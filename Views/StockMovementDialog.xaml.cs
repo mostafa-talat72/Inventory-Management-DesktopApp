@@ -149,13 +149,71 @@ public partial class StockMovementDialog : UserControl
 
         ConfirmDialog.Show("تأكيد الحذف", "هل أنت متأكد من حذف هذه الحركة؟", result => {
             if (!result) return;
+
             var movement = _db.InventoryMovements.Find(item.MovementId);
             if (movement == null) return;
+
+            // إذا كانت الحركة إضافة مخزون، نطرح الكمية من الـ batch المرتبط
+            if (movement.MovementType == MovementType.StockIn)
+            {
+                var batch = FindLinkedBatch(movement);
+                if (batch == null)
+                {
+                    NotificationManager.ShowError("لم يتم العثور على الدفعة المرتبطة بهذه الحركة");
+                    return;
+                }
+
+                // التحقق أن المخزون المتاح كافٍ لطرح الكمية
+                if (batch.RemainingQuantity < movement.Quantity)
+                {
+                    int consumed = batch.InitialQuantity - batch.RemainingQuantity;
+                    NotificationManager.ShowWarning(
+                        $"لا يمكن حذف هذه الحركة.\n" +
+                        $"تم استهلاك {consumed} قطعة من هذه الدفعة بالفعل.\n" +
+                        $"المتبقي في الدفعة: {batch.RemainingQuantity} قطعة فقط.");
+                    return;
+                }
+
+                // طرح الكمية من الدفعة
+                batch.RemainingQuantity -= movement.Quantity;
+                batch.InitialQuantity -= movement.Quantity;
+
+                // إذا أصبحت الدفعة فارغة تماماً احذفها
+                if (batch.InitialQuantity <= 0)
+                    _db.InventoryBatches.Remove(batch);
+                else
+                    _db.Entry(batch).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            }
+
             _db.InventoryMovements.Remove(movement);
             _db.SaveChanges();
+            NotificationManager.ShowSuccess("تم حذف الحركة وتحديث المخزون بنجاح");
             LoadSummary();
             LoadMovements();
         }, ConfirmDialog.DialogType.Danger);
+    }
+
+    /// <summary>
+    /// يجد الـ InventoryBatch المرتبط بحركة StockIn عن طريق المطابقة الدقيقة للكمية والوقت
+    /// </summary>
+    private InventoryBatch? FindLinkedBatch(InventoryMovement movement)
+    {
+        var batches = _db.InventoryBatches
+            .Where(b => b.ProductId == movement.ProductId)
+            .OrderBy(b => b.PurchaseDate)
+            .ToList();
+
+        // أولاً: بحث بتطابق دقيق في الوقت (نفس الثانية)
+        var exact = batches.FirstOrDefault(b =>
+            Math.Abs((b.PurchaseDate - movement.CreatedAt).TotalSeconds) < 2 &&
+            b.InitialQuantity == movement.Quantity);
+
+        if (exact != null) return exact;
+
+        // ثانياً: بحث بالكمية والوقت بهامش 5 دقائق
+        return batches.FirstOrDefault(b =>
+            Math.Abs((b.PurchaseDate - movement.CreatedAt).TotalMinutes) < 5 &&
+            b.InitialQuantity == movement.Quantity);
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)

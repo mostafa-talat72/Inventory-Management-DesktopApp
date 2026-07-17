@@ -85,11 +85,7 @@ public partial class MovementEditDialog : UserControl
 
         if (_item.MovementType == MovementType.StockIn)
         {
-            var batch = _db.InventoryBatches
-                .Where(b => b.ProductId == _product.Id)
-                .OrderBy(b => b.PurchaseDate)
-                .ToList()
-                .FirstOrDefault(b => Math.Abs((b.CreatedAt - _movement.CreatedAt).TotalSeconds) < 60);
+            var batch = FindLinkedBatch(_movement);
 
             if (batch == null)
             {
@@ -97,14 +93,23 @@ public partial class MovementEditDialog : UserControl
                 return;
             }
 
-            if (qtyDiff < 0 && batch.RemainingQuantity + qtyDiff < 0)
+            if (qtyDiff < 0)
             {
+                // التحقق: الكمية الجديدة لا تقل عما استُهلك من الدفعة
                 int consumed = batch.InitialQuantity - batch.RemainingQuantity;
-                NotificationManager.ShowWarning($"لا يمكن تقليل الكمية. تم استهلاك {consumed} قطعة من هذه الدفعة.\nالحد الأدنى المسموح: {consumed} قطعة");
-                return;
+                if (newQty < consumed)
+                {
+                    NotificationManager.ShowWarning(
+                        $"لا يمكن تقليل الكمية إلى {newQty} قطعة.\n" +
+                        $"تم استهلاك {consumed} قطعة من هذه الدفعة بالفعل.\n" +
+                        $"الحد الأدنى المسموح: {consumed} قطعة");
+                    return;
+                }
             }
 
+            // تحديث الدفعة
             batch.RemainingQuantity += qtyDiff;
+            batch.InitialQuantity += qtyDiff;
             _movement.CostPrice = _item.CostPrice > 0 ? _item.CostPrice : 0;
 
             _db.Entry(batch).State = EntityState.Modified;
@@ -162,5 +167,28 @@ public partial class MovementEditDialog : UserControl
     private void BtnCancel_Click(object sender, RoutedEventArgs e)
     {
         DialogClosed?.Invoke(this, false);
+    }
+
+    /// <summary>
+    /// يجد الـ InventoryBatch المرتبط بحركة StockIn عن طريق المطابقة الدقيقة للكمية والوقت
+    /// </summary>
+    private InventoryBatch? FindLinkedBatch(InventoryMovement movement)
+    {
+        var batches = _db.InventoryBatches
+            .Where(b => b.ProductId == movement.ProductId)
+            .OrderBy(b => b.PurchaseDate)
+            .ToList();
+
+        // أولاً: تطابق دقيق في الوقت (نفس الثانيتين) والكمية الأصلية
+        var exact = batches.FirstOrDefault(b =>
+            Math.Abs((b.PurchaseDate - movement.CreatedAt).TotalSeconds) < 2 &&
+            b.InitialQuantity == movement.Quantity);
+
+        if (exact != null) return exact;
+
+        // ثانياً: تطابق الكمية الأصلية مع هامش 5 دقائق
+        return batches.FirstOrDefault(b =>
+            Math.Abs((b.PurchaseDate - movement.CreatedAt).TotalMinutes) < 5 &&
+            b.InitialQuantity == movement.Quantity);
     }
 }
