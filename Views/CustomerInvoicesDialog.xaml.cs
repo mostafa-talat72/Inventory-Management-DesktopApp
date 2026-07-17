@@ -10,32 +10,49 @@ using ProductApp.Services;
 
 namespace ProductApp.Views;
 
-public partial class CustomerInvoicesDialog : UserControl
-{
-    public event EventHandler<bool?>? DialogClosed;
-
-    private readonly AppDbContext _db;
-    private readonly Customer _customer;
-    private List<Invoice> _allInvoices = new();
-    private string _filterMode = "Unpaid";
-
-    public CustomerInvoicesDialog(AppDbContext db, Customer customer)
+    public partial class CustomerInvoicesDialog : UserControl
     {
-        InitializeComponent();
-        _db = db;
-        _customer = customer;
+        public event EventHandler<bool?>? DialogClosed;
 
-        TxtTitle.Text = $"فواتير - {customer.Name}";
-        TxtSubtitle.Text = customer.Phone ?? "لا يوجد رقم هاتف";
-        LoadData();
-    }
+        private readonly AppDbContext _db;
+        private readonly Customer? _customer;
+        private readonly bool _isCashMode;
+        private List<Invoice> _allInvoices = new();
+        private string _filterMode = "Unpaid";
 
-    private void LoadData()
-    {
-        _allInvoices = _db.Invoices
-            .Where(i => i.CustomerId == _customer.Id)
-            .OrderByDescending(i => i.CreatedAt)
-            .ToList();
+        public CustomerInvoicesDialog(AppDbContext db, Customer customer) : this(db, customer, false) { }
+
+        // Cash mode — invoices with no customer
+        public CustomerInvoicesDialog(AppDbContext db)
+        {
+            InitializeComponent();
+            _db = db;
+            _customer = null;
+            _isCashMode = true;
+
+            TxtTitle.Text = "فواتير نقدي";
+            TxtSubtitle.Text = "الفواتير النقدية (بدون عميل)";
+            LoadData();
+        }
+
+        private CustomerInvoicesDialog(AppDbContext db, Customer customer, bool _)
+        {
+            InitializeComponent();
+            _db = db;
+            _customer = customer;
+            _isCashMode = false;
+
+            TxtTitle.Text = $"فواتير - {customer.Name}";
+            TxtSubtitle.Text = customer.Phone ?? "لا يوجد رقم هاتف";
+            LoadData();
+        }
+
+        private void LoadData()
+        {
+            _allInvoices = _db.Invoices
+                .Where(i => _isCashMode ? i.CustomerId == null : i.CustomerId == _customer!.Id)
+                .OrderByDescending(i => i.CreatedAt)
+                .ToList();
 
         SetFilter("Unpaid");
         UpdateManageOrdersVisibility();
@@ -328,7 +345,7 @@ public partial class CustomerInvoicesDialog : UserControl
     private Invoice? GetOpenInvoice()
     {
         return _db.Invoices
-            .Where(i => i.CustomerId == _customer.Id
+            .Where(i => (_isCashMode ? i.CustomerId == null : i.CustomerId == _customer!.Id)
                 && i.Status != InvoiceStatus.Paid
                 && i.Status != InvoiceStatus.Cancelled)
             .OrderByDescending(i => i.CreatedAt)

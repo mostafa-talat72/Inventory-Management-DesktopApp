@@ -70,6 +70,68 @@
                 </Grid>
             </Border>
 
+            <!-- Cash customer card -->
+            <Border Width="260" MinHeight="152" Margin="8,0,8,8" CornerRadius="14"
+                    Background="White" BorderThickness="0" Cursor="Hand"
+                    MouseLeftButtonDown="CashCustomer_Click">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.1" Color="#000" />
+                </Border.Effect>
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.16" Color="#FF6F00" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Grid Margin="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="4" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="#FF6F00" />
+                    <Grid Grid.Row="1" Margin="16,12,16,14">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
+                                    Background="#FFF3E0" VerticalAlignment="Center">
+                                <Path Width="18" Height="18" Fill="#FF6F00" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M11.5 1L13.91 5.59L19 6.09L15.25 9.72L16.82 14.78L11.5 12.09L6.18 14.78L7.75 9.72L4 6.09L9.09 5.59L11.5 1M11.5 4.84L10.34 7.08L7.82 7.5L9.66 9.28L9.16 11.78L11.5 10.56L13.84 11.78L13.34 9.28L15.18 7.5L12.66 7.08L11.5 4.84M20 12C18.95 12 18.08 12.67 17.77 13.61C17.46 13.77 17.2 14 17.03 14.31L15.56 13.75L15.04 15.25L16.36 15.75C16.28 16.11 16.25 16.5 16.25 16.88C16.25 17.26 16.28 17.64 16.36 18L15.04 18.5L15.56 20L17.03 19.44C17.2 19.75 17.46 20 17.77 20.16C18.08 21.09 18.95 21.75 20 21.75C21.05 21.75 21.92 21.09 22.23 20.16C22.54 20 22.8 19.75 22.97 19.44L24.44 20L24.96 18.5L23.64 18C23.72 17.64 23.75 17.26 23.75 16.88C23.75 16.5 23.72 16.11 23.64 15.75L24.96 15.25L24.44 13.75L22.97 14.31C22.8 14 22.54 13.77 22.23 13.61C21.92 12.67 21.05 12 20 12M20 15.5C20.83 15.5 21.5 16.17 21.5 17C21.5 17.83 20.83 18.5 20 18.5C19.17 18.5 18.5 17.83 18.5 17C18.5 16.17 19.17 15.5 20 15.5Z" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="نقدي" FontSize="15" FontWeight="Bold" Foreground="#E65100" />
+                                <TextBlock Text="فواتير بدون عميل" FontSize="11" Foreground="#78909C" Margin="0,1,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <Border Grid.Row="1" Height="1" Background="#F0F0F0" Margin="0,10,0,8" />
+                        <StackPanel Grid.Row="2">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <Border Width="8" Height="8" CornerRadius="4" Background="#FF6F00" VerticalAlignment="Center" />
+                                <TextBlock Text="فواتير نقدية" FontSize="11" Foreground="#546E7A" Margin="6,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <Border Margin="0,8,0,0" Background="#FF6F00" CornerRadius="6" Padding="10,5" HorizontalAlignment="Left">
+                                <TextBlock x:Name="TxtCashInvoiceCount" Text="0 فاتورة" FontSize="11" FontWeight="SemiBold" Foreground="White" />
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+
             <!-- Customer Cards -->
             <ItemsControl x:Name="CustomerList">
                 <ItemsControl.ItemsPanel>

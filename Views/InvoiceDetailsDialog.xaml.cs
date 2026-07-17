@@ -67,24 +67,22 @@ public partial class InvoiceDetailsDialog : UserControl
         BtnDeleteInvoice.Visibility = _invoice.Status == InvoiceStatus.Cancelled
             ? Visibility.Collapsed : Visibility.Visible;
 
-        // Order items
-        var items = _invoice.Orders
+        // Order items — group by product, merge retail + wholesale
+        var productGroups = _invoice.Orders
             .SelectMany(o => o.Items)
-            .Select(oi =>
-            {
-                string qty = "";
-                if (oi.CartonQuantity > 0) qty += $"{oi.CartonQuantity} كرتونة, ";
-                if (oi.BoxQuantity > 0) qty += $"{oi.BoxQuantity} علبة, ";
-                if (oi.PieceQuantity > 0) qty += $"{oi.PieceQuantity} قطعة, ";
-                qty = qty.TrimEnd(',', ' ');
-                return new { oi, qty };
-            }).ToList();
+            .GroupBy(oi => oi.Product)
+            .ToList();
 
-        TxtItemCount.Text = $"{items.Count} منتج";
+        TxtItemCount.Text = $"{productGroups.Count} منتج";
         ItemsPanel.Children.Clear();
-        foreach (var item in items)
+        foreach (var group in productGroups)
         {
-            var card = CreateOrderItemCard(item.oi, item.qty);
+            var retail = group.Where(oi => oi.PriceType == PriceType.Retail).ToList();
+            var wholesale = group.Where(oi => oi.PriceType == PriceType.Wholesale).ToList();
+
+            var card = CreateProductCard(group.Key,
+                retail.Sum(oi => oi.CartonQuantity), retail.Sum(oi => oi.BoxQuantity), retail.Sum(oi => oi.PieceQuantity), retail.Sum(oi => oi.Total),
+                wholesale.Sum(oi => oi.CartonQuantity), wholesale.Sum(oi => oi.BoxQuantity), wholesale.Sum(oi => oi.PieceQuantity), wholesale.Sum(oi => oi.Total));
             ItemsPanel.Children.Add(card);
         }
 
@@ -133,24 +131,40 @@ public partial class InvoiceDetailsDialog : UserControl
         }
 
         // Show/hide body sections
-        ProductsSection.Visibility = items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        ProductsSection.Visibility = productGroups.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         DiscountsSection.Visibility = _invoice.Discount > 0 ? Visibility.Visible : Visibility.Collapsed;
         PaymentsSection.Visibility = payments.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private Border CreateOrderItemCard(OrderItem oi, string qtyDisplay)
+    private Border CreateProductCard(Product product,
+        int rCarton, int rBox, int rPiece, decimal rTotal,
+        int wCarton, int wBox, int wPiece, decimal wTotal)
     {
-        string priceTypeText = oi.PriceType == PriceType.Retail ? "قطاعي" : "جملة";
-        string priceTypeBg = oi.PriceType == PriceType.Retail ? "#E3F2FD" : "#F3E5F5";
-        string priceTypeFg = oi.PriceType == PriceType.Retail ? "#1565C0" : "#7B1FA2";
+        string RetailQty()
+        {
+            string s = "";
+            if (rCarton > 0) s += $"{rCarton} كرتونة, ";
+            if (rBox > 0) s += $"{rBox} علبة, ";
+            if (rPiece > 0) s += $"{rPiece} قطعة, ";
+            return s.TrimEnd(',', ' ');
+        }
+        string WholesaleQty()
+        {
+            string s = "";
+            if (wCarton > 0) s += $"{wCarton} كرتونة, ";
+            if (wBox > 0) s += $"{wBox} علبة, ";
+            if (wPiece > 0) s += $"{wPiece} قطعة, ";
+            return s.TrimEnd(',', ' ');
+        }
+
+        bool hasRetail = rTotal > 0;
+        bool hasWholesale = wTotal > 0;
 
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-        // Product icon
+        // Icon
         var iconBorder = new Border
         {
             Width = 40, Height = 40,
@@ -170,40 +184,49 @@ public partial class InvoiceDetailsDialog : UserControl
         grid.Children.Add(iconBorder);
         Grid.SetColumn(iconBorder, 0);
 
-        // Product name & qty
-        var nameStack = new StackPanel
-        {
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(14, 0, 0, 0)
-        };
-        nameStack.Children.Add(new TextBlock { Text = oi.Product.Name, FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
-        nameStack.Children.Add(new TextBlock { Text = qtyDisplay, FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(0, 2, 0, 0) });
-        grid.Children.Add(nameStack);
-        Grid.SetColumn(nameStack, 1);
+        // Right side: product name + retail/wholesale rows + total
+        var rightStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 0, 0, 0) };
 
-        // Price type badge
-        var priceBadge = new Border
+        // Product name
+        rightStack.Children.Add(new TextBlock
         {
-            CornerRadius = new CornerRadius(4),
-            Background = (Brush)new BrushConverter().ConvertFrom(priceTypeBg)!,
-            VerticalAlignment = VerticalAlignment.Center,
-            Padding = new Thickness(8, 3, 8, 3),
-            Margin = new Thickness(0, 0, 14, 0),
-            Child = new TextBlock { Text = priceTypeText, FontSize = 10, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom(priceTypeFg)! }
-        };
-        grid.Children.Add(priceBadge);
-        Grid.SetColumn(priceBadge, 2);
+            Text = product.Name,
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")!
+        });
 
-        // Price & total
-        var priceStack = new StackPanel
+        // Retail row
+        if (hasRetail)
         {
-            VerticalAlignment = VerticalAlignment.Center,
-            HorizontalAlignment = HorizontalAlignment.Right
-        };
-        priceStack.Children.Add(new TextBlock { Text = $"{oi.Total:N2} ج.م", FontSize = 15, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!, HorizontalAlignment = HorizontalAlignment.Right });
-        priceStack.Children.Add(new TextBlock { Text = $"{oi.UnitPrice:N2} للواحدة", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#B0BEC5")!, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 1, 0, 0) });
-        grid.Children.Add(priceStack);
-        Grid.SetColumn(priceStack, 3);
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 0) };
+            row.Children.Add(new Border { CornerRadius = new CornerRadius(3), Background = (Brush)new BrushConverter().ConvertFrom("#1565C0")!, Padding = new Thickness(5, 1, 5, 1), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = "قطاعي", FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.White } });
+            row.Children.Add(new TextBlock { Text = $" {RetailQty()}", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#546E7A")!, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) });
+            rightStack.Children.Add(row);
+        }
+
+        // Wholesale row
+        if (hasWholesale)
+        {
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 0) };
+            row.Children.Add(new Border { CornerRadius = new CornerRadius(3), Background = (Brush)new BrushConverter().ConvertFrom("#00897B")!, Padding = new Thickness(5, 1, 5, 1), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = "جملة", FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.White } });
+            row.Children.Add(new TextBlock { Text = $" {WholesaleQty()}", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#546E7A")!, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) });
+            rightStack.Children.Add(row);
+        }
+
+        // Total
+        decimal combined = rTotal + wTotal;
+        rightStack.Children.Add(new TextBlock
+        {
+            Text = $"{combined:N2} ج.م",
+            FontSize = 14,
+            FontWeight = FontWeights.Bold,
+            Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
+            Margin = new Thickness(0, 3, 0, 0)
+        });
+
+        grid.Children.Add(rightStack);
+        Grid.SetColumn(rightStack, 1);
 
         return new Border
         {
@@ -587,6 +610,22 @@ public partial class InvoiceDetailsDialog : UserControl
                 DialogClosed?.Invoke(this, true);
             },
             ConfirmDialog.DialogType.Warning);
+    }
+
+    private void BtnTransfer_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new ChangeCustomerDialog(_db, _invoice);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true)
+            {
+                _db.Entry(_invoice).Reload();
+                LoadData();
+            }
+        };
+        mainWindow.ShowOverlay(dialog);
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)

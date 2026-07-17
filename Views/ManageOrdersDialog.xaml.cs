@@ -203,62 +203,119 @@ public partial class ManageOrdersDialog : UserControl
         var boxUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Box);
         var pieceUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
 
-        var overlay = new Border
+        var panel = new Border
         {
             CornerRadius = new CornerRadius(12),
             Background = Brushes.White,
-            Padding = new Thickness(20),
-            Width = 360,
+            Padding = new Thickness(24),
+            Width = 460,
             Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 16, ShadowDepth = 2, Opacity = 0.2, Color = Colors.Black }
         };
 
-        var stack = new StackPanel();
-        stack.Children.Add(new TextBlock { Text = $"تعديل: {item.Product.Name}", FontSize = 16, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!, Margin = new Thickness(0, 0, 0, 12) });
+        var grid = new Grid();
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        // Row 0: Product name
+        var nameBlock = new TextBlock { Text = $"تعديل: {item.Product.Name}", FontSize = 18, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")! };
+        Grid.SetRow(nameBlock, 0);
+        grid.Children.Add(nameBlock);
+
+        // Row 1: Price info
+        var priceBorder = new Border
+        {
+            CornerRadius = new CornerRadius(6),
+            BorderBrush = (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!,
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(10),
+            Background = Brushes.White,
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        var priceStack = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center };
+        foreach (var u in units)
+        {
+            var unitBorder = new Border { BorderBrush = (Brush)new BrushConverter().ConvertFrom("#E8E8E8")!, BorderThickness = new Thickness(0, 0, 1, 0), Padding = new Thickness(14, 0, 14, 0) };
+            if (u == units.Last()) unitBorder.BorderThickness = new Thickness(0);
+            var unitStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            unitStack.Children.Add(new TextBlock { Text = u.Name, FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, HorizontalAlignment = HorizontalAlignment.Center });
+            var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 0) };
+            row.Children.Add(new StackPanel { Children = { new TextBlock { Text = "قطاعي", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#B0BEC5")!, HorizontalAlignment = HorizontalAlignment.Center }, new TextBlock { Text = $"{u.RetailPrice:N2}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!, HorizontalAlignment = HorizontalAlignment.Center } } });
+            row.Children.Add(new StackPanel { Margin = new Thickness(10, 0, 0, 0), Children = { new TextBlock { Text = "جملة", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#B0BEC5")!, HorizontalAlignment = HorizontalAlignment.Center }, new TextBlock { Text = $"{u.WholesalePrice:N2}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#00897B")!, HorizontalAlignment = HorizontalAlignment.Center } } });
+            unitStack.Children.Add(row);
+            unitBorder.Child = unitStack;
+            priceStack.Children.Add(unitBorder);
+        }
+        priceBorder.Child = priceStack;
+        Grid.SetRow(priceBorder, 1);
+        grid.Children.Add(priceBorder);
+
+        // Row 2: Quantity fields + price type
+        var qtyGrid = new Grid { Margin = new Thickness(0, 10, 0, 0) };
+        qtyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        qtyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        qtyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        qtyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        qtyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
         TextBox cartonTb = null!, boxTb = null!, pieceTb = null!;
-        ComboBox cmb = null!;
+        int col = 0;
 
         if (cartonUnit != null)
         {
-            stack.Children.Add(new TextBlock { Text = "كرتونة", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, Margin = new Thickness(0, 4, 0, 2) });
-            cartonTb = new TextBox { Text = item.CartonQuantity.ToString(), FontSize = 14, Padding = new Thickness(8) };
-            SetNumericInput(cartonTb);
-            stack.Children.Add(cartonTb);
+            var s = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+            s.Children.Add(new TextBlock { Text = "كرتونة", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, HorizontalAlignment = HorizontalAlignment.Center });
+            cartonTb = new TextBox { Text = item.CartonQuantity.ToString(), Width = 60, FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center };
+            cartonTb.PreviewTextInput += (s2, e) => e.Handled = !char.IsDigit(e.Text[0]);
+            s.Children.Add(cartonTb);
+            Grid.SetColumn(s, col++);
+            qtyGrid.Children.Add(s);
         }
         if (boxUnit != null)
         {
-            stack.Children.Add(new TextBlock { Text = "علبة", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, Margin = new Thickness(0, 4, 0, 2) });
-            boxTb = new TextBox { Text = item.BoxQuantity.ToString(), FontSize = 14, Padding = new Thickness(8) };
-            SetNumericInput(boxTb);
-            stack.Children.Add(boxTb);
+            var s = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+            s.Children.Add(new TextBlock { Text = "علبة", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, HorizontalAlignment = HorizontalAlignment.Center });
+            boxTb = new TextBox { Text = item.BoxQuantity.ToString(), Width = 60, FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center };
+            boxTb.PreviewTextInput += (s2, e) => e.Handled = !char.IsDigit(e.Text[0]);
+            s.Children.Add(boxTb);
+            Grid.SetColumn(s, col++);
+            qtyGrid.Children.Add(s);
         }
         if (pieceUnit != null)
         {
-            stack.Children.Add(new TextBlock { Text = "قطعة", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, Margin = new Thickness(0, 4, 0, 2) });
-            pieceTb = new TextBox { Text = item.PieceQuantity.ToString(), FontSize = 14, Padding = new Thickness(8) };
-            SetNumericInput(pieceTb);
-            stack.Children.Add(pieceTb);
+            var s = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+            s.Children.Add(new TextBlock { Text = "قطعة", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, HorizontalAlignment = HorizontalAlignment.Center });
+            pieceTb = new TextBox { Text = item.PieceQuantity.ToString(), Width = 60, FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center };
+            pieceTb.PreviewTextInput += (s2, e) => e.Handled = !char.IsDigit(e.Text[0]);
+            s.Children.Add(pieceTb);
+            Grid.SetColumn(s, col++);
+            qtyGrid.Children.Add(s);
         }
 
-            stack.Children.Add(new TextBlock { Text = "نوع السعر", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, Margin = new Thickness(0, 8, 0, 2) });
-        cmb = new ComboBox { FontSize = 13, Padding = new Thickness(6) };
+        var cmb = new ComboBox { Width = 80, FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
         cmb.Items.Add("قطاعي");
         cmb.Items.Add("جملة");
         cmb.SelectedIndex = item.PriceType == PriceType.Wholesale ? 1 : 0;
-        stack.Children.Add(cmb);
+        Grid.SetColumn(cmb, col);
+        qtyGrid.Children.Add(cmb);
 
-        var btnStack = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 14, 0, 0), HorizontalAlignment = HorizontalAlignment.Center };
+        Grid.SetRow(qtyGrid, 2);
+        grid.Children.Add(qtyGrid);
+
+        // Row 3: Buttons
+        var btnStack = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 14, 0, 0) };
 
         var saveBtn = new Button
         {
             Content = "حفظ",
-            Height = 36,
+            Height = 38,
             Cursor = Cursors.Hand,
-            Padding = new Thickness(24, 0, 24, 0),
+            Padding = new Thickness(28, 0, 28, 0),
             Background = (Brush)new BrushConverter().ConvertFrom("#00897B")!,
             Foreground = Brushes.White,
             BorderThickness = new Thickness(0),
-            FontSize = 13,
+            FontSize = 14,
             FontWeight = FontWeights.Bold
         };
         var itemCopy = item;
@@ -279,49 +336,30 @@ public partial class ManageOrdersDialog : UserControl
             int oldPieces = _inv.CalculatePieceEquivalent(itemCopy.Product, itemCopy.CartonQuantity, itemCopy.BoxQuantity, itemCopy.PieceQuantity);
             int newPieces = _inv.CalculatePieceEquivalent(itemCopy.Product, newCarton, newBox, newPiece);
 
-            // Return old stock
             ReturnStockToBatches(itemCopy.Product.Id, oldPieces, itemCopy.CostPrice);
 
-            // Check stock sufficiency for new quantity
             if (!_inv.IsStockSufficient(itemCopy.Product, newCarton, newBox, newPiece))
             {
-                // Re-deduct the old stock back since we already returned it
-                // We can't easily reverse the ReturnStockToBatches, so show error and reload
                 NotificationManager.ShowWarning("المخزون غير كافٍ للكمية الجديدة");
                 LoadItems();
                 return;
             }
 
-            // Update invoice total: subtract old, add new
-            _invoice.TotalAmount = _invoice.TotalAmount - itemCopy.Total;
+            _invoice.TotalAmount -= itemCopy.Total;
 
-            // Calculate new total and deduct stock
             decimal newUnitPrice = 0;
             int? usedUnitId = null;
-            if (newCarton > 0 && cartonUnit != null)
-            {
-                newUnitPrice = isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice;
-                usedUnitId = cartonUnit.Id;
-            }
-            else if (newBox > 0 && boxUnit != null)
-            {
-                newUnitPrice = isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice;
-                usedUnitId = boxUnit.Id;
-            }
-            else if (newPiece > 0 && pieceUnit != null)
-            {
-                newUnitPrice = isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice;
-                usedUnitId = pieceUnit.Id;
-            }
+            if (newCarton > 0 && cartonUnit != null) { newUnitPrice = isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice; usedUnitId = cartonUnit.Id; }
+            else if (newBox > 0 && boxUnit != null) { newUnitPrice = isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice; usedUnitId = boxUnit.Id; }
+            else if (newPiece > 0 && pieceUnit != null) { newUnitPrice = isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice; usedUnitId = pieceUnit.Id; }
 
             decimal newTotal = 0;
-            if (cartonUnit != null) { decimal price = isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice; newTotal += newCarton * price; }
-            if (boxUnit != null) { decimal price = isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice; newTotal += newBox * price; }
-            if (pieceUnit != null) { decimal price = isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice; newTotal += newPiece * price; }
+            if (cartonUnit != null) { newTotal += newCarton * (isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice); }
+            if (boxUnit != null) { newTotal += newBox * (isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice); }
+            if (pieceUnit != null) { newTotal += newPiece * (isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice); }
 
             var (fifoCost, consumed) = _inv.CalculateFifoCost(itemCopy.Product, newPieces);
 
-            // Update item
             itemCopy.CartonQuantity = newCarton;
             itemCopy.BoxQuantity = newBox;
             itemCopy.PieceQuantity = newPiece;
@@ -333,7 +371,6 @@ public partial class ManageOrdersDialog : UserControl
 
             _invoice.TotalAmount += newTotal;
 
-            // New stock out movement
             _db.InventoryMovements.Add(new InventoryMovement
             {
                 ProductId = itemCopy.ProductId,
@@ -343,7 +380,7 @@ public partial class ManageOrdersDialog : UserControl
                 SellingPrice = newTotal,
                 ReferenceType = ReferenceType.Sale,
                 ReferenceId = itemCopy.OrderId,
-                Notes = $"تعديل طلب - {newCarton} كرتونة, {newBox} علبة, {newPiece} قطعة - فاتورة #{_invoice.Id}"
+                Notes = $"تعديل طلب - فاتورة #{_invoice.Id}"
             });
 
             foreach (var batch in consumed)
@@ -353,39 +390,39 @@ public partial class ManageOrdersDialog : UserControl
             NotificationManager.ShowSuccess("تم تعديل الطلب بنجاح");
             LoadItems();
 
-            // Remove the edit overlay
-            var mainWindow = (MainWindow)Window.GetWindow(this);
-            mainWindow.HideOverlay();
+            var mainWin = (MainWindow)Window.GetWindow(this);
+            mainWin.HideOverlay();
         };
 
         var cancelBtn = new Button
         {
             Content = "إلغاء",
-            Height = 36,
+            Height = 38,
             Cursor = Cursors.Hand,
-            Padding = new Thickness(24, 0, 24, 0),
-            Margin = new Thickness(12, 0, 0, 0),
+            Padding = new Thickness(28, 0, 28, 0),
+            Margin = new Thickness(14, 0, 0, 0),
             Background = (Brush)new BrushConverter().ConvertFrom("#F5F5F5")!,
             Foreground = (Brush)new BrushConverter().ConvertFrom("#546E7A")!,
             BorderThickness = new Thickness(1),
             BorderBrush = (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!,
-            FontSize = 13,
+            FontSize = 14,
             FontWeight = FontWeights.SemiBold
         };
         cancelBtn.Click += (_, _) =>
         {
-            var mainWindow = (MainWindow)Window.GetWindow(this);
-            mainWindow.HideOverlay();
+            var mainWin = (MainWindow)Window.GetWindow(this);
+            mainWin.HideOverlay();
         };
 
         btnStack.Children.Add(saveBtn);
         btnStack.Children.Add(cancelBtn);
-        stack.Children.Add(btnStack);
+        Grid.SetRow(btnStack, 3);
+        grid.Children.Add(btnStack);
 
-        overlay.Child = stack;
+        panel.Child = grid;
 
         var mainW = (MainWindow)Window.GetWindow(this);
-        mainW.ShowOverlay(new UserControl { Content = overlay });
+        mainW.ShowOverlay(new UserControl { Content = panel });
     }
 
     private void ReturnStockToBatches(int productId, int totalPieces, decimal costPrice)
@@ -439,7 +476,6 @@ public partial class ManageOrdersDialog : UserControl
 
                 // Update invoice total
                 _invoice.TotalAmount -= item.Total;
-                _invoice.Status = _invoice.TotalAmount <= 0 ? InvoiceStatus.Cancelled : _invoice.Status;
                 if (_invoice.TotalAmount <= 0)
                 {
                     _invoice.TotalPaid = 0;
@@ -450,10 +486,43 @@ public partial class ManageOrdersDialog : UserControl
                 var order = item.Order;
                 _db.OrderItems.Remove(item);
                 var remainingItems = _db.OrderItems.Count(oi => oi.OrderId == order.Id);
+                bool orderDeleted = false;
                 if (remainingItems == 0)
+                {
                     _db.Orders.Remove(order);
+                    orderDeleted = true;
+                }
 
                 _db.SaveChanges();
+
+                // If the invoice has no more orders, ask to delete it entirely
+                if (orderDeleted)
+                {
+                    var remainingOrders = _db.Orders.Count(o => o.InvoiceId == _invoice.Id);
+                    if (remainingOrders == 0)
+                    {
+                        ConfirmDialog.Show("حذف الفاتورة",
+                            "تم حذف جميع الطلبات من هذه الفاتورة.\nهل تريد حذف الفاتورة بالكامل؟",
+                            delResult =>
+                            {
+                                if (delResult != true) { LoadItems(); return; }
+
+                                // Delete payments
+                                var payments = _db.Payments.Where(p => p.InvoiceId == _invoice.Id).ToList();
+                                _db.Payments.RemoveRange(payments);
+
+                                // Delete invoice
+                                _db.Invoices.Remove(_invoice);
+                                _db.SaveChanges();
+
+                                NotificationManager.ShowSuccess("تم حذف الفاتورة بالكامل");
+                                DialogClosed?.Invoke(this, true);
+                            },
+                            ConfirmDialog.DialogType.Warning);
+                        return;
+                    }
+                }
+
                 NotificationManager.ShowSuccess("تم حذف الطلب وترجيع الكمية");
                 LoadItems();
             },

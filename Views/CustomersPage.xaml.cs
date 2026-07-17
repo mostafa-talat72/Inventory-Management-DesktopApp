@@ -50,6 +50,22 @@ public partial class CustomersPage : Page
         }).ToList();
 
         CustomerList.ItemsSource = customers;
+
+        // Update cash invoice count
+        int cashCount = _db.Invoices.Count(i => i.CustomerId == null);
+        TxtCashInvoiceCount.Text = cashCount > 0 ? $"{cashCount} فاتورة" : "لا توجد فواتير";
+    }
+
+    private void CashCustomer_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new CustomerInvoicesDialog(_db);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true) LoadCustomers();
+        };
     }
 
     private void OpenCustomer(Customer customer)

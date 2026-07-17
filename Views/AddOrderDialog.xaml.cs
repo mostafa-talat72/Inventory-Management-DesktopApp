@@ -1,402 +1,564 @@
+using Microsoft.EntityFrameworkCore;
+using ProductApp.Data;
+using ProductApp.Models;
+using ProductApp.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Microsoft.EntityFrameworkCore;
-using ProductApp.Data;
-using ProductApp.Models;
-using ProductApp.Services;
 
-namespace ProductApp.Views;
-
-public partial class AddOrderDialog : UserControl
+namespace ProductApp.Views
 {
-    public event EventHandler<bool?>? DialogClosed;
-
-    private readonly AppDbContext _db;
-    private readonly InventoryService _inv;
-    private readonly Customer _customer;
-    private Invoice _invoice = null!;
-    private List<Product> _allProducts = [];
-    private bool _loaded;
-
-    public AddOrderDialog(AppDbContext db, Customer customer)
+    public partial class AddOrderDialog : UserControl
     {
-        InitializeComponent();
-        _db = db;
-        _inv = new InventoryService(db);
-        _customer = customer;
+        public event EventHandler<bool?>? DialogClosed;
 
-        TxtSubtitle.Text = customer.Name;
+        private readonly AppDbContext _db;
+        private readonly InventoryService _inv;
+        private readonly Customer? _customer;
+        private Invoice? _invoice;
+        private readonly Dictionary<int, OrderItemEntry> _entries = new();
 
-        FindOrCreateInvoice();
-        LoadProducts();
-        _loaded = true;
-    }
-
-    private void FindOrCreateInvoice()
-    {
-        _invoice = _db.Invoices
-            .Where(i => i.CustomerId == _customer.Id
-                && i.Status != InvoiceStatus.Paid
-                && i.Status != InvoiceStatus.Cancelled)
-            .OrderByDescending(i => i.CreatedAt)
-            .FirstOrDefault()!;
-
-        if (_invoice == null)
+        private class OrderItemEntry
         {
-            _invoice = new Invoice
+            public Product Product { get; set; } = null!;
+            public ProductUnit? CartonUnit, BoxUnit, PieceUnit;
+            public Border Container = null!;
+            public TextBox RetailCartonTb = null!, RetailBoxTb = null!, RetailPieceTb = null!;
+            public TextBox WholesaleCartonTb = null!, WholesaleBoxTb = null!, WholesalePieceTb = null!;
+            public TextBlock TotalTb = null!;
+
+            public int RetailCarton => ParseInt(RetailCartonTb.Text);
+            public int RetailBox => ParseInt(RetailBoxTb.Text);
+            public int RetailPiece => ParseInt(RetailPieceTb.Text);
+            public int WholesaleCarton => ParseInt(WholesaleCartonTb.Text);
+            public int WholesaleBox => ParseInt(WholesaleBoxTb.Text);
+            public int WholesalePiece => ParseInt(WholesalePieceTb.Text);
+
+            public decimal RetailTotal
             {
-                CustomerId = _customer.Id,
-                CustomerName = _customer.Name,
-                Status = InvoiceStatus.Open,
-                InvoiceDate = DateTime.Now,
-                TotalAmount = 0,
-                TotalPaid = 0,
-                Discount = 0
+                get
+                {
+                    decimal t = 0;
+                    if (CartonUnit != null) t += RetailCarton * CartonUnit.RetailPrice;
+                    if (BoxUnit != null) t += RetailBox * BoxUnit.RetailPrice;
+                    if (PieceUnit != null) t += RetailPiece * PieceUnit.RetailPrice;
+                    return t;
+                }
+            }
+
+            public decimal WholesaleTotal
+            {
+                get
+                {
+                    decimal t = 0;
+                    if (CartonUnit != null) t += WholesaleCarton * CartonUnit.WholesalePrice;
+                    if (BoxUnit != null) t += WholesaleBox * BoxUnit.WholesalePrice;
+                    if (PieceUnit != null) t += WholesalePiece * PieceUnit.WholesalePrice;
+                    return t;
+                }
+            }
+
+            public decimal Total => RetailTotal + WholesaleTotal;
+        }
+
+        public AddOrderDialog(AppDbContext db, Customer? customer)
+        {
+            InitializeComponent();
+            _db = db;
+            _inv = new InventoryService(db);
+            _customer = customer;
+            Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _invoice = FindExistingInvoice();
+            TxtSubtitle.Text = _customer?.Name ?? "نقدي";
+            if (_invoice != null)
+            {
+                InvoiceBadge.Visibility = Visibility.Visible;
+                TxtInvoiceId.Text = _invoice.Id.ToString();
+            }
+            else
+            {
+                InvoiceBadge.Visibility = Visibility.Collapsed;
+            }
+            LoadProducts();
+        }
+
+        private Invoice? FindExistingInvoice()
+        {
+            if (_customer != null)
+                return _db.Invoices
+                    .Where(i => i.CustomerId == _customer.Id
+                        && (i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid))
+                    .OrderByDescending(i => i.Id)
+                    .FirstOrDefault();
+            else
+                return _db.Invoices
+                    .Where(i => i.CustomerId == null
+                        && (i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid))
+                    .OrderByDescending(i => i.Id)
+                    .FirstOrDefault();
+        }
+
+        private void LoadProducts(string filter = null)
+        {
+            var query = _db.Products.Include(p => p.Units).AsQueryable();
+            if (!string.IsNullOrWhiteSpace(filter))
+                query = query.Where(p => p.Name.Contains(filter));
+            var products = query.OrderBy(p => p.Name).ToList();
+
+            var items = products.Select(p =>
+            {
+                var stock = _inv.GetStockDisplay(p);
+                var units = p.Units.OrderBy(u => u.UnitType).ToList();
+                string unitInfo = string.Join(" | ", units.Select(u => $"{u.Name} {u.RetailPrice:N2}"));
+                string priceInfo = units.Any() ? $"قطاعي: {units.Min(u => u.RetailPrice):N2}  جملة: {units.Min(u => u.WholesalePrice):N2}" : "";
+                var cmd = new RelayCommand(() => SelectProduct(p));
+                return new { p.Name, UnitsDisplay = unitInfo, StockDisplay = stock, PriceDisplay = priceInfo, SelectCommand = cmd };
+            }).ToList();
+
+            ProductCards.ItemsSource = items;
+        }
+
+        private void SelectProduct(Product product)
+        {
+            if (_entries.ContainsKey(product.Id))
+            {
+                // Already added — briefly highlight
+                var entry = _entries[product.Id];
+                var orig = entry.Container.Background;
+                entry.Container.Background = new SolidColorBrush(Color.FromRgb(0xFF, 0xF8, 0xE1));
+                var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
+                timer.Tick += (_, _) => { timer.Stop(); entry.Container.Background = orig; };
+                timer.Start();
+                return;
+            }
+            AddProductToOrder(product);
+        }
+
+        private void AddProductToOrder(Product product)
+        {
+            _db.Entry(product).Collection(p => p.Units).Load();
+            var units = product.Units.OrderBy(u => u.UnitType).ToList();
+            var cartonUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Carton);
+            var boxUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Box);
+            var pieceUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
+
+            var entry = new OrderItemEntry
+            {
+                Product = product,
+                CartonUnit = cartonUnit,
+                BoxUnit = boxUnit,
+                PieceUnit = pieceUnit,
             };
-            _db.Invoices.Add(_invoice);
-            _db.SaveChanges();
-        }
 
-        TxtInvoiceId.Text = _invoice.Id.ToString();
-        TxtTitle.Text = $"إضافة طلب - فاتورة #{_invoice.Id}";
-    }
-
-    private void LoadProducts(string? search = null)
-    {
-        var query = _db.Products.Include(p => p.Units).AsQueryable();
-        if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(p => p.Name.Contains(search));
-
-        _allProducts = query.OrderBy(p => p.Name).ToList();
-
-        ProductsPanel.Children.Clear();
-        foreach (var product in _allProducts)
-        {
-            var card = CreateProductCard(product);
-            ProductsPanel.Children.Add(card);
-        }
-
-        if (_allProducts.Count == 0)
-        {
-            ProductsPanel.Children.Add(new TextBlock
+            // Build card
+            var outer = new Border
             {
-                Text = "لا توجد منتجات",
-                FontSize = 14,
-                Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 30, 0, 30)
+                CornerRadius = new CornerRadius(8),
+                Background = new SolidColorBrush(Color.FromRgb(0xF8, 0xF9, 0xFA)),
+                Padding = new Thickness(12, 8, 12, 8),
+                Margin = new Thickness(0, 0, 0, 6)
+            };
+            var mainGrid = new Grid();
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            // Row 0: Product name + remove
+            var nameRow = new Grid();
+            nameRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            nameRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            nameRow.Children.Add(new TextBlock
+            {
+                Text = product.Name,
+                FontSize = 13,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x37, 0x47, 0x4F)),
+                VerticalAlignment = VerticalAlignment.Center
             });
-        }
-    }
-
-    private Border CreateProductCard(Product product)
-    {
-        var units = product.Units.OrderBy(u => u.UnitType).ToList();
-        var cartonUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Carton);
-        var boxUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Box);
-        var pieceUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
-
-        var stockDisplay = _inv.GetStockDisplay(product);
-
-        var grid = new Grid();
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-        // Product info
-        var infoStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-        infoStack.Children.Add(new TextBlock { Text = product.Name, FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
-        infoStack.Children.Add(new TextBlock { Text = stockDisplay, FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(0, 1, 0, 0) });
-        grid.Children.Add(infoStack);
-        Grid.SetColumn(infoStack, 0);
-
-        // Carton qty
-        if (cartonUnit != null)
-        {
-            var stack = new StackPanel { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-            stack.Children.Add(new TextBlock { Text = "كرتونة", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")! });
-            var tb = new TextBox { Width = 55, Text = "0", FontSize = 13, HorizontalAlignment = HorizontalAlignment.Center, Tag = product };
-            tb.TextChanged += (_, _) => { };
-            stack.Children.Add(tb);
-            grid.Children.Add(stack);
-            Grid.SetColumn(stack, 1);
-        }
-
-        // Box qty
-        if (boxUnit != null)
-        {
-            var stack = new StackPanel { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-            stack.Children.Add(new TextBlock { Text = "علبة", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")! });
-            var tb = new TextBox { Width = 55, Text = "0", FontSize = 13, HorizontalAlignment = HorizontalAlignment.Center, Tag = product };
-            tb.TextChanged += (_, _) => { };
-            stack.Children.Add(tb);
-            grid.Children.Add(stack);
-            Grid.SetColumn(stack, 2);
-        }
-
-        // Piece qty
-        if (pieceUnit != null)
-        {
-            var stack = new StackPanel { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-            stack.Children.Add(new TextBlock { Text = "قطعة", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")! });
-            var tb = new TextBox { Width = 55, Text = "0", FontSize = 13, HorizontalAlignment = HorizontalAlignment.Center, Tag = product };
-            tb.TextChanged += (_, _) => { };
-            stack.Children.Add(tb);
-            grid.Children.Add(stack);
-            Grid.SetColumn(stack, 3);
-        }
-
-        // Price type
-        var cmb = new ComboBox
-        {
-            Width = 70,
-            FontSize = 12,
-            Margin = new Thickness(8, 0, 0, 0),
-            VerticalAlignment = VerticalAlignment.Center,
-            Tag = product
-        };
-        cmb.Items.Add("قطاعي");
-        cmb.Items.Add("جملة");
-        cmb.SelectedIndex = 0;
-        grid.Children.Add(cmb);
-        Grid.SetColumn(cmb, 4);
-
-        // Add button
-        var addBtn = new Button
-        {
-            Content = "إضافة",
-            Height = 32,
-            Cursor = Cursors.Hand,
-            Margin = new Thickness(10, 0, 0, 0),
-            VerticalAlignment = VerticalAlignment.Center,
-            Background = (Brush)new BrushConverter().ConvertFrom("#1565C0")!,
-            Foreground = Brushes.White,
-            BorderThickness = new Thickness(0),
-            FontSize = 12,
-            FontWeight = FontWeights.Bold,
-            Padding = new Thickness(14, 0, 14, 0),
-            Tag = product
-        };
-        addBtn.Click += (_, _) => AddProduct(product, cartonUnit, boxUnit, pieceUnit);
-
-        var borderBtn = new Border
-        {
-            CornerRadius = new CornerRadius(6),
-            Child = addBtn,
-            Margin = new Thickness(10, 0, 0, 0),
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        // Re-template button
-        addBtn.Template = CreateAddButtonTemplate();
-        addBtn.ApplyTemplate();
-
-        grid.Children.Add(borderBtn);
-        Grid.SetColumn(borderBtn, 5);
-
-        return new Border
-        {
-            CornerRadius = new CornerRadius(8),
-            Background = (Brush)new BrushConverter().ConvertFrom("#F8F9FA")!,
-            Padding = new Thickness(14, 10, 14, 10),
-            Margin = new Thickness(0, 0, 0, 6),
-            Child = grid
-        };
-    }
-
-    private static ControlTemplate CreateAddButtonTemplate()
-    {
-        var tf = new FrameworkElementFactory(typeof(Border));
-        tf.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
-        tf.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-        tf.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Button.PaddingProperty));
-        tf.Name = "border";
-
-        var sp = new FrameworkElementFactory(typeof(StackPanel));
-        sp.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
-        var path = new FrameworkElementFactory(typeof(Path));
-        path.SetValue(Path.WidthProperty, 14.0);
-        path.SetValue(Path.HeightProperty, 14.0);
-        path.SetValue(Path.FillProperty, Brushes.White);
-        path.SetValue(Path.StretchProperty, Stretch.Uniform);
-        path.SetValue(Path.VerticalAlignmentProperty, VerticalAlignment.Center);
-        path.SetValue(Path.DataProperty, Geometry.Parse("M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"));
-        sp.AppendChild(path);
-        var cp = new FrameworkElementFactory(typeof(ContentPresenter));
-        cp.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-        cp.SetValue(ContentPresenter.MarginProperty, new Thickness(8, 0, 0, 0));
-        sp.AppendChild(cp);
-        tf.AppendChild(sp);
-
-        var trigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
-        trigger.Setters.Add(new Setter(Border.OpacityProperty, 0.85, "border"));
-
-        var template = new ControlTemplate(typeof(Button));
-        template.VisualTree = tf;
-        template.Triggers.Add(trigger);
-        return template;
-    }
-
-    private void AddProduct(Product product, ProductUnit? cartonUnit, ProductUnit? boxUnit, ProductUnit? pieceUnit)
-    {
-        // Find the TextBoxes and ComboBox for this product
-        var cardBorder = ProductsPanel.Children
-            .OfType<Border>()
-            .FirstOrDefault(b =>
+            var removeBtn = new Button
             {
-                var grid = b.Child as Grid;
-                return grid?.Children
-                    .OfType<StackPanel>()
-                    .Any(s => s.Children.OfType<TextBox>().Any(t => t.Tag == product)) == true;
+                Width = 24, Height = 24,
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                ToolTip = "إزالة",
+                Content = new Path
+                {
+                    Width = 12, Height = 12,
+                    Fill = new SolidColorBrush(Color.FromRgb(0xE5, 0x39, 0x35)),
+                    Stretch = Stretch.Uniform,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = Geometry.Parse("M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z")
+                }
+            };
+            var productId = product.Id;
+            removeBtn.Click += (_, _) => RemoveEntry(productId);
+            Grid.SetColumn(removeBtn, 1);
+            nameRow.Children.Add(removeBtn);
+            Grid.SetRow(nameRow, 0);
+            mainGrid.Children.Add(nameRow);
+
+            // Row 1: Retail
+            var retailBorder = new Border
+            {
+                CornerRadius = new CornerRadius(4),
+                Background = new SolidColorBrush(Color.FromRgb(0xE3, 0xF2, 0xFD)),
+                Padding = new Thickness(8, 5, 8, 5),
+                Margin = new Thickness(0, 4, 0, 0)
+            };
+            var retailGrid = new Grid();
+            retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            int rCol = 0;
+            retailGrid.Children.Add(new Border
+            {
+                CornerRadius = new CornerRadius(3),
+                Background = new SolidColorBrush(Color.FromRgb(0x15, 0x65, 0xC0)),
+                Padding = new Thickness(6, 1, 6, 1),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 6, 0),
+                Child = new TextBlock { Text = "قطاعي", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = Brushes.White }
             });
+            Grid.SetColumn(retailGrid.Children[^1], rCol++);
 
-        if (cardBorder?.Child is not Grid cardGrid) return;
-
-        var stacks = cardGrid.Children.OfType<StackPanel>().ToList();
-
-        int cartonQty = 0, boxQty = 0, pieceQty = 0;
-
-        if (cartonUnit != null && stacks.Count > 0)
-        {
-            var tb = stacks[0].Children.OfType<TextBox>().FirstOrDefault();
-            if (tb != null) int.TryParse(tb.Text, out cartonQty);
-        }
-        if (boxUnit != null && stacks.Count > 1)
-        {
-            var idx = cartonUnit != null ? 1 : 0;
-            var tb = stacks[idx].Children.OfType<TextBox>().FirstOrDefault();
-            if (tb != null) int.TryParse(tb.Text, out boxQty);
-        }
-        if (pieceUnit != null)
-        {
-            int idx = (cartonUnit != null ? 1 : 0) + (boxUnit != null ? 1 : 0);
-            if (idx < stacks.Count)
+            if (cartonUnit != null)
             {
-                var tb = stacks[idx].Children.OfType<TextBox>().FirstOrDefault();
-                if (tb != null) int.TryParse(tb.Text, out pieceQty);
+                var s = MakeQtyField("كرتونة", out var tb);
+                entry.RetailCartonTb = tb;
+                tb.TextChanged += RecalcAll;
+                Grid.SetColumn(s, rCol++);
+                retailGrid.Children.Add(s);
+            }
+            if (boxUnit != null)
+            {
+                var s = MakeQtyField("علبة", out var tb);
+                entry.RetailBoxTb = tb;
+                tb.TextChanged += RecalcAll;
+                Grid.SetColumn(s, rCol++);
+                retailGrid.Children.Add(s);
+            }
+            if (pieceUnit != null)
+            {
+                var s = MakeQtyField("قطعة", out var tb);
+                entry.RetailPieceTb = tb;
+                tb.TextChanged += RecalcAll;
+                Grid.SetColumn(s, rCol++);
+                retailGrid.Children.Add(s);
+            }
+            retailBorder.Child = retailGrid;
+            Grid.SetRow(retailBorder, 1);
+            mainGrid.Children.Add(retailBorder);
+
+            // Row 2: Wholesale
+            var wholesaleBorder = new Border
+            {
+                CornerRadius = new CornerRadius(4),
+                Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xF5, 0xE9)),
+                Padding = new Thickness(8, 5, 8, 5),
+                Margin = new Thickness(0, 3, 0, 0)
+            };
+            var wholesaleGrid = new Grid();
+            wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            int wCol = 0;
+            wholesaleGrid.Children.Add(new Border
+            {
+                CornerRadius = new CornerRadius(3),
+                Background = new SolidColorBrush(Color.FromRgb(0x00, 0x89, 0x7B)),
+                Padding = new Thickness(6, 1, 6, 1),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 6, 0),
+                Child = new TextBlock { Text = "جملة", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = Brushes.White }
+            });
+            Grid.SetColumn(wholesaleGrid.Children[^1], wCol++);
+
+            if (cartonUnit != null)
+            {
+                var s = MakeQtyField("كرتونة", out var tb);
+                entry.WholesaleCartonTb = tb;
+                tb.TextChanged += RecalcAll;
+                Grid.SetColumn(s, wCol++);
+                wholesaleGrid.Children.Add(s);
+            }
+            if (boxUnit != null)
+            {
+                var s = MakeQtyField("علبة", out var tb);
+                entry.WholesaleBoxTb = tb;
+                tb.TextChanged += RecalcAll;
+                Grid.SetColumn(s, wCol++);
+                wholesaleGrid.Children.Add(s);
+            }
+            if (pieceUnit != null)
+            {
+                var s = MakeQtyField("قطعة", out var tb);
+                entry.WholesalePieceTb = tb;
+                tb.TextChanged += RecalcAll;
+                Grid.SetColumn(s, wCol++);
+                wholesaleGrid.Children.Add(s);
+            }
+            wholesaleBorder.Child = wholesaleGrid;
+            Grid.SetRow(wholesaleBorder, 2);
+            mainGrid.Children.Add(wholesaleBorder);
+
+            // Row 3: Total
+            entry.TotalTb = new TextBlock
+            {
+                Text = "0.00 ج.م",
+                FontSize = 13,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x1A, 0x23, 0x7E)),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Margin = new Thickness(0, 3, 0, 0)
+            };
+            Grid.SetRow(entry.TotalTb, 3);
+            mainGrid.Children.Add(entry.TotalTb);
+
+            outer.Child = mainGrid;
+            entry.Container = outer;
+
+            _entries[product.Id] = entry;
+            OrderItemsPanel.Children.Add(outer);
+            UpdateSummary();
+        }
+
+        private static StackPanel MakeQtyField(string label, out TextBox tb)
+        {
+            var sp = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
+            sp.Children.Add(new TextBlock { Text = label, FontSize = 9, Foreground = new SolidColorBrush(Color.FromRgb(0x54, 0x6E, 0x7A)), HorizontalAlignment = HorizontalAlignment.Center });
+            tb = new TextBox { Text = "0", Width = 40, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center, BorderThickness = new Thickness(0, 0, 0, 1), BorderBrush = new SolidColorBrush(Color.FromRgb(0xB0, 0xBE, 0xC5)) };
+            tb.PreviewTextInput += (s, e) => e.Handled = !Regex.IsMatch(e.Text, "^[0-9]$");
+            sp.Children.Add(tb);
+            return sp;
+        }
+
+        private void RemoveEntry(int productId)
+        {
+            if (!_entries.TryGetValue(productId, out var entry)) return;
+            OrderItemsPanel.Children.Remove(entry.Container);
+            _entries.Remove(productId);
+            UpdateSummary();
+        }
+
+        private void BtnClear_Click(object sender, RoutedEventArgs e)
+        {
+            if (_entries.Count == 0) return;
+            if (MessageBox.Show("تفريغ كل المنتجات من الطلب؟", "", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+                return;
+            foreach (var entry in _entries.Values)
+                OrderItemsPanel.Children.Remove(entry.Container);
+            _entries.Clear();
+            UpdateSummary();
+        }
+
+        private void RecalcAll(object sender, TextChangedEventArgs e)
+        {
+            UpdateSummary();
+        }
+
+        private void UpdateSummary()
+        {
+            int count = _entries.Count;
+            TxtItemCount.Text = count > 0 ? $"{count}" : "0";
+            bool hasAnyQty = _entries.Values.Any(e => e.Total > 0);
+            BtnSave.IsEnabled = hasAnyQty;
+
+            if (count > 0)
+            {
+                CartBadge.Visibility = Visibility.Visible;
+                TxtCartCount.Text = count.ToString();
+
+                decimal grandTotal = 0;
+                foreach (var entry in _entries.Values)
+                {
+                    decimal t = entry.Total;
+                    entry.TotalTb.Text = $"{t:N2} ج.م";
+                    grandTotal += t;
+                }
+                TxtGrandTotal.Text = $"{grandTotal:N2} ج.م";
+            }
+            else
+            {
+                CartBadge.Visibility = Visibility.Collapsed;
+                TxtGrandTotal.Text = "0 ج.م";
             }
         }
 
-        if (cartonQty == 0 && boxQty == 0 && pieceQty == 0)
+        private void BtnSaveOrder_Click(object sender, RoutedEventArgs e)
         {
-            NotificationManager.ShowWarning("الرجاء إدخال كمية");
-            return;
+            if (_entries.Count == 0)
+            {
+                NotificationManager.ShowWarning("لم يتم إضافة أي منتجات.");
+                return;
+            }
+
+            if (!_entries.Values.Any(entry => entry.Total > 0))
+            {
+                NotificationManager.ShowWarning("يجب تحديد كمية واحدة على الأقل لأحد المنتجات.");
+                return;
+            }
+
+            // Pre-check stock for all entries before saving anything
+            foreach (var entry in _entries.Values)
+            {
+                if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
+                {
+                    if (!_inv.IsStockSufficient(entry.Product, entry.RetailCarton, entry.RetailBox, entry.RetailPiece))
+                    {
+                        NotificationManager.ShowWarning($"المخزون غير كافٍ لـ {entry.Product.Name} (قطاعي)");
+                        return;
+                    }
+                }
+                if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
+                {
+                    if (!_inv.IsStockSufficient(entry.Product, entry.WholesaleCarton, entry.WholesaleBox, entry.WholesalePiece))
+                    {
+                        NotificationManager.ShowWarning($"المخزون غير كافٍ لـ {entry.Product.Name} (جملة)");
+                        return;
+                    }
+                }
+            }
+
+            // Create invoice if none existed
+            if (_invoice == null)
+            {
+                _invoice = new Invoice
+                {
+                    CustomerId = _customer?.Id,
+                    CustomerName = _customer?.Name ?? "نقدي",
+                    InvoiceDate = DateTime.Now,
+                    TotalAmount = 0,
+                    Status = InvoiceStatus.Open
+                };
+                _db.Invoices.Add(_invoice);
+                _db.SaveChanges();
+                InvoiceBadge.Visibility = Visibility.Visible;
+                TxtInvoiceId.Text = _invoice.Id.ToString();
+            }
+
+            // Create a new Order for this batch
+            var order = new Order { InvoiceId = _invoice.Id };
+            _db.Orders.Add(order);
+            _db.SaveChanges();
+
+            foreach (var entry in _entries.Values)
+            {
+                if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
+                    AddOrderItem(order, entry, PriceType.Retail);
+                if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
+                    AddOrderItem(order, entry, PriceType.Wholesale);
+            }
+
+            // Save items first, then recalculate total from DB
+            _db.SaveChanges();
+            var orderIds = _db.Orders.Where(o => o.InvoiceId == _invoice.Id).Select(o => o.Id).ToList();
+            _invoice.TotalAmount = _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).Sum(oi => oi.Total);
+            _db.SaveChanges();
+
+            int count = _entries.Count;
+            _entries.Clear();
+            OrderItemsPanel.Children.Clear();
+            UpdateSummary();
+            TxtInvoiceId.Text = _invoice.Id.ToString();
+
+            NotificationManager.ShowSuccess($"تم إضافة {count} منتج للفاتورة #{_invoice.Id} بنجاح.");
+            DialogClosed?.Invoke(this, true);
         }
 
-        var cmb = cardGrid.Children.OfType<ComboBox>().FirstOrDefault();
-        bool isWholesale = cmb?.SelectedIndex == 1;
-
-        if (!_inv.IsStockSufficient(product, cartonQty, boxQty, pieceQty))
+        private void AddOrderItem(Order order, OrderItemEntry entry, PriceType priceType)
         {
-            int available = _inv.GetAvailableStock(product);
-            NotificationManager.ShowWarning($"الكمية المطلوبة تتجاوز المخزون المتاح ({available})");
-            return;
+            var product = entry.Product;
+            int cartonQty = priceType == PriceType.Retail ? entry.RetailCarton : entry.WholesaleCarton;
+            int boxQty = priceType == PriceType.Retail ? entry.RetailBox : entry.WholesaleBox;
+            int pieceQty = priceType == PriceType.Retail ? entry.RetailPiece : entry.WholesalePiece;
+
+            if (cartonQty == 0 && boxQty == 0 && pieceQty == 0) return;
+
+            int totalPieces = _inv.CalculatePieceEquivalent(product, cartonQty, boxQty, pieceQty);
+            var (fifoCost, consumed) = _inv.CalculateFifoCost(product, totalPieces);
+
+            ProductUnit usedUnit = null;
+            if (cartonQty > 0 && entry.CartonUnit != null) usedUnit = entry.CartonUnit;
+            else if (boxQty > 0 && entry.BoxUnit != null) usedUnit = entry.BoxUnit;
+            else if (pieceQty > 0 && entry.PieceUnit != null) usedUnit = entry.PieceUnit;
+
+            decimal totalPrice = 0;
+            if (entry.CartonUnit != null) totalPrice += cartonQty * (priceType == PriceType.Retail ? entry.CartonUnit.RetailPrice : entry.CartonUnit.WholesalePrice);
+            if (entry.BoxUnit != null) totalPrice += boxQty * (priceType == PriceType.Retail ? entry.BoxUnit.RetailPrice : entry.BoxUnit.WholesalePrice);
+            if (entry.PieceUnit != null) totalPrice += pieceQty * (priceType == PriceType.Retail ? entry.PieceUnit.RetailPrice : entry.PieceUnit.WholesalePrice);
+
+            var item = new OrderItem
+            {
+                OrderId = order.Id,
+                ProductId = product.Id,
+                ProductUnitId = usedUnit?.Id ?? 0,
+                CartonQuantity = cartonQty,
+                BoxQuantity = boxQty,
+                PieceQuantity = pieceQty,
+                UnitPrice = usedUnit != null ? (priceType == PriceType.Retail ? usedUnit.RetailPrice : usedUnit.WholesalePrice) : 0,
+                PriceType = priceType,
+                Total = totalPrice,
+                CostPrice = fifoCost
+            };
+            _db.OrderItems.Add(item);
+
+            foreach (var batch in consumed)
+            {
+                var b = _db.InventoryBatches.Find(batch.Id);
+                if (b != null)
+                    b.RemainingQuantity = batch.RemainingQuantity;
+            }
+
+            _db.InventoryMovements.Add(new InventoryMovement
+            {
+                ProductId = product.Id,
+                MovementType = MovementType.StockOut,
+                Quantity = totalPieces,
+                CostPrice = totalPieces > 0 ? fifoCost / totalPieces : 0,
+                SellingPrice = totalPrice,
+                ReferenceType = ReferenceType.Sale,
+                ReferenceId = order.Id,
+                Notes = $"{(priceType == PriceType.Retail ? "بيع قطاعي" : "بيع جملة")} - فاتورة #{_invoice.Id}"
+            });
         }
 
-        int totalPieces = _inv.CalculatePieceEquivalent(product, cartonQty, boxQty, pieceQty);
-        var (fifoCost, consumed) = _inv.CalculateFifoCost(product, totalPieces);
-
-        decimal unitPrice = 0;
-        int? usedUnitId = null;
-
-        if (cartonQty > 0 && cartonUnit != null)
+        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            unitPrice = isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice;
-            usedUnitId = cartonUnit.Id;
-        }
-        else if (boxQty > 0 && boxUnit != null)
-        {
-            unitPrice = isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice;
-            usedUnitId = boxUnit.Id;
-        }
-        else if (pieceQty > 0 && pieceUnit != null)
-        {
-            unitPrice = isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice;
-            usedUnitId = pieceUnit.Id;
+            LoadProducts(TxtSearch.Text.Trim());
         }
 
-        decimal total = 0;
-        if (cartonUnit != null)
+        private static int ParseInt(string text) =>
+            int.TryParse(text, out int v) ? v : 0;
+
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            decimal p = isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice;
-            total += cartonQty * p;
+            DialogClosed?.Invoke(this, false);
         }
-        if (boxUnit != null)
-        {
-            decimal p = isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice;
-            total += boxQty * p;
-        }
-        if (pieceUnit != null)
-        {
-            decimal p = isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice;
-            total += pieceQty * p;
-        }
-
-        var order = new Order { InvoiceId = _invoice.Id };
-        _db.Orders.Add(order);
-        _db.SaveChanges();
-
-        _db.OrderItems.Add(new OrderItem
-        {
-            OrderId = order.Id,
-            ProductId = product.Id,
-            ProductUnitId = usedUnitId ?? 0,
-            CartonQuantity = cartonQty,
-            BoxQuantity = boxQty,
-            PieceQuantity = pieceQty,
-            UnitPrice = unitPrice,
-            PriceType = isWholesale ? PriceType.Wholesale : PriceType.Retail,
-            Total = total,
-            CostPrice = fifoCost
-        });
-
-        _invoice.TotalAmount += total;
-
-        _db.InventoryMovements.Add(new InventoryMovement
-        {
-            ProductId = product.Id,
-            MovementType = MovementType.StockOut,
-            Quantity = totalPieces,
-            CostPrice = totalPieces > 0 ? fifoCost / totalPieces : 0,
-            SellingPrice = total,
-            ReferenceType = ReferenceType.Sale,
-            ReferenceId = order.Id,
-            Notes = $"بيع {cartonQty} كرتونة, {boxQty} علبة, {pieceQty} قطعة - فاتورة #{_invoice.Id}"
-        });
-
-        foreach (var batch in consumed)
-            _db.Entry(batch).State = EntityState.Modified;
-
-        _db.SaveChanges();
-
-        // Clear qty fields
-        foreach (var stack in stacks)
-        {
-            var tb = stack.Children.OfType<TextBox>().FirstOrDefault();
-            if (tb != null) tb.Text = "0";
-        }
-
-        NotificationManager.ShowSuccess($"تم إضافة {product.Name} للفاتورة #{_invoice.Id}");
     }
 
-    private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+    public class RelayCommand : ICommand
     {
-        if (!_loaded) return;
-        LoadProducts(TxtSearch.Text);
-    }
-
-    private void BtnFinish_Click(object sender, RoutedEventArgs e)
-    {
-        DialogClosed?.Invoke(this, true);
-    }
-
-    private void BtnCancel_Click(object sender, RoutedEventArgs e)
-    {
-        DialogClosed?.Invoke(this, false);
+        private readonly Action _execute;
+        public RelayCommand(Action execute) => _execute = execute;
+        public event EventHandler CanExecuteChanged;
+        public bool CanExecute(object parameter) => true;
+        public void Execute(object parameter) => _execute?.Invoke();
     }
 }

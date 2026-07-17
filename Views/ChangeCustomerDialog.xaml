@@ -1,0 +1,287 @@
+<UserControl x:Class="ProductApp.Views.ChangeCustomerDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft"
+             MinWidth="520" MaxWidth="580">
+    <Border CornerRadius="16" Background="White" Padding="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.25" Color="#000000" />
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- ===== HEADER ===== -->
+            <Border Grid.Row="0" CornerRadius="16,16,0,0" Padding="24,20,24,16">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#1976D2" Offset="0" />
+                        <GradientStop Color="#1565C0" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="White" Opacity="0.2">
+                        <Path Width="22" Height="22" Fill="White" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Data="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <TextBlock x:Name="TxtTitle" Text="نقل الفاتورة" FontSize="20" FontWeight="Bold" Foreground="White" />
+                        <TextBlock x:Name="TxtSubtitle" Text="" FontSize="11" Foreground="#90CAF9" Margin="0,2,0,0" />
+                    </StackPanel>
+                    <Button Grid.Column="2" Click="BtnCancel_Click"
+                            Background="Transparent" BorderThickness="0"
+                            Cursor="Hand" Width="32" Height="32"
+                            ToolTip="إغلاق" VerticalAlignment="Top">
+                        <Path Width="16" Height="16" Fill="#90CAF9" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- ===== CURRENT INVOICE INFO ===== -->
+            <Border Grid.Row="1" Margin="24,18,24,0" CornerRadius="12" Background="#F5F7FA" Padding="18,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="#E8EAF6">
+                        <Path Width="16" Height="16" Fill="#3F51B5" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Data="M12 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-10c4.2 0 8 3.22 8 8.2 0 3.32-2.67 7.25-8 11.8-5.33-4.55-8-8.48-8-11.8C4 5.22 7.8 2 12 2z" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                        <TextBlock x:Name="TxtCurrentCustomer" Text="" FontSize="14" FontWeight="SemiBold" Foreground="#37474F" />
+                        <TextBlock x:Name="TxtInvoiceInfo" Text="" FontSize="11" Foreground="#78909C" Margin="0,2,0,0" />
+                    </StackPanel>
+                    <Border Grid.Column="2" CornerRadius="6" Padding="12,4" Background="#E3F2FD" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtCurrentBadge" Text="الحالي" FontSize="10" FontWeight="Bold" Foreground="#1976D2" />
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- ===== LABEL ===== -->
+            <TextBlock Grid.Row="2" Text="اختر الوجهة الجديدة:" FontSize="12" FontWeight="SemiBold"
+                       Foreground="#546E7A" Margin="24,18,24,0" />
+
+            <!-- ===== OPTIONS + CONTENT ===== -->
+            <Border Grid.Row="3" Margin="24,12,24,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Option tabs -->
+                    <Grid Grid.Row="0" Margin="0,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Cash card -->
+                        <Border x:Name="CashCard" Grid.Column="0" CornerRadius="10"
+                                BorderBrush="#E0E0E0" BorderThickness="1.5" Padding="14,12"
+                                Cursor="Hand" MouseDown="CashCard_MouseDown">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFF8E1" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="#FFF3E0">
+                                    <Path Width="18" Height="18" Fill="#FF8F00" Stretch="Uniform"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Data="M11.5 1L2 9h3v8h5v-6h3v6h5V9h3L11.5 1z" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                    <TextBlock Text="نقدي" FontSize="14" FontWeight="Bold" Foreground="#E65100" />
+                                    <TextBlock Text="بدون عميل" FontSize="10" Foreground="#BF360C" Margin="0,1,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Customer card -->
+                        <Border x:Name="CustomerCard" Grid.Column="2" CornerRadius="10"
+                                BorderBrush="#E0E0E0" BorderThickness="1.5" Padding="14,12"
+                                Cursor="Hand" MouseDown="CustomerCard_MouseDown">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E3F2FD" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="#E3F2FD">
+                                    <Path Width="18" Height="18" Fill="#1976D2" Stretch="Uniform"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Data="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                    <TextBlock Text="عميل آخر" FontSize="14" FontWeight="Bold" Foreground="#1565C0" />
+                                    <TextBlock Text="اختيار من العملاء" FontSize="10" Foreground="#1976D2" Margin="0,1,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Divider -->
+                    <Rectangle Grid.Row="1" Height="1" Fill="#E8E8E8" Margin="0,16,0,0" />
+
+                    <!-- Cash confirmation area (shown when cash selected) -->
+                    <Border x:Name="CashConfirmArea" Grid.Row="2" CornerRadius="10" Background="#FFF8E1"
+                            BorderBrush="#FFB300" BorderThickness="1" Padding="18,14" Margin="0,14,0,0"
+                            Visibility="Collapsed">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Width="20" Height="20" Fill="#FF8F00" Stretch="Uniform" VerticalAlignment="Center"
+                                      Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                                <TextBlock Text="سيتم نقل الفاتورة إلى المبيعات النقدية" FontSize="12" Foreground="#E65100"
+                                           FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="لن تكون مرتبطة بأي عميل" FontSize="11" Foreground="#BF360C" Margin="28,4,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Customer search area (shown when customer selected) -->
+                    <Grid x:Name="CustomerArea" Grid.Row="2" Visibility="Collapsed" Margin="0,14,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Search -->
+                        <Border Grid.Row="0" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid Grid.Column="0">
+                                    <TextBlock IsHitTestVisible="False" Text="بحث عن عميل..."
+                                               FontSize="13" Foreground="#90A4AE" VerticalAlignment="Center"
+                                               Margin="14,0,0,0" x:Name="SearchWatermark" />
+                                    <TextBox x:Name="TxtSearch"
+                                             FontSize="13" Padding="12,10" BorderThickness="0"
+                                             Background="Transparent" Foreground="#37474F"
+                                             TextChanged="TxtSearch_TextChanged" />
+                                </Grid>
+                                <Border Grid.Column="1" Background="Transparent" Width="36" HorizontalAlignment="Right">
+                                    <Path Width="16" Height="16" Fill="#90A4AE" Stretch="Uniform"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- List -->
+                        <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="10" Background="#FAFBFC" Padding="0"
+                                BorderBrush="#F0F0F0" BorderThickness="1">
+                            <Grid>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4">
+                                    <StackPanel x:Name="CustomersPanel" />
+                                </ScrollViewer>
+                                <TextBlock x:Name="TxtNoResults" Text="لا يوجد عملاء"
+                                           FontSize="12" Foreground="#90A4AE" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" Margin="0,20,0,0" Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+
+                        <TextBlock x:Name="TxtSelectHint" Grid.Row="1" Text="اختر عميلاً من القائمة"
+                                   FontSize="11" Foreground="#B0BEC5" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" Margin="0,30,0,0" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- ===== FOOTER ===== -->
+            <Border Grid.Row="4" Background="#FAFAFA" CornerRadius="0,0,16,16" Padding="24,16,24,20"
+                    BorderBrush="#E8E8E8" BorderThickness="0,1,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="BtnSave" Click="BtnSave_Click"
+                            Height="42" Cursor="Hand" Padding="36,0"
+                            Background="#1976D2" Foreground="White" BorderThickness="0"
+                            FontSize="14" FontWeight="Bold" IsEnabled="False">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="#B0BEC5"
+                                        CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Width="18" Height="18" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                              Data="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
+                                        <ContentPresenter VerticalAlignment="Center" Margin="10,0,0,0" />
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#1976D2" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        تأكيد النقل
+                    </Button>
+                    <Button Click="BtnCancel_Click"
+                            Height="42" Cursor="Hand" Padding="36,0" Margin="14,0,0,0"
+                            Background="#F5F5F5" Foreground="#546E7A" BorderThickness="1" BorderBrush="#E0E0E0"
+                            FontSize="14" FontWeight="SemiBold">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="{TemplateBinding Background}"
+                                        CornerRadius="10" Padding="{TemplateBinding Padding}"
+                                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                    <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#EEEEEE" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#E0E0E0" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        إلغاء
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

@@ -33,6 +33,18 @@
                             <Border x:Name="StatusBadge" CornerRadius="6" Padding="14,5" Margin="14,0,0,0" VerticalAlignment="Center" Background="#E8F5E9">
                                 <TextBlock x:Name="TxtStatus" Text="مدفوعة" FontSize="11" FontWeight="Bold" Foreground="#2E7D32" />
                             </Border>
+                            <Button x:Name="BtnTransfer" Click="BtnTransfer_Click"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Padding="8,4" Margin="8,0,0,0" VerticalAlignment="Center"
+                                    ToolTip="نقل الفاتورة إلى عميل آخر أو نقدي">
+                                <Border CornerRadius="6" Padding="8,4" Background="#E3F2FD">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Width="14" Height="14" Fill="#1976D2" Stretch="Uniform" VerticalAlignment="Center"
+                                              Data="M15 20a1 1 0 0 0 1-1V5l4 4a1 1 0 0 0 1.42-1.42l-6-6a1 1 0 0 0-1.42 0l-6 6A1 1 0 0 0 9.58 9.58L14 5v14a1 1 0 0 0 1 1z" />
+                                        <TextBlock Text="نقل" FontSize="11" FontWeight="Bold" Foreground="#1976D2" Margin="4,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                            </Button>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                             <Path Width="14" Height="14" Fill="#546E7A" Stretch="Uniform" VerticalAlignment="Center"
