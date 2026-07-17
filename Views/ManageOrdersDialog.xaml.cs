@@ -472,7 +472,7 @@ public partial class ManageOrdersDialog : UserControl
                 int totalPieces = _inv.CalculatePieceEquivalent(item.Product!, item.CartonQuantity, item.BoxQuantity, item.PieceQuantity);
 
                 // Return stock
-                ReturnStockToBatches(item.Product.Id, totalPieces, item.CostPrice);
+                ReturnStockToBatches(item.Product!.Id, totalPieces, item.CostPrice);
 
                 // Update invoice total
                 _invoice.TotalAmount -= item.Total;

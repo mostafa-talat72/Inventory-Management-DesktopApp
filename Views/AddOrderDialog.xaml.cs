@@ -126,7 +126,7 @@ namespace ProductApp.Views
                     .FirstOrDefault();
         }
 
-        private void LoadProducts(string filter = null)
+        private void LoadProducts(string? filter = null)
         {
             var query = _db.Products.Include(p => p.Units).AsQueryable();
             if (!string.IsNullOrWhiteSpace(filter))
@@ -516,7 +516,7 @@ namespace ProductApp.Views
             int totalPieces = _inv.CalculatePieceEquivalent(product, cartonQty, boxQty, pieceQty);
             var (fifoCost, consumed) = _inv.CalculateFifoCost(product, totalPieces);
 
-            ProductUnit usedUnit = null;
+            ProductUnit? usedUnit = null;
             if (cartonQty > 0 && entry.CartonUnit != null) usedUnit = entry.CartonUnit;
             else if (boxQty > 0 && entry.BoxUnit != null) usedUnit = entry.BoxUnit;
             else if (pieceQty > 0 && entry.PieceUnit != null) usedUnit = entry.PieceUnit;
@@ -557,7 +557,7 @@ namespace ProductApp.Views
                 SellingPrice = totalPrice,
                 ReferenceType = ReferenceType.Sale,
                 ReferenceId = order.Id,
-                Notes = $"{(priceType == PriceType.Retail ? "بيع قطاعي" : "بيع جملة")} - فاتورة #{_invoice.Id}"
+                Notes = $"{(priceType == PriceType.Retail ? "بيع قطاعي" : "بيع جملة")} - فاتورة #{_invoice!.Id}"
             });
         }
 
@@ -579,8 +579,8 @@ namespace ProductApp.Views
     {
         private readonly Action _execute;
         public RelayCommand(Action execute) => _execute = execute;
-        public event EventHandler CanExecuteChanged;
-        public bool CanExecute(object parameter) => true;
-        public void Execute(object parameter) => _execute?.Invoke();
+        public event EventHandler? CanExecuteChanged;
+        public bool CanExecute(object? parameter) => true;
+        public void Execute(object? parameter) => _execute?.Invoke();
     }
 }

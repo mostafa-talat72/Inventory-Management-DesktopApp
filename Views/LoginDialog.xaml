@@ -1,8 +1,8 @@
 <Window x:Class="ProductApp.Views.LoginDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="تسجيل الدخول - نظام إدارة المخزون"
-        Width="400" Height="320"
+        Title="تسجيل الدخول - MTE Stock"
+        Width="400" Height="380"
         WindowStartupLocation="CenterScreen"
         WindowStyle="SingleBorderWindow"
         ResizeMode="NoResize"
@@ -33,13 +33,14 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0,24,0,0" HorizontalAlignment="Center">
                 <Path Width="44" Height="44" Fill="#1A237E" Stretch="Uniform" HorizontalAlignment="Center"
                       Data="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
-                <TextBlock Text="نظام إدارة المخزون" FontSize="20" FontWeight="Bold" Foreground="#1A237E" HorizontalAlignment="Center" Margin="0,8,0,0" />
+                <TextBlock Text="MTE Stock" FontSize="20" FontWeight="Bold" Foreground="#1A237E" HorizontalAlignment="Center" Margin="0,8,0,0" />
                 <TextBlock x:Name="TxtLocation" FontSize="11" Foreground="#78909C" HorizontalAlignment="Center" Margin="0,2,0,0" />
             </StackPanel>
 
@@ -51,7 +52,7 @@
             </StackPanel>
 
             <!-- Button -->
-            <StackPanel Grid.Row="2" Margin="32,0,32,24">
+            <StackPanel Grid.Row="2" Margin="32,0,32,16">
                 <Button x:Name="BtnLogin" Click="BtnLogin_Click" Style="{StaticResource LoginBtn}" Background="#1A237E">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
@@ -69,6 +70,21 @@
                     دخول
                 </Button>
             </StackPanel>
+
+            <!-- Developer Signature -->
+            <Border Grid.Row="3" Background="#F5F5F5" CornerRadius="0,0,12,12" Padding="0,8,0,10">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="تم تصميم وتطوير هذا النظام بواسطة"
+                               FontSize="9" Foreground="#AAAAAA"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="المهندس مصطفى طلعت للحلول البرمجيه"
+                               FontSize="10" FontWeight="Bold" Foreground="#888888"
+                               HorizontalAlignment="Center" Margin="0,2,0,0" />
+                    <TextBlock Text="01116626164"
+                               FontSize="10" FontWeight="Bold" Foreground="#888888"
+                               HorizontalAlignment="Center" Margin="0,1,0,0" />
+                </StackPanel>
+            </Border>
         </Grid>
     </Border>
 </Window>

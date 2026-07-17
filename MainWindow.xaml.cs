@@ -67,10 +67,16 @@ public partial class MainWindow : Window
     {
         foreach (var btn in new[] { BtnProducts, BtnCustomers, BtnInvoices, BtnReports, BtnSettings })
         {
-            btn.IsEnabled = true;
-            btn.Foreground = btn.Tag?.ToString() == _currentPage
+            var isActive = btn.Tag?.ToString() == _currentPage;
+            btn.BorderBrush = isActive
                 ? System.Windows.Media.Brushes.White
-                : (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFrom("#B0BEC5")!;
+                : System.Windows.Media.Brushes.Transparent;
+            btn.Background = isActive
+                ? (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFrom("#14FFFFFF")!
+                : System.Windows.Media.Brushes.Transparent;
+            btn.Foreground = isActive
+                ? System.Windows.Media.Brushes.White
+                : (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFrom("#90CAF9")!;
         }
     }
 

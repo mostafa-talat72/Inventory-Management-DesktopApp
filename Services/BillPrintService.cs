@@ -53,7 +53,7 @@ public class BillPrintService
         var discount = invoice.Discount;
         var customerPhone = invoice.Customer?.Phone;
 
-        var orgName = "نظام إدارة المخزون";
+        var orgName = "MTE Stock";
 
         var qrText = $"{orgName}\nرقم الفاتورة: {invoice.Id}";
         if (invoice.CustomerName != null)
@@ -165,7 +165,7 @@ public class BillPrintService
     <div class='qr-subtitle'>فاتورة #{invoice.Id}</div>
   </div>
 
-  <div class='footer'>تم بواسطة نظام إدارة المخزون</div>
+  <div class='footer'>تم بواسطة MTE Stock</div>
 
   <div class='no-print' style='margin-top:20px;text-align:center;padding:10px;'>
     <button onclick='window.print()' style='

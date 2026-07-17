@@ -1,8 +1,16 @@
 {
   "PasswordHash": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
-  "LocationName": "",
+  "LocationName": "\u0627\u062D\u0628\u0627\u0628 \u0627\u0644\u0646\u0628\u0649",
   "BackupFolder": "",
   "BackupOnStartup": false,
   "BackupOnOperation": false,
-  "BackupIntervalMinutes": 0
+  "BackupIntervalMinutes": 0,
+  "LocationAddress": "",
+  "LocationPhone": "",
+  "LocationDescription": "\u062A\u062D\u062A \u0627\u062F\u0627\u0631\u0629 \u0627\u0628\u0648 \u0633\u0641\u064A\u0627\u0646 | 01116626164",
+  "PrintLocationName": true,
+  "PrintLocationAddress": false,
+  "PrintLocationPhone": false,
+  "PrintLocationDescription": true,
+  "PrinterName": ""
 }

@@ -161,3 +161,5 @@ H:\My Work\Product App\obj\Debug\net9.0-windows\Views\LoginDialog.baml
 H:\My Work\Product App\obj\Debug\net9.0-windows\Views\SettingsPage.baml
 H:\My Work\Product App\obj\Debug\net9.0-windows\Views\LoginDialog.g.cs
 H:\My Work\Product App\obj\Debug\net9.0-windows\Views\SettingsPage.g.cs
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\PrintPreviewDialog.baml
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\PrintPreviewDialog.g.cs
