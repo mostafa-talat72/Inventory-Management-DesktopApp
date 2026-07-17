@@ -233,7 +233,7 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="التكلفة الإجمالية" Binding="{Binding TotalCost, StringFormat={}{0:N2}}" Width="140">
+                            <DataGridTextColumn Header="التكلفة الإجمالية" Binding="{Binding TotalCost, StringFormat={}{0:0.##}}" Width="140">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextAlignment" Value="Center" />

@@ -38,7 +38,7 @@ public partial class StockMovementDialog : UserControl
 
         string stockDisplay = _inv.GetStockDisplay(_product);
         TxtCurrentStock.Text = stockDisplay;
-        TxtStockValue.Text = $"{fifoValue:N2} ج.م";
+        TxtStockValue.Text = $"{fifoValue:0.##} ج.م";
         TxtMovementCount.Text = movementCount.ToString();
     }
 
@@ -98,12 +98,12 @@ public partial class StockMovementDialog : UserControl
 
             items.Add(new MovementItem
             {
-                DateDisplay = m.CreatedAt.ToString("yyyy/MM/dd HH:mm"),
+                DateDisplay = m.CreatedAt.ToString("yyyy/MM/dd hh:mm tt"),
                 TypeDisplay = typeDisplay,
                 TypeColor = typeColor,
                 QuantityDisplay = $"{sign}{m.Quantity}",
-                UnitPriceDisplay = m.CostPrice > 0 ? $"{m.CostPrice:N2}" : "-",
-                TotalDisplay = m.CostPrice > 0 ? $"{(m.Quantity * m.CostPrice):N2} ج.م" : "-",
+                UnitPriceDisplay = m.CostPrice > 0 ? $"{m.CostPrice:0.##}" : "-",
+                TotalDisplay = m.CostPrice > 0 ? $"{(m.Quantity * m.CostPrice):0.##} ج.م" : "-",
                 ReasonDisplay = reason,
                 StockAfterDisplay = runningStock.ToString(),
                 MovementId = m.Id,

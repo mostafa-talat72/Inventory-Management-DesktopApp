@@ -20,7 +20,7 @@ public partial class ConfirmPaymentDialog : UserControl
         _invoice = invoice;
 
         TxtMessage.Text = $"سيتم دفع المبلغ المتبقي بالكامل للفاتورة رقم {invoice.Id}. هل أنت متأكد؟";
-        TxtAmount.Text = $"{invoice.Remaining:N2} ج.م";
+        TxtAmount.Text = $"{invoice.Remaining:0.##} ج.م";
     }
 
     private void BtnConfirm_Click(object sender, RoutedEventArgs e)
@@ -51,7 +51,9 @@ public partial class ConfirmPaymentDialog : UserControl
 
         _db.SaveChanges();
 
-        NotificationManager.ShowSuccess($"تم دفع {amount:N2} ج.م بنجاح");
+        App.AppBackup?.BackupIfOnOperation();
+
+        NotificationManager.ShowSuccess($"تم دفع {amount:0.##} ج.م بنجاح");
         DialogClosed?.Invoke(this, true);
     }
 

@@ -655,9 +655,8 @@
                         </Grid>
                     </Border>
 
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="400">
-                        <ItemsControl x:Name="ReportGrid" Focusable="False">
-                            <ItemsControl.ItemTemplate>
+                    <ItemsControl x:Name="ReportGrid" Focusable="False">
+                        <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Padding="0,6" Background="White" BorderBrush="#F0F0F0" BorderThickness="0,0,0,1">
                                         <Border.Style>
@@ -703,7 +702,6 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </ScrollViewer>
 
                     <!-- Totals Footer -->
                     <Border x:Name="ReportFooter" Background="#F5F5FF" Visibility="Collapsed">

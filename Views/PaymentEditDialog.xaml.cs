@@ -32,9 +32,9 @@ public partial class PaymentEditDialog : UserControl
     private void LoadPayment()
     {
         TxtTitle.Text = $"تعديل الدفعة #{_payment.Id}";
-        TxtSubtitle.Text = $"الحد الأقصى للتعديل: {_maxAllowed:N2} ج.م";
-        TxtAmount.Text = _payment.Amount.ToString("N2");
-        TxtMaxHint.Text = $"يمكنك التعديل حتى {_maxAllowed:N2} ج.م";
+        TxtSubtitle.Text = $"الحد الأقصى للتعديل: {_maxAllowed:0.##} ج.م";
+        TxtAmount.Text = _payment.Amount.ToString("0.##");
+        TxtMaxHint.Text = $"يمكنك التعديل حتى {_maxAllowed:0.##} ج.م";
 
         foreach (ComboBoxItem item in CmbMethod.Items)
         {
@@ -84,7 +84,7 @@ public partial class PaymentEditDialog : UserControl
 
         if (amount > _maxAllowed)
         {
-            NotificationManager.ShowError($"لا يمكن أن يتجاوز المبلغ {_maxAllowed:N2} ج.م");
+            NotificationManager.ShowError($"لا يمكن أن يتجاوز المبلغ {_maxAllowed:0.##} ج.م");
             return;
         }
 

@@ -199,10 +199,9 @@
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.05" Color="#000" />
                 </Border.Effect>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="480">
-                    <ItemsControl x:Name="ProductsList" Focusable="False"
-                                  HorizontalAlignment="Center">
-                        <ItemsControl.ItemsPanel>
+                <ItemsControl x:Name="ProductsList" Focusable="False"
+                              HorizontalAlignment="Center">
+                    <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel />
                             </ItemsPanelTemplate>
@@ -338,7 +337,6 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </ScrollViewer>
             </Border>
 
         </StackPanel>

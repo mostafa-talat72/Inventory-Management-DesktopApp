@@ -107,6 +107,8 @@ public partial class StockDeductionDialog : UserControl
 
         await _db.SaveChangesAsync();
 
+        App.AppBackup?.BackupIfOnOperation();
+
         NotificationManager.ShowSuccess("تم خصم المخزون بنجاح");
         DialogClosed?.Invoke(this, true);
     }

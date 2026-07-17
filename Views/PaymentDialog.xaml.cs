@@ -22,7 +22,7 @@ public partial class PaymentDialog : UserControl
         _db = db;
         _invoice = invoice;
         TxtInvoiceInfo.Text = $"فاتورة #{invoice.Id}";
-        TxtRemaining.Text = $"{invoice.Remaining:N2} ج.م";
+        TxtRemaining.Text = $"{invoice.Remaining:0.##} ج.م";
         Loaded += (_, _) => TxtAmount.Focus();
     }
 
@@ -71,7 +71,7 @@ public partial class PaymentDialog : UserControl
 
         if (amount > _invoice.Remaining)
         {
-            NotificationManager.ShowError($"المبلغ لا يمكن أن يتجاوز المتبقي ({_invoice.Remaining:N2} ج.م)");
+            NotificationManager.ShowError($"المبلغ لا يمكن أن يتجاوز المتبقي ({_invoice.Remaining:0.##} ج.م)");
             return;
         }
         DoPayment(amount);
@@ -92,6 +92,8 @@ public partial class PaymentDialog : UserControl
         _invoice.Status = _invoice.Remaining <= 0 ? InvoiceStatus.Paid : InvoiceStatus.PartiallyPaid;
 
         _db.SaveChanges();
+
+        App.AppBackup?.BackupIfOnOperation();
 
         NotificationManager.ShowSuccess("تم إضافة الدفعة بنجاح");
         DialogClosed?.Invoke(this, true);

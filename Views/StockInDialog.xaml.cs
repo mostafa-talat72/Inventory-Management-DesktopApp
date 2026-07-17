@@ -116,6 +116,8 @@ public partial class StockInDialog : UserControl
             }
         }
 
+        App.AppBackup?.BackupIfOnOperation();
+
         NotificationManager.ShowSuccess("تم إضافة المخزون بنجاح");
         DialogClosed?.Invoke(this, true);
     }

@@ -68,8 +68,8 @@ public partial class UnitLevelsDialog : UserControl
                     _ => ""
                 },
                 ContainsDisplay = contains,
-                RetailDisplay = $"{u.RetailPrice:N2} ج.م",
-                WholesaleDisplay = $"{u.WholesalePrice:N2} ج.م",
+                RetailDisplay = $"{u.RetailPrice:0.##} ج.م",
+                WholesaleDisplay = $"{u.WholesalePrice:0.##} ج.م",
                 LevelIcon = icon,
                 LevelColor = color
             };

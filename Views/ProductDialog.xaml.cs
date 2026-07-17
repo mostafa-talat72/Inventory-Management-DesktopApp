@@ -48,7 +48,7 @@ public partial class ProductDialog : UserControl
         {
             TxtPieceName.Text = piece.Name;
             TxtPieceRetail.Text = piece.RetailPrice.ToString();
-            TxtPieceWholesale.Text = piece.WholesalePrice == piece.RetailPrice ? "" : piece.WholesalePrice.ToString("F2");
+            TxtPieceWholesale.Text = piece.WholesalePrice == piece.RetailPrice ? "" : piece.WholesalePrice.ToString("0.##");
         }
 
         if (box != null)
@@ -56,8 +56,8 @@ public partial class ProductDialog : UserControl
             ChkHasBox.IsChecked = true;
             TxtBoxName.Text = box.Name;
             TxtBoxQty.Text = box.QuantityPerParent.ToString();
-            TxtBoxRetail.Text = box.RetailPrice.ToString("F2");
-            TxtBoxWholesale.Text = box.WholesalePrice == box.RetailPrice ? "" : box.WholesalePrice.ToString("F2");
+            TxtBoxRetail.Text = box.RetailPrice.ToString("0.##");
+            TxtBoxWholesale.Text = box.WholesalePrice == box.RetailPrice ? "" : box.WholesalePrice.ToString("0.##");
         }
 
         if (carton != null)
@@ -65,8 +65,8 @@ public partial class ProductDialog : UserControl
             ChkHasCarton.IsChecked = true;
             TxtCartonName.Text = carton.Name;
             TxtCartonQty.Text = carton.QuantityPerParent.ToString();
-            TxtCartonRetail.Text = carton.RetailPrice.ToString("F2");
-            TxtCartonWholesale.Text = carton.WholesalePrice == carton.RetailPrice ? "" : carton.WholesalePrice.ToString("F2");
+            TxtCartonRetail.Text = carton.RetailPrice.ToString("0.##");
+            TxtCartonWholesale.Text = carton.WholesalePrice == carton.RetailPrice ? "" : carton.WholesalePrice.ToString("0.##");
 
             bool hasBox = units.Any(u => u.UnitType == UnitType.Box && u.ParentUnitId == carton.Id);
             UpdateCartonUnitLabel(hasBox);
@@ -166,9 +166,9 @@ public partial class ProductDialog : UserControl
         if (hasBox && boxQtyValid)
         {
             if (!_dirtyFields.Contains("BoxRetail"))
-                TxtBoxRetail.Text = (pieceRetail * boxQty).ToString("F2");
+                TxtBoxRetail.Text = (pieceRetail * boxQty).ToString("0.##");
             if (!_dirtyFields.Contains("BoxWholesale"))
-                TxtBoxWholesale.Text = (pieceWholesale * boxQty).ToString("F2");
+                TxtBoxWholesale.Text = (pieceWholesale * boxQty).ToString("0.##");
         }
 
         // Carton prices
@@ -182,16 +182,16 @@ public partial class ProductDialog : UserControl
                 decimal boxWholesale = decimal.TryParse(TxtBoxWholesale.Text, out decimal bw) ? bw : pieceWholesale * boxQty;
 
                 if (!_dirtyFields.Contains("CartonRetail"))
-                    TxtCartonRetail.Text = (boxRetail * cartonQty).ToString("F2");
+                    TxtCartonRetail.Text = (boxRetail * cartonQty).ToString("0.##");
                 if (!_dirtyFields.Contains("CartonWholesale"))
-                    TxtCartonWholesale.Text = (boxWholesale * cartonQty).ToString("F2");
+                    TxtCartonWholesale.Text = (boxWholesale * cartonQty).ToString("0.##");
             }
             else
             {
                 if (!_dirtyFields.Contains("CartonRetail"))
-                    TxtCartonRetail.Text = (pieceRetail * cartonQty).ToString("F2");
+                    TxtCartonRetail.Text = (pieceRetail * cartonQty).ToString("0.##");
                 if (!_dirtyFields.Contains("CartonWholesale"))
-                    TxtCartonWholesale.Text = (pieceWholesale * cartonQty).ToString("F2");
+                    TxtCartonWholesale.Text = (pieceWholesale * cartonQty).ToString("0.##");
             }
         }
 

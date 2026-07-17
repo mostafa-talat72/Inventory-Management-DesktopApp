@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using ProductApp.Services;
 using ProductApp.Views;
 
 namespace ProductApp;
@@ -13,7 +14,22 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        var config = AppConfig.Load();
+        UpdateLocationName(config.LocationName);
+
         NavigateToPage("Products");
+    }
+
+    public void UpdateLocationName(string name)
+    {
+        TxtLocationDisplay.Text = string.IsNullOrWhiteSpace(name) ? "" : name;
+    }
+
+    public void RestartAutoBackup()
+    {
+        App.AppBackup?.StopAutoBackup();
+        App.AppBackup?.StartAutoBackup();
     }
 
     private void NavigateToPage(object sender, RoutedEventArgs e)
@@ -41,12 +57,15 @@ public partial class MainWindow : Window
             case "Reports":
                 MainFrame.Navigate(new ReportsPage());
                 break;
+            case "Settings":
+                MainFrame.Navigate(new SettingsPage());
+                break;
         }
     }
 
     private void UpdateNavButtons()
     {
-        foreach (var btn in new[] { BtnProducts, BtnCustomers, BtnInvoices, BtnReports })
+        foreach (var btn in new[] { BtnProducts, BtnCustomers, BtnInvoices, BtnReports, BtnSettings })
         {
             btn.IsEnabled = true;
             btn.Foreground = btn.Tag?.ToString() == _currentPage
@@ -82,5 +101,4 @@ public partial class MainWindow : Window
     {
         HideOverlay();
     }
-
 }

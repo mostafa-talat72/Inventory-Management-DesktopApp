@@ -58,7 +58,7 @@ public class BillPrintService
         var qrText = $"{orgName}\nرقم الفاتورة: {invoice.Id}";
         if (invoice.CustomerName != null)
             qrText += $"\nالعميل: {invoice.CustomerName}";
-        qrText += $"\nالإجمالي: {invoice.TotalAmount:N2} ج.م";
+        qrText += $"\nالإجمالي: {invoice.TotalAmount:0.##} ج.م";
         qrText += $"\nالتاريخ: {invoice.CreatedAt:yyyy-MM-dd HH:mm}";
 
         var qrBase64 = GenerateQRCodeBase64(qrText);
@@ -80,8 +80,8 @@ public class BillPrintService
         <tr>
           <td class='item-name'>{item.Product.Name}</td>
           <td class='item-qty'>{qtyText}</td>
-          <td class='item-price'>{item.UnitPrice:N2}</td>
-          <td class='item-total'>{item.Total:N2}</td>
+          <td class='item-price'>{item.UnitPrice:0.##}</td>
+          <td class='item-total'>{item.Total:0.##}</td>
         </tr>");
         }
 
@@ -151,10 +151,10 @@ public class BillPrintService
   <div class='divider'></div>
 
   <div class='total-section'>
-    {(discount > 0 ? $@"<div class='total-row'>الخصم: {discount:N2} ج.م</div>" : "")}
-    <div class='total-row grand-total'>الإجمالي: {invoice.TotalAmount:N2} ج.م</div>
-    <div class='total-row paid'>المدفوع: {totalPaid:N2} ج.م</div>
-    {(remaining > 0 ? $@"<div class='total-row remaining'>المتبقي: {remaining:N2} ج.م</div>" : "")}
+    {(discount > 0 ? $@"<div class='total-row'>الخصم: {discount:0.##} ج.م</div>" : "")}
+    <div class='total-row grand-total'>الإجمالي: {invoice.TotalAmount:0.##} ج.م</div>
+    <div class='total-row paid'>المدفوع: {totalPaid:0.##} ج.م</div>
+    {(remaining > 0 ? $@"<div class='total-row remaining'>المتبقي: {remaining:0.##} ج.م</div>" : "")}
   </div>
 
   <div class='thank-you'>شكراً لتعاملكم معنا</div>

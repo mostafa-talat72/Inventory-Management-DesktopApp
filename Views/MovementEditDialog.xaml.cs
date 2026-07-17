@@ -51,7 +51,7 @@ public partial class MovementEditDialog : UserControl
             .Where(b => b.ProductId == product.Id && b.RemainingQuantity > 0)
             .Sum(b => b.RemainingQuantity);
         TxtFifoCost.Text = totalBatchPieces > 0
-            ? $"{fifoValue / totalBatchPieces:N2} ج.م/قطعة"
+            ? $"{fifoValue / totalBatchPieces:0.##} ج.م/قطعة"
             : "-";
         TxtAvailableStock.Text = _inv.GetStockDisplay(product);
 

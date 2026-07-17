@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:ProductApp.Converters">
 
     <SolidColorBrush x:Key="PrimaryBrush" Color="#1A237E" />
     <SolidColorBrush x:Key="PrimaryLightBrush" Color="#534BAE" />
@@ -8,5 +9,16 @@
     <SolidColorBrush x:Key="SuccessBrush" Color="#2E7D32" />
     <SolidColorBrush x:Key="WarningBrush" Color="#F57F17" />
     <SolidColorBrush x:Key="DangerBrush" Color="#C62828" />
+
+    <!-- ScrollBar styles - minimal, reliable, mouse-wheel safe -->
+    <Style TargetType="ScrollBar">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="MinWidth" Value="8" />
+    </Style>
+
+    <!-- Global ScrollViewer: force mouse wheel to work even over input controls -->
+    <Style TargetType="ScrollViewer">
+        <Setter Property="local:ScrollBehavior.ForceMouseWheel" Value="True" />
+    </Style>
 
 </ResourceDictionary>

@@ -38,7 +38,7 @@ public partial class InvoiceDetailsDialog : UserControl
         var customerName = _invoice.Customer?.Name ?? _invoice.CustomerName ?? "نقدي";
         TxtTitle.Text = $"فاتورة #{_invoice.Id}";
         TxtCustomerName.Text = customerName;
-        TxtInvoiceDate.Text = _invoice.CreatedAt.ToString("yyyy/MM/dd HH:mm");
+        TxtInvoiceDate.Text = _invoice.CreatedAt.ToString("yyyy/MM/dd hh:mm tt");
 
         // Status badge
         var (statusText, statusBg, statusFg) = _invoice.Status switch
@@ -53,10 +53,10 @@ public partial class InvoiceDetailsDialog : UserControl
         TxtStatus.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(statusFg)!;
 
         // Summary
-        TxtTotal.Text = $"{_invoice.TotalAmount:N2} ج.م";
-        TxtDiscount.Text = _invoice.Discount > 0 ? $"{_invoice.Discount:N2} ج.م" : "لا يوجد";
-        TxtPaid.Text = $"{_invoice.TotalPaid:N2} ج.م";
-        TxtRemaining.Text = $"{_invoice.Remaining:N2} ج.م";
+        TxtTotal.Text = $"{_invoice.TotalAmount:0.##} ج.م";
+        TxtDiscount.Text = _invoice.Discount > 0 ? $"{_invoice.Discount:0.##} ج.م" : "لا يوجد";
+        TxtPaid.Text = $"{_invoice.TotalPaid:0.##} ج.م";
+        TxtRemaining.Text = $"{_invoice.Remaining:0.##} ج.م";
 
         // Show/hide payment buttons
         BtnPayFull.Visibility = _invoice.Status == InvoiceStatus.Paid || _invoice.Status == InvoiceStatus.Cancelled
@@ -218,7 +218,7 @@ public partial class InvoiceDetailsDialog : UserControl
         decimal combined = rTotal + wTotal;
         rightStack.Children.Add(new TextBlock
         {
-            Text = $"{combined:N2} ج.م",
+            Text = $"{combined:0.##} ج.م",
             FontSize = 14,
             FontWeight = FontWeights.Bold,
             Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
@@ -269,7 +269,7 @@ public partial class InvoiceDetailsDialog : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(14, 0, 0, 0)
         };
-        infoStack.Children.Add(new TextBlock { Text = $"{p.Amount:N2} ج.م", FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
+        infoStack.Children.Add(new TextBlock { Text = $"{p.Amount:0.##} ج.م", FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
         infoStack.Children.Add(new TextBlock { Text = $"{p.PaymentDate:yyyy/MM/dd HH:mm}  •  {p.PaymentMethod ?? "-"}", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(0, 2, 0, 0) });
         grid.Children.Add(infoStack);
         Grid.SetColumn(infoStack, 1);
@@ -358,7 +358,7 @@ public partial class InvoiceDetailsDialog : UserControl
     private void DeletePayment(Payment payment)
     {
         ConfirmDialog.Show("حذف الدفعة",
-            $"هل أنت متأكد من حذف هذه الدفعة بقيمة {payment.Amount:N2} ج.م؟\nسيتم تحديث رصيد الفاتورة تلقائياً.",
+            $"هل أنت متأكد من حذف هذه الدفعة بقيمة {payment.Amount:0.##} ج.م؟\nسيتم تحديث رصيد الفاتورة تلقائياً.",
             result =>
             {
                 if (result != true) return;
@@ -406,7 +406,7 @@ public partial class InvoiceDetailsDialog : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(14, 0, 0, 0)
         };
-        infoStack.Children.Add(new TextBlock { Text = $"{_invoice.Discount:N2} ج.م", FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#E65100")! });
+        infoStack.Children.Add(new TextBlock { Text = $"{_invoice.Discount:0.##} ج.م", FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#E65100")! });
         infoStack.Children.Add(new TextBlock { Text = "خصم على الفاتورة", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(0, 2, 0, 0) });
         grid.Children.Add(infoStack);
         Grid.SetColumn(infoStack, 1);
@@ -492,7 +492,7 @@ public partial class InvoiceDetailsDialog : UserControl
     private void DeleteDiscount()
     {
         ConfirmDialog.Show("حذف الخصم",
-            $"هل أنت متأكد من حذف الخصم بقيمة {_invoice.Discount:N2} ج.م؟",
+            $"هل أنت متأكد من حذف الخصم بقيمة {_invoice.Discount:0.##} ج.م؟",
             result =>
             {
                 if (result != true) return;

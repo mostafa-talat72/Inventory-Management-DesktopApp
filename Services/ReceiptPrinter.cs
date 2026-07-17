@@ -1,3 +1,4 @@
+using System.Printing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -31,14 +32,62 @@ public class ReceiptPrinter
             .Where(oi => oi.Order.InvoiceId == invoice.Id)
             .ToList();
 
-        var printDialog = new PrintDialog();
-        if (printDialog.ShowDialog() != true) return;
-
+        var config = AppConfig.Load();
         var receipt = BuildReceiptVisual(invoice, items);
-        printDialog.PrintVisual(receipt, $"فاتورة #{invoice.Id}");
+
+        if (!string.IsNullOrWhiteSpace(config.PrinterName))
+        {
+            var server = new LocalPrintServer();
+            var queue = new PrintQueue(server, config.PrinterName);
+            var writer = System.Printing.PrintQueue.CreateXpsDocumentWriter(queue);
+            var ticket = queue.DefaultPrintTicket;
+            var size = new Size(receipt.Width, receipt.DesiredSize.Height);
+            receipt.Measure(size);
+            receipt.Arrange(new Rect(size));
+            writer.Write(receipt, ticket);
+        }
+        else
+        {
+            var printDialog = new PrintDialog();
+            if (printDialog.ShowDialog() != true) return;
+            printDialog.PrintVisual(receipt, $"فاتورة #{invoice.Id}");
+        }
     }
 
-    private Visual BuildReceiptVisual(Invoice invoice, List<OrderItem> items)
+    public void PrintTestPage(PrintQueue? queue)
+    {
+        var panel = new StackPanel
+        {
+            Width = 280,
+            Background = Brushes.White,
+            FlowDirection = FlowDirection.RightToLeft
+        };
+
+        panel.Children.Add(MakeText("نظام إدارة المخزون", 18, FontWeights.Black, horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText("صفحة اختبار الطباعة", 14, FontWeights.Bold, horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeSeparator(8));
+        panel.Children.Add(MakeText("إذا كنت ترى هذه الصفحة فإن الطابعة تعمل بشكل صحيح", 11, FontWeights.Normal, horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeSeparator(8));
+        panel.Children.Add(MakeText(DateTime.Now.ToString("yyyy/MM/dd - hh:mm tt"), 10, FontWeights.Normal, foreground: Brushes.Gray, horizontal: HorizontalAlignment.Center));
+
+        panel.Measure(new Size(280, double.PositiveInfinity));
+        panel.Arrange(new Rect(new Size(280, panel.DesiredSize.Height)));
+
+        if (queue != null)
+        {
+            var writer = PrintQueue.CreateXpsDocumentWriter(queue);
+            var ticket = queue.DefaultPrintTicket;
+            writer.Write(panel, ticket);
+        }
+        else
+        {
+            var printDialog = new PrintDialog();
+            if (printDialog.ShowDialog() != true) return;
+            printDialog.PrintVisual(panel, "اختبار الطباعة");
+        }
+    }
+
+    private StackPanel BuildReceiptVisual(Invoice invoice, List<OrderItem> items)
     {
         double width = 280;
         double margin = 12;
@@ -127,8 +176,8 @@ public class ReceiptPrinter
             rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(20, GridUnitType.Star) });
             AddCell(rowGrid, item.Product.Name, 0, false);
             AddCell(rowGrid, qtyText, 1, false);
-            AddCell(rowGrid, item.UnitPrice.ToString("N2"), 2, false);
-            AddCell(rowGrid, item.Total.ToString("N2"), 3, false);
+            AddCell(rowGrid, item.UnitPrice.ToString("0.##"), 2, false);
+            AddCell(rowGrid, item.Total.ToString("0.##"), 3, false);
             rowBorder.Child = rowGrid;
             table.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             Grid.SetRow(rowBorder, row);
@@ -212,7 +261,7 @@ public class ReceiptPrinter
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
         grid.Children.Add(new TextBlock { Text = label, FontSize = fontSize, FontWeight = weight, Foreground = foreground, VerticalAlignment = VerticalAlignment.Center });
-        grid.Children.Add(new TextBlock { Text = $"{amount:N2} ج.م", FontSize = fontSize, FontWeight = weight, Foreground = foreground, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center });
+        grid.Children.Add(new TextBlock { Text = $"{amount:0.##} ج.م", FontSize = fontSize, FontWeight = weight, Foreground = foreground, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center });
         Grid.SetColumn(grid.Children[^1], 2);
 
         border.Child = grid;

@@ -137,8 +137,8 @@ namespace ProductApp.Views
             {
                 var stock = _inv.GetStockDisplay(p);
                 var units = p.Units.OrderBy(u => u.UnitType).ToList();
-                string unitInfo = string.Join(" | ", units.Select(u => $"{u.Name} {u.RetailPrice:N2}"));
-                string priceInfo = units.Any() ? $"قطاعي: {units.Min(u => u.RetailPrice):N2}  جملة: {units.Min(u => u.WholesalePrice):N2}" : "";
+                string unitInfo = string.Join(" | ", units.Select(u => $"{u.Name} {u.RetailPrice:0.##}"));
+                string priceInfo = units.Any() ? $"قطاعي: {units.Min(u => u.RetailPrice):0.##}  جملة: {units.Min(u => u.WholesalePrice):0.##}" : "";
                 var cmd = new RelayCommand(() => SelectProduct(p));
                 return new { p.Name, UnitsDisplay = unitInfo, StockDisplay = stock, PriceDisplay = priceInfo, SelectCommand = cmd };
             }).ToList();
@@ -407,10 +407,10 @@ namespace ProductApp.Views
                 foreach (var entry in _entries.Values)
                 {
                     decimal t = entry.Total;
-                    entry.TotalTb.Text = $"{t:N2} ج.م";
+                    entry.TotalTb.Text = $"{t:0.##} ج.م";
                     grandTotal += t;
                 }
-                TxtGrandTotal.Text = $"{grandTotal:N2} ج.م";
+                TxtGrandTotal.Text = $"{grandTotal:0.##} ج.م";
             }
             else
             {
@@ -466,7 +466,9 @@ namespace ProductApp.Views
                     Status = InvoiceStatus.Open
                 };
                 _db.Invoices.Add(_invoice);
-                _db.SaveChanges();
+            _db.SaveChanges();
+
+            App.AppBackup?.BackupIfOnOperation();
                 InvoiceBadge.Visibility = Visibility.Visible;
                 TxtInvoiceId.Text = _invoice.Id.ToString();
             }
@@ -489,6 +491,8 @@ namespace ProductApp.Views
             var orderIds = _db.Orders.Where(o => o.InvoiceId == _invoice.Id).Select(o => o.Id).ToList();
             _invoice.TotalAmount = _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).Sum(oi => oi.Total);
             _db.SaveChanges();
+
+            App.AppBackup?.BackupIfOnOperation();
 
             int count = _entries.Count;
             _entries.Clear();

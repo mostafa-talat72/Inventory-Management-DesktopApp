@@ -48,7 +48,7 @@ public partial class OrderDialog : UserControl
                 UnitsDisplay = string.Join(" → ", units.Select(u => u.Name)),
                 StockDisplay = _inv.GetStockDisplay(p),
                 PriceDisplay = units.Count > 0
-                    ? $"من {units.Min(u => u.RetailPrice):N2} ج.م"
+                    ? $"من {units.Min(u => u.RetailPrice):0.##} ج.م"
                     : "-",
                 SelectCommand = new RelayCommand(() => SelectProduct(p))
             };
@@ -71,8 +71,8 @@ public partial class OrderDialog : UserControl
         var priceItems = units.Select(u => new
         {
             u.Name,
-            RetailDisplay = u.RetailPrice.ToString("N2") + " ج.م",
-            WholesaleDisplay = u.WholesalePrice.ToString("N2") + " ج.م",
+            RetailDisplay = u.RetailPrice.ToString("0.##") + " ج.م",
+            WholesaleDisplay = u.WholesalePrice.ToString("0.##") + " ج.م",
             Stock = _inv.GetStockDisplay(product)
         }).ToList();
 
@@ -131,7 +131,7 @@ public partial class OrderDialog : UserControl
         }
 
         TotalPanel.Visibility = total > 0 ? Visibility.Visible : Visibility.Collapsed;
-        TxtTotal.Text = total.ToString("N2") + " ج.م";
+        TxtTotal.Text = total.ToString("0.##") + " ج.م";
     }
 
     private void LoadExistingItems()
@@ -142,7 +142,7 @@ public partial class OrderDialog : UserControl
             {
                 ProductName = i.Product.Name,
                 PriceTypeDisplay = i.PriceType == PriceType.Retail ? "قطاعي" : "جملة",
-                TotalDisplay = i.Total.ToString("N2") + " ج.م"
+                TotalDisplay = i.Total.ToString("0.##") + " ج.م"
             }).ToList();
 
         if (items.Count > 0)
@@ -267,6 +267,8 @@ public partial class OrderDialog : UserControl
         }
 
         _db.SaveChanges();
+
+        App.AppBackup?.BackupIfOnOperation();
 
         NotificationManager.ShowSuccess("تم إضافة الطلب بنجاح");
         DialogClosed?.Invoke(this, true);

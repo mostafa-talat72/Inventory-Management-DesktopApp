@@ -52,9 +52,9 @@ public partial class ReportsPage : Page
         var totalCost = items.Sum(i => i.CostPrice);
         var totalProfit = totalSales - totalCost;
 
-        TxtTotalSales.Text = totalSales.ToString("N2") + " ج.م";
-        TxtTotalCost.Text = totalCost.ToString("N2") + " ج.م";
-        TxtTotalProfit.Text = totalProfit.ToString("N2") + " ج.م";
+        TxtTotalSales.Text = totalSales.ToString("0.##") + " ج.م";
+        TxtTotalCost.Text = totalCost.ToString("0.##") + " ج.م";
+        TxtTotalProfit.Text = totalProfit.ToString("0.##") + " ج.م";
         TxtInvoiceCount.Text = invoiceCount.ToString();
 
         UpdateProfitMargin(totalSales, totalProfit);
@@ -85,16 +85,16 @@ public partial class ReportsPage : Page
             return new
             {
                 ProductName = g.Key,
-                CartonDisplay = $"كرتونة: {totalCartons:N0}",
-                BoxDisplay = $"علبة: {totalBoxes:N0}",
-                PieceDisplay = $"قطعة: {totalPieces:N0}",
-                RetailRevDisplay = $"قطاعي: {retailRevenue:N2} ج.م",
-                WholesaleRevDisplay = $"جملة: {wholesaleRevenue:N2} ج.م",
-                RetailCostDisplay = $"قطاعي: {retailCost:N2} ج.م",
-                WholesaleCostDisplay = $"جملة: {wholesaleCost:N2} ج.م",
-                ProfitDisplay = profit.ToString("N2") + " ج.م",
+                CartonDisplay = $"كرتونة: {totalCartons:0}",
+                BoxDisplay = $"علبة: {totalBoxes:0}",
+                PieceDisplay = $"قطعة: {totalPieces:0}",
+                RetailRevDisplay = $"قطاعي: {retailRevenue:0.##} ج.م",
+                WholesaleRevDisplay = $"جملة: {wholesaleRevenue:0.##} ج.م",
+                RetailCostDisplay = $"قطاعي: {retailCost:0.##} ج.م",
+                WholesaleCostDisplay = $"جملة: {wholesaleCost:0.##} ج.م",
+                ProfitDisplay = profit.ToString("0.##") + " ج.م",
                 ProfitPercentDisplay = totalRevenue > 0
-                    ? (profit / totalRevenue * 100).ToString("N1") + "%"
+                    ? (profit / totalRevenue * 100).ToString("0.#") + "%"
                     : "0%",
                 _cartonQty = totalCartons,
                 _boxQty = totalBoxes,
@@ -116,15 +116,15 @@ public partial class ReportsPage : Page
         ReportCountBadge.Visibility = reportData.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtReportCount.Text = reportData.Count.ToString();
 
-        TxtFooterCarton.Text = "كرتونة: " + reportData.Sum(r => (int)r._cartonQty).ToString("N0");
-        TxtFooterBox.Text = "علبة: " + reportData.Sum(r => (int)r._boxQty).ToString("N0");
-        TxtFooterPiece.Text = "قطعة: " + reportData.Sum(r => (int)r._pieceQty).ToString("N0");
-        TxtFooterRetailRev.Text = "قطاعي: " + reportData.Sum(r => (decimal)r._retailRev).ToString("N2") + " ج.م";
-        TxtFooterWholesaleRev.Text = "جملة: " + reportData.Sum(r => (decimal)r._wholesaleRev).ToString("N2") + " ج.م";
-        TxtFooterRetailCost.Text = "قطاعي: " + reportData.Sum(r => (decimal)r._retailCost).ToString("N2") + " ج.م";
-        TxtFooterWholesaleCost.Text = "جملة: " + reportData.Sum(r => (decimal)r._wholesaleCost).ToString("N2") + " ج.م";
-        TxtFooterProfit.Text = reportData.Sum(r => (decimal)r._profit).ToString("N2") + " ج.م";
-        TxtFooterMargin.Text = totalSales > 0 ? (totalProfit / totalSales * 100).ToString("N1") + "%" : "0%";
+        TxtFooterCarton.Text = "كرتونة: " + reportData.Sum(r => (int)r._cartonQty).ToString("0");
+        TxtFooterBox.Text = "علبة: " + reportData.Sum(r => (int)r._boxQty).ToString("0");
+        TxtFooterPiece.Text = "قطعة: " + reportData.Sum(r => (int)r._pieceQty).ToString("0");
+        TxtFooterRetailRev.Text = "قطاعي: " + reportData.Sum(r => (decimal)r._retailRev).ToString("0.##") + " ج.م";
+        TxtFooterWholesaleRev.Text = "جملة: " + reportData.Sum(r => (decimal)r._wholesaleRev).ToString("0.##") + " ج.م";
+        TxtFooterRetailCost.Text = "قطاعي: " + reportData.Sum(r => (decimal)r._retailCost).ToString("0.##") + " ج.م";
+        TxtFooterWholesaleCost.Text = "جملة: " + reportData.Sum(r => (decimal)r._wholesaleCost).ToString("0.##") + " ج.م";
+        TxtFooterProfit.Text = reportData.Sum(r => (decimal)r._profit).ToString("0.##") + " ج.م";
+        TxtFooterMargin.Text = totalSales > 0 ? (totalProfit / totalSales * 100).ToString("0.#") + "%" : "0%";
     }
 
     private void UpdateProfitMargin(decimal totalSales, decimal totalProfit)
@@ -132,7 +132,7 @@ public partial class ReportsPage : Page
         if (totalSales > 0)
         {
             var marginPercent = (double)(totalProfit / totalSales * 100);
-            TxtProfitMargin.Text = marginPercent.ToString("N1") + "%";
+            TxtProfitMargin.Text = marginPercent.ToString("0.#") + "%";
             if (marginPercent >= 30)
             {
                 TxtProfitIndicator.Text = "ممتاز";
@@ -188,9 +188,9 @@ public partial class ReportsPage : Page
 
         TxtComparisonPeriod.Text = $"مقارنة {prevFrom:dd/MM/yyyy} -> {from.AddDays(-1):dd/MM/yyyy}";
 
-        TxtPrevSales.Text = prevSales.ToString("N2") + " ج.م";
-        TxtPrevCost.Text = prevCost.ToString("N2") + " ج.م";
-        TxtPrevProfit.Text = prevProfit.ToString("N2") + " ج.م";
+        TxtPrevSales.Text = prevSales.ToString("0.##") + " ج.م";
+        TxtPrevCost.Text = prevCost.ToString("0.##") + " ج.م";
+        TxtPrevProfit.Text = prevProfit.ToString("0.##") + " ج.م";
         TxtPrevCount.Text = prevCount.ToString();
 
         SetChangeIndicator(SalesChangeBadge, SalesArrow, TxtSalesChange, prevSales, currentSales);
@@ -220,7 +220,7 @@ public partial class ReportsPage : Page
         }
 
         var change = (double)((currentVal - prevVal) / prevVal * 100);
-        txt.Text = (change >= 0 ? "+" : "") + change.ToString("N1") + "%";
+        txt.Text = (change >= 0 ? "+" : "") + change.ToString("0.#") + "%";
 
         if (change >= 0)
         {
@@ -271,7 +271,7 @@ public partial class ReportsPage : Page
             {
                 Rank = (i + 1).ToString(),
                 Name = x.Name,
-                SalesDisplay = x.Sales.ToString("N2") + " ج.م",
+                SalesDisplay = x.Sales.ToString("0.##") + " ج.م",
                 BarWidth = (double)(x.Sales / maxSales * 180),
                 BarColor = idx >= 0 ? rankColors[idx] : "#E0E0E0",
                 RankColor = idx >= 0 ? rankColors[idx] : "#BDBDBD",
@@ -312,7 +312,7 @@ public partial class ReportsPage : Page
             {
                 Rank = (i + 1).ToString(),
                 Name = x.Name,
-                SalesDisplay = x.Sales.ToString("N2") + " ج.م",
+                SalesDisplay = x.Sales.ToString("0.##") + " ج.م",
                 InvoiceCount = $"فواتير: {x.Count}",
                 RankColor = idx >= 0 ? rankColors[idx] : "#BDBDBD",
                 RankBg = idx >= 0 ? rankBg[idx] : "#FAFAFA"
@@ -358,10 +358,10 @@ public partial class ReportsPage : Page
         var minDay = dailySales.MinBy(x => x.Sales)!;
 
         TxtTrendSubtitle.Text = $"آخر {dailySales.Count} يوم • من {dailySales.First().Date:dd/MM} إلى {dailySales.Last().Date:dd/MM}";
-        TxtTrendTotal.Text = totalSales.ToString("N2") + " ج.م";
-        TxtTrendAvg.Text = avgDaily.ToString("N2") + " ج.م";
-        TxtTrendMax.Text = maxDay.Sales.ToString("N2") + " ج.م";
-        TxtTrendMin.Text = minDay.Sales.ToString("N2") + " ج.م";
+        TxtTrendTotal.Text = totalSales.ToString("0.##") + " ج.م";
+        TxtTrendAvg.Text = avgDaily.ToString("0.##") + " ج.م";
+        TxtTrendMax.Text = maxDay.Sales.ToString("0.##") + " ج.م";
+        TxtTrendMin.Text = minDay.Sales.ToString("0.##") + " ج.م";
 
         // — Calculate data series —
         var revData = dailySales.Select(d => (double)d.Sales).ToArray();
@@ -434,7 +434,7 @@ public partial class ReportsPage : Page
 
             var lbl = new TextBlock
             {
-                Text = val.ToString("N0"),
+                Text = val.ToString("0"),
                 FontSize = 8,
                 Foreground = labelColor
             };
@@ -513,7 +513,7 @@ public partial class ReportsPage : Page
                     Fill = (Brush)new BrushConverter().ConvertFromString(dotColors[s])!,
                     Stroke = Brushes.White,
                     StrokeThickness = 1.5,
-                    ToolTip = $"{dotLabels[s]}: {dotVals[s]:N2} ج.م"
+                    ToolTip = $"{dotLabels[s]}: {dotVals[s]:0.##} ج.م"
                 };
                 Canvas.SetLeft(dot, x - 3.5);
                 Canvas.SetTop(dot, dotY - 3.5);

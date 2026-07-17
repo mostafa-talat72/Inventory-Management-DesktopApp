@@ -119,9 +119,9 @@ public partial class CustomerInvoicesDialog : UserControl
         var totalFiltered = filtered.Count;
 
         TxtInvoiceCount.Text = totalFiltered.ToString();
-        TxtTotalAmount.Text = $"{filtered.Sum(i => i.TotalAmount):N2} ج.م";
-        TxtPaidAmount.Text = $"{filtered.Sum(i => i.TotalPaid):N2} ج.م";
-        TxtRemainingAmount.Text = $"{filtered.Sum(i => i.Remaining):N2} ج.م";
+        TxtTotalAmount.Text = $"{filtered.Sum(i => i.TotalAmount):0.##} ج.م";
+        TxtPaidAmount.Text = $"{filtered.Sum(i => i.TotalPaid):0.##} ج.م";
+        TxtRemainingAmount.Text = $"{filtered.Sum(i => i.Remaining):0.##} ج.م";
 
         InvoicesPanel.Children.Clear();
 
@@ -305,7 +305,7 @@ public partial class CustomerInvoicesDialog : UserControl
             Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
             {
                 new TextBlock { Text = "المتبقي:", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom(remainingFg)!, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeights.SemiBold },
-                new TextBlock { Text = $" {remaining:N2} ج.م", FontSize = 18, FontWeight = FontWeights.ExtraBold, Foreground = (Brush)new BrushConverter().ConvertFrom(remainingFg)!, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) }
+                new TextBlock { Text = $" {remaining:0.##} ج.م", FontSize = 18, FontWeight = FontWeights.ExtraBold, Foreground = (Brush)new BrushConverter().ConvertFrom(remainingFg)!, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) }
             }}
         };
         mainGrid.Children.Add(amtCol);
@@ -327,7 +327,7 @@ public partial class CustomerInvoicesDialog : UserControl
             Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
             {
                 new TextBlock { Text = "الإجمالي", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#5C6BC0")!, VerticalAlignment = VerticalAlignment.Center },
-                new TextBlock { Text = $" {invoice.TotalAmount:N2}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#283593")!, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center }
+                new TextBlock { Text = $" {invoice.TotalAmount:0.##}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#283593")!, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center }
             }}
         };
         bottomRow.Children.Add(totalBadge);
@@ -339,7 +339,7 @@ public partial class CustomerInvoicesDialog : UserControl
                 Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
                 {
                     new TextBlock { Text = "خصم", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#F57F17")!, VerticalAlignment = VerticalAlignment.Center },
-                    new TextBlock { Text = $" {invoice.Discount:N2}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#E65100")!, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center }
+                    new TextBlock { Text = $" {invoice.Discount:0.##}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#E65100")!, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center }
                 }}
             };
             bottomRow.Children.Add(discBadge);
@@ -350,7 +350,7 @@ public partial class CustomerInvoicesDialog : UserControl
             Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
             {
                 new TextBlock { Text = "مدفوع", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#2E7D32")!, VerticalAlignment = VerticalAlignment.Center },
-                new TextBlock { Text = $" {invoice.TotalPaid:N2}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = invoice.TotalPaid > 0 ? (Brush)new BrushConverter().ConvertFrom("#1B5E20")! : (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center }
+                new TextBlock { Text = $" {invoice.TotalPaid:0.##}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = invoice.TotalPaid > 0 ? (Brush)new BrushConverter().ConvertFrom("#1B5E20")! : (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center }
             }}
         };
         bottomRow.Children.Add(paidBadge);

@@ -56,8 +56,8 @@ public partial class ProductsPage : Page
                 StockDisplay = stockDisplay,
                 StockBgColor = stockBg,
                 StockFgColor = stockFg,
-                RetailDisplay = units.Count > 0 ? units.Min(u => u.RetailPrice).ToString("N2") : "-",
-                WholesaleDisplay = units.Count > 0 ? units.Min(u => u.WholesalePrice).ToString("N2") : "-",
+                RetailDisplay = units.Count > 0 ? units.Min(u => u.RetailPrice).ToString("0.##") : "-",
+                WholesaleDisplay = units.Count > 0 ? units.Min(u => u.WholesalePrice).ToString("0.##") : "-",
                 Product = p,
                 SelectCommand = new RelayCommand(() => OpenUnitLevelsDialog(p)),
                 EditCommand = new RelayCommand(() => OpenEditDialog(p)),
@@ -68,7 +68,7 @@ public partial class ProductsPage : Page
         ProductsList.ItemsSource = cards;
 
         TxtTotalProducts.Text = products.Count.ToString();
-        TxtTotalStock.Text = totalStockPieces.ToString("N0");
+        TxtTotalStock.Text = totalStockPieces.ToString("0");
         TxtLowStock.Text = lowStockCount.ToString();
     }
 

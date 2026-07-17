@@ -29,7 +29,7 @@ public partial class ChangeCustomerDialog : UserControl
         var customerName = invoice.Customer?.Name ?? invoice.CustomerName ?? "نقدي";
         TxtSubtitle.Text = $"فاتورة #{invoice.Id}";
         TxtCurrentCustomer.Text = customerName;
-        TxtInvoiceInfo.Text = $"#{invoice.Id}  •  {invoice.TotalAmount:N2} ج.م  •  {invoice.InvoiceDate:yyyy/MM/dd}";
+        TxtInvoiceInfo.Text = $"#{invoice.Id}  •  {invoice.TotalAmount:0.##} ج.م  •  {invoice.InvoiceDate:yyyy/MM/dd}";
 
         // Exclude current customer from list
         _allCustomers = _db.Customers

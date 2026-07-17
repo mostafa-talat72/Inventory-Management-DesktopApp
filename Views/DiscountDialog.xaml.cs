@@ -29,15 +29,15 @@ public partial class DiscountDialog : UserControl
         if (_invoice.Discount > 0)
         {
             TxtTitle.Text = "تعديل الخصم";
-            TxtAmount.Text = _invoice.Discount.ToString("N2");
+            TxtAmount.Text = _invoice.Discount.ToString("0.##");
         }
         else
         {
             TxtTitle.Text = "إضافة خصم";
         }
 
-        TxtSubtitle.Text = $"إجمالي الفاتورة: {_invoice.TotalAmount:N2} ج.م";
-        TxtMaxHint.Text = $"الحد الأقصى للخصم: {_invoice.TotalAmount:N2} ج.م";
+        TxtSubtitle.Text = $"إجمالي الفاتورة: {_invoice.TotalAmount:0.##} ج.م";
+        TxtMaxHint.Text = $"الحد الأقصى للخصم: {_invoice.TotalAmount:0.##} ج.م";
     }
 
     private void TxtAmount_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -75,12 +75,14 @@ public partial class DiscountDialog : UserControl
 
         if (amount > _invoice.TotalAmount)
         {
-            NotificationManager.ShowError($"لا يمكن أن يتجاوز الخصم {_invoice.TotalAmount:N2} ج.م");
+            NotificationManager.ShowError($"لا يمكن أن يتجاوز الخصم {_invoice.TotalAmount:0.##} ج.م");
             return;
         }
 
         _invoice.Discount = amount;
         _db.SaveChanges();
+
+        App.AppBackup?.BackupIfOnOperation();
 
         NotificationManager.ShowSuccess("تم حفظ الخصم بنجاح");
         DialogClosed?.Invoke(this, true);

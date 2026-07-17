@@ -140,9 +140,9 @@ public partial class MergeInvoicesDialog : UserControl
         var row2 = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 0) };
         row2.Children.Add(new TextBlock { Text = invoice.CreatedAt.ToString("yyyy/MM/dd"), FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")! });
         row2.Children.Add(new TextBlock { Text = " • ", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#CFD8DC")! });
-        row2.Children.Add(new TextBlock { Text = $"{invoice.TotalAmount:N2} ج.م", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
+        row2.Children.Add(new TextBlock { Text = $"{invoice.TotalAmount:0.##} ج.م", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
         if (invoice.Discount > 0)
-            row2.Children.Add(new TextBlock { Text = $"خصم {invoice.Discount:N2}", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#F57F17")!, Margin = new Thickness(6, 0, 0, 0) });
+            row2.Children.Add(new TextBlock { Text = $"خصم {invoice.Discount:0.##}", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#F57F17")!, Margin = new Thickness(6, 0, 0, 0) });
         infoStack.Children.Add(row2);
 
         grid.Children.Add(checkBorder);
@@ -283,7 +283,7 @@ public partial class MergeInvoicesDialog : UserControl
         TargetBadge.Visibility = target != null ? Visibility.Visible : Visibility.Collapsed;
         if (target != null)
         {
-            TxtTargetInfo.Text = $"الهدف: فاتورة #{target.Id} ({target.TotalAmount:N2} ج.م)";
+            TxtTargetInfo.Text = $"الهدف: فاتورة #{target.Id} ({target.TotalAmount:0.##} ج.م)";
         }
     }
 

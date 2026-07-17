@@ -5,15 +5,16 @@
       FlowDirection="RightToLeft"
       Background="#F0F2F5">
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
         <!-- Header -->
         <Border Grid.Row="0" Background="White" Padding="28,24,28,16" CornerRadius="14" Margin="0,0,0,12">
@@ -159,9 +160,7 @@
         </Border>
 
         <!-- Invoice cards list -->
-        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" Margin="0,0,0,0">
-            <StackPanel x:Name="InvoicesPanel" />
-        </ScrollViewer>
+        <StackPanel x:Name="InvoicesPanel" Grid.Row="4" />
 
         <!-- Show more -->
         <Border x:Name="ShowMoreBar" Grid.Row="5" Margin="0,8,0,0" CornerRadius="8" Background="#F5F5F5"
@@ -173,5 +172,6 @@
                 <TextBlock x:Name="TxtShowMore" Text="عرض المزيد" FontSize="12" FontWeight="SemiBold" Foreground="#546E7A" Margin="6,0,0,0" />
             </StackPanel>
         </Border>
-    </Grid>
+        </Grid>
+    </ScrollViewer>
 </Page>

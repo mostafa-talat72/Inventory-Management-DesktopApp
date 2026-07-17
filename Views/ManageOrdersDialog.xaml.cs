@@ -53,7 +53,7 @@ public partial class ManageOrdersDialog : UserControl
             .ToList();
 
         TxtInfo.Text = $"{allItems.Count} طلب";
-        TxtTotal.Text = $"{_invoice.TotalAmount:N2} ج.م";
+        TxtTotal.Text = $"{_invoice.TotalAmount:0.##} ج.م";
 
         ItemsPanel.Children.Clear();
         if (allItems.Count == 0)
@@ -123,7 +123,7 @@ public partial class ManageOrdersDialog : UserControl
         // Total
         var totalBlock = new TextBlock
         {
-            Text = $"{item.Total:N2} ج.م",
+            Text = $"{item.Total:0.##} ج.م",
             FontSize = 15,
             FontWeight = FontWeights.Bold,
             Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
@@ -241,8 +241,8 @@ public partial class ManageOrdersDialog : UserControl
             var unitStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             unitStack.Children.Add(new TextBlock { Text = u.Name, FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!, HorizontalAlignment = HorizontalAlignment.Center });
             var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 0) };
-            row.Children.Add(new StackPanel { Children = { new TextBlock { Text = "قطاعي", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#B0BEC5")!, HorizontalAlignment = HorizontalAlignment.Center }, new TextBlock { Text = $"{u.RetailPrice:N2}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!, HorizontalAlignment = HorizontalAlignment.Center } } });
-            row.Children.Add(new StackPanel { Margin = new Thickness(10, 0, 0, 0), Children = { new TextBlock { Text = "جملة", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#B0BEC5")!, HorizontalAlignment = HorizontalAlignment.Center }, new TextBlock { Text = $"{u.WholesalePrice:N2}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#00897B")!, HorizontalAlignment = HorizontalAlignment.Center } } });
+            row.Children.Add(new StackPanel { Children = { new TextBlock { Text = "قطاعي", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#B0BEC5")!, HorizontalAlignment = HorizontalAlignment.Center }, new TextBlock { Text = $"{u.RetailPrice:0.##}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!, HorizontalAlignment = HorizontalAlignment.Center } } });
+            row.Children.Add(new StackPanel { Margin = new Thickness(10, 0, 0, 0), Children = { new TextBlock { Text = "جملة", FontSize = 9, Foreground = (Brush)new BrushConverter().ConvertFrom("#B0BEC5")!, HorizontalAlignment = HorizontalAlignment.Center }, new TextBlock { Text = $"{u.WholesalePrice:0.##}", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#00897B")!, HorizontalAlignment = HorizontalAlignment.Center } } });
             unitStack.Children.Add(row);
             unitBorder.Child = unitStack;
             priceStack.Children.Add(unitBorder);
