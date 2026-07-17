@@ -13,14 +13,11 @@ namespace ProductApp.Views;
 public partial class ProductsPage : Page
 {
     private readonly AppDbContext _db;
-    private readonly InventoryService _inv;
-    private Product? _selectedProduct;
     private bool _loaded;
 
     public ProductsPage()
     {
         _db = new AppDbContext();
-        _inv = new InventoryService(_db);
         InitializeComponent();
         LoadProducts();
         _loaded = true;
@@ -36,11 +33,13 @@ public partial class ProductsPage : Page
         var totalStockPieces = 0;
         var lowStockCount = 0;
 
+        var inv = new InventoryService(_db);
+
         var cards = products.Select(p =>
         {
             var units = _db.ProductUnits.AsNoTracking().Where(u => u.ProductId == p.Id).OrderBy(u => u.UnitType).ToList();
-            var stockDisplay = _inv.GetStockDisplay(p);
-            var stockPieces = _inv.GetAvailableStock(p);
+            var stockDisplay = inv.GetStockDisplay(p);
+            var stockPieces = inv.GetAvailableStock(p);
             totalStockPieces += stockPieces;
 
             var isLowStock = stockPieces <= 0;
@@ -60,7 +59,7 @@ public partial class ProductsPage : Page
                 RetailDisplay = units.Count > 0 ? units.Min(u => u.RetailPrice).ToString("N2") : "-",
                 WholesaleDisplay = units.Count > 0 ? units.Min(u => u.WholesalePrice).ToString("N2") : "-",
                 Product = p,
-                SelectCommand = new RelayCommand(() => SelectProduct(p)),
+                SelectCommand = new RelayCommand(() => OpenUnitLevelsDialog(p)),
                 EditCommand = new RelayCommand(() => OpenEditDialog(p)),
                 DeleteCommand = new RelayCommand(() => DeleteProduct(p))
             };
@@ -73,23 +72,6 @@ public partial class ProductsPage : Page
         TxtLowStock.Text = lowStockCount.ToString();
     }
 
-    private void RefreshAndRestoreSelection()
-    {
-        var product = _selectedProduct;
-        LoadProducts();
-        if (product != null)
-        {
-            _selectedProduct = product;
-            ShowUnits(product);
-        }
-    }
-
-    private void SelectProduct(Product product)
-    {
-        _selectedProduct = product;
-        ShowUnits(product);
-    }
-
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (!_loaded) return;
@@ -99,59 +81,17 @@ public partial class ProductsPage : Page
         LoadProducts(text);
     }
 
-    private void ShowUnits(Product product)
+    private void OpenUnitLevelsDialog(Product product)
     {
-        var units = _db.ProductUnits.Where(u => u.ProductId == product.Id)
-            .OrderBy(u => u.UnitType).ToList();
-
-        var cardData = units.Select(u =>
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new UnitLevelsDialog(_db, product);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
         {
-            var (icon, color) = u.UnitType switch
-            {
-                UnitType.Carton => ("📦", "#1A237E"),
-                UnitType.Box => ("📋", "#00897B"),
-                UnitType.Piece => ("⚪", "#546E7A"),
-                _ => ("📦", "#78909C")
-            };
-
-            string contains = "";
-            if (u.UnitType == UnitType.Carton)
-            {
-                var children = units.FirstOrDefault(x => x.ParentUnitId == u.Id);
-                if (children != null)
-                    contains = $"يحتوي على {u.QuantityPerParent} {children.Name}";
-            }
-            else if (u.UnitType == UnitType.Box)
-            {
-                var piece = units.FirstOrDefault(x => x.UnitType == UnitType.Piece && x.ParentUnitId == u.Id);
-                if (piece != null)
-                    contains = $"يحتوي على {u.QuantityPerParent} قطعة";
-            }
-            else if (u.UnitType == UnitType.Piece)
-                contains = "الوحدة الأساسية";
-
-            return new
-            {
-                u.Name,
-                UnitTypeDisplay = u.UnitType switch
-                {
-                    UnitType.Carton => "كرتونة",
-                    UnitType.Box => "علبة",
-                    UnitType.Piece => "قطعة",
-                    _ => ""
-                },
-                ContainsDisplay = contains,
-                RetailDisplay = $"{u.RetailPrice:N2} ج.م",
-                WholesaleDisplay = $"{u.WholesalePrice:N2} ج.م",
-                LevelIcon = icon,
-                LevelColor = color
-            };
-        }).ToList();
-
-        UnitsCards.ItemsSource = cardData;
-        TxtUnitSubHeader.Text = product.Name;
-        UnitsPanel.Visibility = Visibility.Visible;
-        DividerLine.Visibility = Visibility.Visible;
+            mainWindow.HideOverlay();
+            if (r == true)
+                LoadProducts();
+        };
     }
 
     private void AddProduct_Click(object sender, RoutedEventArgs e)
@@ -163,11 +103,7 @@ public partial class ProductsPage : Page
         {
             mainWindow.HideOverlay();
             if (r == true)
-            {
                 LoadProducts();
-                UnitsPanel.Visibility = Visibility.Collapsed;
-                DividerLine.Visibility = Visibility.Collapsed;
-            }
         };
     }
 
@@ -180,7 +116,7 @@ public partial class ProductsPage : Page
         {
             mainWindow.HideOverlay();
             if (r == true)
-                RefreshAndRestoreSelection();
+                LoadProducts();
         };
     }
 
@@ -194,28 +130,7 @@ public partial class ProductsPage : Page
             _db.Products.Remove(product);
             _db.SaveChanges();
             LoadProducts();
-            UnitsPanel.Visibility = Visibility.Collapsed;
-            DividerLine.Visibility = Visibility.Collapsed;
         }, ConfirmDialog.DialogType.Danger);
-    }
-
-    private void EditProduct_FromUnits(object sender, RoutedEventArgs e)
-    {
-        if (_selectedProduct != null)
-            OpenEditDialog(_selectedProduct);
-    }
-
-    private void StockMovement_Click(object sender, RoutedEventArgs e)
-    {
-        if (_selectedProduct == null) return;
-        var mainWindow = (MainWindow)Window.GetWindow(this);
-        var dialog = new StockMovementDialog(_db, _selectedProduct);
-        mainWindow.ShowOverlay(dialog);
-        dialog.DialogClosed += (s, r) =>
-        {
-            mainWindow.HideOverlay();
-            RefreshAndRestoreSelection();
-        };
     }
 
     private void StockIn_Click(object sender, RoutedEventArgs e)
@@ -227,21 +142,7 @@ public partial class ProductsPage : Page
         {
             mainWindow.HideOverlay();
             if (r == true)
-                RefreshAndRestoreSelection();
-        };
-    }
-
-    private void StockDeduction_Click(object sender, RoutedEventArgs e)
-    {
-        if (_selectedProduct == null) return;
-        var mainWindow = (MainWindow)Window.GetWindow(this);
-        var dialog = new StockDeductionDialog(_db, _selectedProduct);
-        mainWindow.ShowOverlay(dialog);
-        dialog.DialogClosed += (s, r) =>
-        {
-            mainWindow.HideOverlay();
-            if (r == true)
-                RefreshAndRestoreSelection();
+                LoadProducts();
         };
     }
 

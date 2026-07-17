@@ -162,7 +162,8 @@
             </Border>
 
             <!-- Customer Cards -->
-            <ItemsControl x:Name="CustomerList">
+            <ItemsControl x:Name="CustomerList"
+                          HorizontalAlignment="Center">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel />
