@@ -33,7 +33,7 @@ public class ReceiptPrinter
             .ToList();
 
         var config = AppConfig.Load();
-        var receipt = BuildReceiptVisual(invoice, items);
+        var receipt = BuildReceiptVisual(invoice, items, config);
 
         if (!string.IsNullOrWhiteSpace(config.PrinterName))
         {
@@ -87,7 +87,7 @@ public class ReceiptPrinter
         }
     }
 
-    private StackPanel BuildReceiptVisual(Invoice invoice, List<OrderItem> items)
+    private StackPanel BuildReceiptVisual(Invoice invoice, List<OrderItem> items, AppConfig config)
     {
         double width = 280;
         double margin = 12;
@@ -118,6 +118,27 @@ public class ReceiptPrinter
                 customerStack.Children.Add(MakeText(invoice.Customer.Phone, 10, FontWeights.Normal, foreground: Brushes.Gray));
             customerBorder.Child = customerStack;
             add(customerBorder);
+        }
+
+        // --- Location Info (optional) ---
+        if (config.PrintLocationName && !string.IsNullOrWhiteSpace(config.LocationName) ||
+            config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress) ||
+            config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone) ||
+            config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription))
+        {
+            add(MakeSeparator(4));
+            var locationBorder = new Border { Background = new SolidColorBrush(Color.FromRgb(232, 234, 246)), Padding = new Thickness(8), Margin = new Thickness(0, 4, 0, 4) };
+            var locationStack = new StackPanel();
+            if (config.PrintLocationName && !string.IsNullOrWhiteSpace(config.LocationName))
+                locationStack.Children.Add(MakeText(config.LocationName, 12, FontWeights.Bold));
+            if (config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress))
+                locationStack.Children.Add(MakeText(config.LocationAddress, 10, FontWeights.Normal, foreground: Brushes.Gray));
+            if (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone))
+                locationStack.Children.Add(MakeText(config.LocationPhone, 10, FontWeights.Normal, foreground: Brushes.Gray));
+            if (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription))
+                locationStack.Children.Add(MakeText(config.LocationDescription, 10, FontWeights.Normal, foreground: Brushes.Gray));
+            locationBorder.Child = locationStack;
+            add(locationBorder);
         }
 
         add(MakeSeparator(8));

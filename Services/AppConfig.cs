@@ -16,6 +16,13 @@ public class AppConfig
     public bool BackupOnStartup { get; set; }
     public bool BackupOnOperation { get; set; }
     public int BackupIntervalMinutes { get; set; }
+    public string LocationAddress { get; set; } = "";
+    public string LocationPhone { get; set; } = "";
+    public string LocationDescription { get; set; } = "";
+    public bool PrintLocationName { get; set; } = true;
+    public bool PrintLocationAddress { get; set; }
+    public bool PrintLocationPhone { get; set; }
+    public bool PrintLocationDescription { get; set; }
     public string PrinterName { get; set; } = "";
 
     private static readonly string DefaultPassword = "123456";

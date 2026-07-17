@@ -23,6 +23,13 @@ public partial class SettingsPage : UserControl
     private void LoadSettings()
     {
         TxtLocationName.Text = _config.LocationName;
+        TxtLocationAddress.Text = _config.LocationAddress;
+        TxtLocationPhone.Text = _config.LocationPhone;
+        TxtLocationDescription.Text = _config.LocationDescription;
+        ChkPrintLocationName.IsChecked = _config.PrintLocationName;
+        ChkPrintLocationAddress.IsChecked = _config.PrintLocationAddress;
+        ChkPrintLocationPhone.IsChecked = _config.PrintLocationPhone;
+        ChkPrintLocationDescription.IsChecked = _config.PrintLocationDescription;
         TxtBackupFolder.Text = _config.BackupFolder;
         ChkBackupOnStartup.IsChecked = _config.BackupOnStartup;
         ChkBackupOnOperation.IsChecked = _config.BackupOnOperation;
@@ -94,8 +101,15 @@ public partial class SettingsPage : UserControl
     private void BtnSaveLocation_Click(object sender, RoutedEventArgs e)
     {
         _config.LocationName = TxtLocationName.Text.Trim();
+        _config.LocationAddress = TxtLocationAddress.Text.Trim();
+        _config.LocationPhone = TxtLocationPhone.Text.Trim();
+        _config.LocationDescription = TxtLocationDescription.Text.Trim();
+        _config.PrintLocationName = ChkPrintLocationName.IsChecked == true;
+        _config.PrintLocationAddress = ChkPrintLocationAddress.IsChecked == true;
+        _config.PrintLocationPhone = ChkPrintLocationPhone.IsChecked == true;
+        _config.PrintLocationDescription = ChkPrintLocationDescription.IsChecked == true;
         _config.Save();
-        NotificationManager.ShowSuccess("تم حفظ اسم المكان بنجاح");
+        NotificationManager.ShowSuccess("تم حفظ بيانات المكان بنجاح");
 
         // Update the title bar if MainWindow is accessible
         if (Window.GetWindow(this) is MainWindow mainWin)

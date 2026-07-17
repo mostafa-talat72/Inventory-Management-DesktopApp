@@ -131,24 +131,70 @@
                         </Grid>
                     </Border>
                     <StackPanel Grid.Row="1" Margin="24,20,24,24">
-                        <TextBlock Text="اسم المكان" Style="{StaticResource FieldLabel}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border BorderThickness="1" BorderBrush="#E0E0E0" CornerRadius="8" Padding="2" Grid.Column="0">
-                                <TextBox x:Name="TxtLocationName" Height="36" FontSize="13" BorderThickness="0" Padding="10,0" VerticalContentAlignment="Center" />
-                            </Border>
-                            <Button x:Name="BtnSaveLocation" Click="BtnSaveLocation_Click" Grid.Column="1"
-                                    Background="#1A237E" Style="{StaticResource SaveBtn}" Margin="10,0,0,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
-                                          Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                                    <TextBlock Text="  حفظ" Margin="4,0,0,0" />
-                                </StackPanel>
-                            </Button>
+                            <TextBlock Grid.Column="0" Text="اسم المكان" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
+                            <CheckBox Grid.Column="1" x:Name="ChkPrintLocationName" IsChecked="True"
+                                      Content="طباعة في الفاتورة" FontSize="12" Foreground="#78909C"
+                                      VerticalAlignment="Center" Cursor="Hand" />
                         </Grid>
+                        <Border BorderThickness="1" BorderBrush="#E0E0E0" CornerRadius="8" Padding="2">
+                            <TextBox x:Name="TxtLocationName" Height="36" FontSize="13" BorderThickness="0" Padding="10,0" VerticalContentAlignment="Center" />
+                        </Border>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="عنوان المكان" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
+                            <CheckBox Grid.Column="1" x:Name="ChkPrintLocationAddress"
+                                      Content="طباعة في الفاتورة" FontSize="12" Foreground="#78909C"
+                                      VerticalAlignment="Center" Cursor="Hand" />
+                        </Grid>
+                        <Border BorderThickness="1" BorderBrush="#E0E0E0" CornerRadius="8" Padding="2">
+                            <TextBox x:Name="TxtLocationAddress" Height="36" FontSize="13" BorderThickness="0" Padding="10,0" VerticalContentAlignment="Center" />
+                        </Border>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="رقم المكان" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
+                            <CheckBox Grid.Column="1" x:Name="ChkPrintLocationPhone"
+                                      Content="طباعة في الفاتورة" FontSize="12" Foreground="#78909C"
+                                      VerticalAlignment="Center" Cursor="Hand" />
+                        </Grid>
+                        <Border BorderThickness="1" BorderBrush="#E0E0E0" CornerRadius="8" Padding="2">
+                            <TextBox x:Name="TxtLocationPhone" Height="36" FontSize="13" BorderThickness="0" Padding="10,0" VerticalContentAlignment="Center" />
+                        </Border>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="مواصفات المكان" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
+                            <CheckBox Grid.Column="1" x:Name="ChkPrintLocationDescription"
+                                      Content="طباعة في الفاتورة" FontSize="12" Foreground="#78909C"
+                                      VerticalAlignment="Center" Cursor="Hand" />
+                        </Grid>
+                        <Border BorderThickness="1" BorderBrush="#E0E0E0" CornerRadius="8" Padding="2">
+                            <TextBox x:Name="TxtLocationDescription" Height="80" FontSize="13" BorderThickness="0" Padding="10,8" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" />
+                        </Border>
+
+                        <Button x:Name="BtnSaveLocation" Click="BtnSaveLocation_Click"
+                                Background="#1A237E" Style="{StaticResource SaveBtn}" HorizontalAlignment="Left" Margin="0,14,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                      Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                                <TextBlock Text="  حفظ" Margin="4,0,0,0" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
