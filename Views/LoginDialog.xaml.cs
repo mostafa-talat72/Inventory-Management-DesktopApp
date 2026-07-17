@@ -38,8 +38,8 @@ public partial class LoginDialog : Window
         }
         else
         {
-            TxtError.Text = "الرقم السري غير صحيح";
-            TxtError.Visibility = Visibility.Visible;
+            TxtError.Text = "كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى";
+            ErrorBorder.Visibility = Visibility.Visible;
             TxtPassword.Password = "";
             TxtPassword.Focus();
         }

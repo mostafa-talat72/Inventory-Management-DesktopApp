@@ -23,7 +23,7 @@ public partial class MainWindow : Window
 
     public void UpdateLocationName(string name)
     {
-        TxtLocationDisplay.Text = string.IsNullOrWhiteSpace(name) ? "" : name;
+        TxtLocationDisplay2.Text = string.IsNullOrWhiteSpace(name) ? "" : name;
     }
 
     public void RestartAutoBackup()

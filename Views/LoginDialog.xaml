@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="تسجيل الدخول - MTE Stock"
-        Width="400" Height="380"
+        Width="400" Height="440"
         WindowStartupLocation="CenterScreen"
         WindowStyle="SingleBorderWindow"
         ResizeMode="NoResize"
@@ -34,6 +34,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!-- Header -->
@@ -48,11 +49,10 @@
             <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="32,0">
                 <TextBlock Text="الرجاء إدخال كلمة المرور" FontSize="13" Foreground="#546E7A" Margin="0,0,0,8" />
                 <PasswordBox x:Name="TxtPassword" Style="{StaticResource LoginField}" KeyDown="TxtPassword_KeyDown" />
-                <TextBlock x:Name="TxtError" Text="" FontSize="11" Foreground="#E53935" Margin="0,4,0,0" Visibility="Collapsed" />
             </StackPanel>
 
             <!-- Button -->
-            <StackPanel Grid.Row="2" Margin="32,0,32,16">
+            <StackPanel Grid.Row="2" Margin="32,0,32,0">
                 <Button x:Name="BtnLogin" Click="BtnLogin_Click" Style="{StaticResource LoginBtn}" Background="#1A237E">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
@@ -71,8 +71,26 @@
                 </Button>
             </StackPanel>
 
+            <!-- Error Message -->
+            <Border Grid.Row="3" x:Name="ErrorBorder" Visibility="Collapsed"
+                    Background="#FFEBEE" BorderBrush="#EF9A9A" BorderThickness="1"
+                    CornerRadius="8" Padding="10,8" Margin="32,10,32,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Path Grid.Column="0" Width="16" Height="16" Fill="#E53935" Stretch="Uniform"
+                          VerticalAlignment="Center" Margin="0,0,8,0"
+                          Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                    <TextBlock x:Name="TxtError" Grid.Column="1" Text=""
+                               FontSize="12" FontWeight="SemiBold" Foreground="#C62828"
+                               VerticalAlignment="Center" TextWrapping="Wrap" />
+                </Grid>
+            </Border>
+
             <!-- Developer Signature -->
-            <Border Grid.Row="3" Background="#F5F5F5" CornerRadius="0,0,12,12" Padding="0,8,0,10">
+            <Border Grid.Row="4" Background="#F5F5F5" CornerRadius="0,0,12,12" Padding="0,10,0,12" Margin="0,14,0,0">
                 <StackPanel HorizontalAlignment="Center">
                     <TextBlock Text="تم تصميم وتطوير هذا النظام بواسطة"
                                FontSize="9" Foreground="#AAAAAA"

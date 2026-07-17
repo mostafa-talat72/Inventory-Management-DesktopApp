@@ -76,7 +76,7 @@
                     </Border>
                     <TextBlock Text="MTE Stock" FontSize="22" FontWeight="Bold" Foreground="White"
                                HorizontalAlignment="Center" />
-                    <TextBlock Text="MTE Stock" FontSize="14" Foreground="#90CAF9"
+                    <TextBlock x:Name="TxtLocationDisplay2" Text="" FontSize="13" Foreground="#90CAF9"
                                HorizontalAlignment="Center" Margin="0,4,0,0" />
                 </StackPanel>
 
@@ -147,10 +147,23 @@
 
                 <!-- Footer -->
                 <StackPanel Grid.Row="4" Margin="24,16,24,20">
-                    <TextBlock x:Name="TxtLocationDisplay" Text="" FontSize="11"
-                               Foreground="#90CAF9" HorizontalAlignment="Right" />
                     <TextBlock Text="الإصدار 1.0" FontSize="11" Foreground="#546E7A"
-                               HorizontalAlignment="Right" Margin="0,4,0,0" />
+                               HorizontalAlignment="Right" />
+                    <!-- Developer Signature -->
+                    <Border Margin="0,10,0,0" Padding="0,10,0,0"
+                            BorderThickness="0,1,0,0" BorderBrush="#33FFFFFF">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="تم تطويره بواسطة"
+                                       FontSize="11" Foreground="#546E7A"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="م. مصطفى طلعت"
+                                       FontSize="13" FontWeight="Bold" Foreground="#90CAF9"
+                                       HorizontalAlignment="Center" Margin="0,3,0,0" />
+                            <TextBlock Text="01116626164"
+                                       FontSize="11" Foreground="#78909C"
+                                       HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Grid>
         </Border>
