@@ -1,0 +1,236 @@
+<UserControl x:Class="ProductApp.Views.PaymentDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wm="clr-namespace:ProductApp.Converters"
+             FlowDirection="RightToLeft"
+             MinWidth="380" MaxWidth="500">
+    <Grid Margin="20">
+        <Border CornerRadius="16"
+                Background="White"
+                Padding="0"
+                Style="{StaticResource CardStyle}">
+            <StackPanel>
+                <!-- Header -->
+                <Border CornerRadius="16,16,0,0"
+                        Background="{StaticResource PrimaryBrush}"
+                        Padding="24,20">
+                    <StackPanel>
+                        <TextBlock Text="دفعة جديدة"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White" />
+                        <TextBlock x:Name="TxtInvoiceInfo"
+                                   FontSize="13"
+                                   Foreground="#B0BEC5"
+                                   Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Form Body -->
+                <StackPanel Margin="24,20,24,24">
+                    <!-- Amount -->
+                    <TextBlock Text="المبلغ"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#546E7A"
+                               Margin="0,0,0,4" />
+                    <Border CornerRadius="8"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            Padding="0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=TxtAmount, Path=IsFocused}" Value="True">
+                                        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                             <TextBox x:Name="TxtAmount"
+                                      FontSize="18"
+                                      FontWeight="SemiBold"
+                                      Padding="12,10"
+                                      BorderThickness="0"
+                                      Background="Transparent"
+                                      Foreground="#1A237E"
+                                      wm:WatermarkBehavior.Watermark="أدخل المبلغ"
+                                      PreviewTextInput="TxtAmount_PreviewTextInput"
+                                      TextChanged="TxtAmount_TextChanged"
+                                      DataObject.Pasting="TxtAmount_Pasting" />
+                            <TextBlock Text="ج.م"
+                                       FontSize="14"
+                                       Foreground="#90A4AE"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Left"
+                                       Margin="12,0,0,0"
+                                       IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Hidden" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=TxtAmount, Path=Text.Length}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+
+                    <!-- Remaining Balance -->
+                    <Border CornerRadius="8"
+                            Background="#FFF8E1"
+                            BorderBrush="#FFE082"
+                            BorderThickness="1"
+                            Padding="12,10"
+                            Margin="0,12,0,0">
+                        <Grid>
+                            <TextBlock Text="المتبقي"
+                                       FontSize="12"
+                                       Foreground="#F57F17"
+                                       VerticalAlignment="Center" />
+                            <TextBlock x:Name="TxtRemaining"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       Foreground="#E65100"
+                                       HorizontalAlignment="Right" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Payment Method -->
+                    <TextBlock Text="طريقة الدفع"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#546E7A"
+                               Margin="0,16,0,4" />
+                    <Border CornerRadius="8"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            Padding="4">
+                        <ComboBox x:Name="CmbMethod"
+                                  FontSize="14"
+                                  Padding="8,6"
+                                  BorderThickness="0"
+                                  Background="Transparent">
+                            <ComboBoxItem Content="نقدي" IsSelected="True" />
+                            <ComboBoxItem Content="تحويل بنكي" />
+                            <ComboBoxItem Content="محفظة الكترونية" />
+                        </ComboBox>
+                    </Border>
+
+                    <!-- Notes -->
+                    <TextBlock Text="ملاحظات"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#546E7A"
+                               Margin="0,16,0,4" />
+                    <Border CornerRadius="8"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            Padding="0">
+                        <TextBox x:Name="TxtNotes"
+                                 FontSize="13"
+                                 Padding="12,10"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 wm:WatermarkBehavior.Watermark="اختياري" />
+                    </Border>
+
+                    <!-- Buttons -->
+                    <Grid Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="BtnSave"
+                                Grid.Column="0"
+                                Click="BtnSave_Click"
+                                Height="44"
+                                Background="{StaticResource PrimaryBrush}"
+                                BorderThickness="0"
+                                Cursor="Hand">
+                            <Grid>
+                                <TextBlock Text="حفظ الدفعة"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border"
+                                                        Background="{TemplateBinding Background}"
+                                                        CornerRadius="10"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Grid.Column="2"
+                                Click="BtnCancel_Click"
+                                Height="44"
+                                Background="#F5F5F5"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1"
+                                Cursor="Hand">
+                            <TextBlock Text="إلغاء"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="#546E7A"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="10"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#EEEEEE" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#E0E0E0" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

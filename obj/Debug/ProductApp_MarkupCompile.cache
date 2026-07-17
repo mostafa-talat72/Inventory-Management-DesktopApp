@@ -1,0 +1,20 @@
+﻿ProductApp
+
+
+winexe
+C#
+.cs
+H:\My Work\Product App\obj\Debug\
+ProductApp
+none
+false
+TRACE;DEBUG;NET;NET9_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
+H:\My Work\Product App\App.xaml
+11350194270
+
+291132001518
+221914125303
+MainWindow.xaml;Styles\Colors.xaml;Views\CustomerDialog.xaml;Views\CustomersPage.xaml;Views\InvoicesPage.xaml;Views\OrderDialog.xaml;Views\PaymentDialog.xaml;Views\ProductDialog.xaml;Views\ProductsPage.xaml;Views\ReportsPage.xaml;Views\StockInDialog.xaml;
+
+False
+

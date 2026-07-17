@@ -1,0 +1,47 @@
+[Dispatcher] System.Windows.Markup.XamlParseException: 'The invocation of the constructor on type 'ProductApp.MainWindow' that matches the specified binding constraints threw an exception.' Line number '3' and line position '9'.
+ ---> System.NotSupportedException: SQLite cannot apply aggregate operator 'Min' on expressions of type 'decimal'. Convert the values to a supported type, or use LINQ to Objects to aggregate the results on the client side.
+   at Microsoft.EntityFrameworkCore.Sqlite.Query.Internal.SqliteQueryableAggregateMethodTranslator.Translate(MethodInfo method, EnumerableExpression source, IReadOnlyList`1 arguments, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.Query.RelationalAggregateMethodCallTranslatorProvider.<>c__DisplayClass6_0.<Translate>b__0(IAggregateMethodCallTranslator t)
+   at System.Linq.Enumerable.IteratorSelectIterator`2.MoveNext()
+   at System.Linq.Enumerable.TryGetFirst[TSource](IEnumerable`1 source, Func`2 predicate, Boolean& found)
+   at System.Linq.Enumerable.FirstOrDefault[TSource](IEnumerable`1 source, Func`2 predicate)
+   at Microsoft.EntityFrameworkCore.Query.RelationalAggregateMethodCallTranslatorProvider.Translate(IModel model, MethodInfo method, EnumerableExpression source, IReadOnlyList`1 arguments, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.Query.RelationalSqlTranslatingExpressionVisitor.TranslateAggregateMethod(EnumerableExpression enumerableExpression, MethodInfo method, List`1 scalarArguments)
+   at Microsoft.EntityFrameworkCore.Query.RelationalSqlTranslatingExpressionVisitor.TryTranslateAggregateMethodCall(MethodCallExpression methodCallExpression, SqlExpression& translation)
+   at Microsoft.EntityFrameworkCore.Query.RelationalSqlTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Sqlite.Query.Internal.SqliteSqlTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalSqlTranslatingExpressionVisitor.TranslateInternal(Expression expression, Boolean applyDefaultTypeMapping)
+   at Microsoft.EntityFrameworkCore.Query.RelationalSqlTranslatingExpressionVisitor.Translate(Expression expression, Boolean applyDefaultTypeMapping)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.TranslateAggregateWithSelector(ShapedQueryExpression source, LambdaExpression selectorLambda, Func`2 methodGenerator, Boolean throwWhenEmpty, Type resultType)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.TranslateMin(ShapedQueryExpression source, LambdaExpression selector, Type resultType)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutorExpression[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass11_0`1.<ExecuteCore>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteCore[TResult](Expression query, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.Execute[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.Execute[TResult](Expression expression)
+   at System.Linq.Queryable.Min[TSource,TResult](IQueryable`1 source, Expression`1 selector)
+   at ProductApp.Views.ProductsPage.<>c__DisplayClass4_0.<LoadProducts>b__2(Product p) in H:\My Work\Product App\Views\ProductsPage.xaml.cs:line 30
+   at System.Linq.Enumerable.ListSelectIterator`2.Fill(ReadOnlySpan`1 source, Span`1 destination, Func`2 func)
+   at System.Linq.Enumerable.ListSelectIterator`2.ToList()
+   at ProductApp.Views.ProductsPage.LoadProducts(String search) in H:\My Work\Product App\Views\ProductsPage.xaml.cs:line 30
+   at ProductApp.Views.ProductsPage..ctor() in H:\My Work\Product App\Views\ProductsPage.xaml.cs:line 21
+   at ProductApp.MainWindow.NavigateToPage(String page) in H:\My Work\Product App\MainWindow.xaml.cs:line 31
+   at ProductApp.MainWindow..ctor() in H:\My Work\Product App\MainWindow.xaml.cs:line 14
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+   --- End of inner exception stack trace ---
+   at System.Windows.Markup.XamlReader.RewrapException(Exception e, IXamlLineInfo lineInfo, Uri baseUri)
+   at System.Windows.Markup.WpfXamlLoader.Load(XamlReader xamlReader, IXamlObjectWriterFactory writerFactory, Boolean skipJournaledProperties, Object rootObject, XamlObjectWriterSettings settings, Uri baseUri)
+   at System.Windows.Markup.WpfXamlLoader.LoadBaml(XamlReader xamlReader, Boolean skipJournaledProperties, Object rootObject, XamlAccessLevel accessLevel, Uri baseUri)
+   at System.Windows.Markup.XamlReader.LoadBaml(Stream stream, ParserContext parserContext, Object parent, Boolean closeStream)
+   at System.Windows.Application.LoadBamlStreamWithSyncInfo(Stream stream, ParserContext pc)
+   at System.Windows.Application.DoStartup()
+   at System.Windows.Application.<.ctor>b__1_0(Object unused)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)

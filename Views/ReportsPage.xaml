@@ -1,0 +1,92 @@
+<Page x:Class="ProductApp.Views.ReportsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="التقارير"
+      FlowDirection="RightToLeft"
+      Background="#F0F2F5">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24">
+            <TextBlock Text="التقارير" Style="{StaticResource PageTitle}" />
+
+            <!-- Date Filter -->
+            <Border Style="{StaticResource CardStyle}" Padding="20" Margin="0,0,0,16">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="من:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <DatePicker x:Name="DateFrom" Grid.Column="1" Margin="0,0,16,0" />
+                        <TextBlock Grid.Column="2" Text="إلى:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <DatePicker x:Name="DateTo" Grid.Column="3" Margin="0,0,16,0" />
+                        <Button Grid.Column="4" Content="🔍 عرض" Click="ShowReport_Click"
+                                Width="100" Height="36"
+                                Style="{StaticResource PrimaryButton}"
+                                Background="{StaticResource PrimaryBrush}" Foreground="White" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Summary Cards -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="4" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="إجمالي المبيعات" FontSize="13" Foreground="#78909C" />
+                        <TextBlock x:Name="TxtTotalSales" Text="0.00 ج.م" FontSize="24" FontWeight="Bold" Foreground="#1A237E" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="4" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="إجمالي التكلفة" FontSize="13" Foreground="#78909C" />
+                        <TextBlock x:Name="TxtTotalCost" Text="0.00 ج.م" FontSize="24" FontWeight="Bold" Foreground="#C62828" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="4" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="إجمالي الربح" FontSize="13" Foreground="#78909C" />
+                        <TextBlock x:Name="TxtTotalProfit" Text="0.00 ج.م" FontSize="24" FontWeight="Bold" Foreground="#2E7D32" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="4" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="عدد الفواتير" FontSize="13" Foreground="#78909C" />
+                        <TextBlock x:Name="TxtInvoiceCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="#00897B" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Detailed Report -->
+            <Border Style="{StaticResource CardStyle}" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="تفاصيل المبيعات" Style="{StaticResource SectionTitle}" />
+
+                    <DataGrid x:Name="ReportGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                              AlternatingRowBackground="#F5F5F5" BorderThickness="1" BorderBrush="#E0E0E0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="المنتج" Binding="{Binding ProductName}" Width="2*" />
+                            <DataGridTextColumn Header="الكمية المباعة" Binding="{Binding QtySold}" Width="*" />
+                            <DataGridTextColumn Header="الإيراد" Binding="{Binding RevenueDisplay}" Width="*" />
+                            <DataGridTextColumn Header="التكلفة" Binding="{Binding CostDisplay}" Width="*" />
+                            <DataGridTextColumn Header="الربح" Binding="{Binding ProfitDisplay}" Width="*" />
+                            <DataGridTextColumn Header="نسبة الربح" Binding="{Binding ProfitPercentDisplay}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
