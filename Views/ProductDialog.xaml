@@ -3,12 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:wm="clr-namespace:ProductApp.Converters"
              FlowDirection="RightToLeft"
-             MinWidth="600" MaxWidth="900">
+             MinWidth="650" MaxWidth="950">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="0">
 
-            <!-- Header with accent bar -->
-            <Border Background="White" Padding="28,24,28,0">
+            <!-- Header -->
+            <Border Background="White" Padding="32,24,32,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -16,13 +16,13 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Width="44" Height="44" CornerRadius="14" Background="#E8EAF6">
-                        <Path Width="22" Height="22" Fill="#1A237E" Stretch="Uniform"
+                    <Border Grid.Column="0" Width="50" Height="50" CornerRadius="16" Background="#E8EAF6">
+                        <Path Width="24" Height="24" Fill="#1A237E" Stretch="Uniform"
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
                     </Border>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
                         <TextBlock x:Name="TxtHeader" Text="إضافة منتج جديد" FontSize="22" FontWeight="Bold" Foreground="#1A237E" />
                         <TextBlock Text="أدخل بيانات المنتج ومستويات التعبئة والأسعار"
                                    FontSize="11" Foreground="#90A4AE" Margin="0,2,0,0" />
@@ -31,8 +31,7 @@
                     <Button Grid.Column="2" Click="BtnCancel_Click"
                             Background="Transparent" BorderThickness="0"
                             Cursor="Hand" Width="36" Height="36"
-                            ToolTip="إغلاق"
-                            VerticalAlignment="Top">
+                            ToolTip="إغلاق" VerticalAlignment="Top">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="border" Background="{TemplateBinding Background}"
@@ -53,68 +52,96 @@
             </Border>
 
             <!-- Accent divider -->
-            <Rectangle Height="3" Fill="#1A237E" Margin="28,0,28,0" />
+            <Rectangle Height="3" Fill="#1A237E" Margin="32,0,32,0" />
 
-            <StackPanel Margin="28,20,28,24">
+            <StackPanel Margin="32,24,32,28">
 
-                <!-- Basic Info -->
-                <Border Style="{StaticResource CardStyle}" Padding="20" Margin="0,0,0,16">
+                <!-- Step: Basic Info -->
+                <Border CornerRadius="14" Background="White" Padding="24,20" Margin="0,0,0,16">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="#000" />
+                    </Border.Effect>
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                            <Border Width="26" Height="26" CornerRadius="13" Background="#1A237E" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <Border Width="28" Height="28" CornerRadius="14" Background="#1A237E">
                                 <TextBlock Text="1" FontSize="13" FontWeight="Bold" Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="المعلومات الأساسية" FontSize="14" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" />
+                            <TextBlock Text="المعلومات الأساسية" FontSize="15" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" Margin="10,0,0,0" />
                         </StackPanel>
-                        <TextBox x:Name="TxtName" wm:WatermarkBehavior.Watermark="اسم المنتج *" Style="{StaticResource FormField}" />
-                        <TextBox x:Name="TxtDescription" wm:WatermarkBehavior.Watermark="وصف المنتج (اختياري)" Style="{StaticResource FormField}" Margin="0" />
+                        <TextBox x:Name="TxtName" wm:WatermarkBehavior.Watermark="اسم المنتج *"
+                                 Style="{StaticResource FormField}" FontSize="14" Height="42" />
+                        <TextBox x:Name="TxtDescription" wm:WatermarkBehavior.Watermark="وصف المنتج (اختياري)"
+                                 Style="{StaticResource FormField}" Margin="0,10,0,0" FontSize="14" Height="42" />
                     </StackPanel>
                 </Border>
 
-                <!-- Piece Level -->
-                <Border Style="{StaticResource CardStyle}" Padding="20" Margin="0,0,0,16">
+                <!-- Step: Piece Level -->
+                <Border CornerRadius="14" Background="White" Padding="24,20" Margin="0,0,0,16">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="#000" />
+                    </Border.Effect>
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                            <Border Width="26" Height="26" CornerRadius="13" Background="#1A237E" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <Border Width="28" Height="28" CornerRadius="14" Background="#1A237E">
                                 <TextBlock Text="2" FontSize="13" FontWeight="Bold" Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="القطعة" FontSize="14" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" />
-                            <TextBlock Text="(الوحدة الأساسية)" FontSize="12" Foreground="#90A4AE" VerticalAlignment="Center" Margin="8,0,0,0" />
+                            <TextBlock Text="القطعة" FontSize="15" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            <Border CornerRadius="4" Background="#E8EAF6" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="الوحدة الأساسية" FontSize="10" FontWeight="SemiBold" Foreground="#3F51B5" />
+                            </Border>
                         </StackPanel>
-                        <Grid Margin="0,10,0,0">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtPieceName" Grid.Column="0" Text="قطعة" Margin="4" />
-                            <TextBox x:Name="TxtPieceRetail" Grid.Column="1" wm:WatermarkBehavior.Watermark="سعر القطاعي *" Margin="4" TextChanged="Price_TextChanged" />
-                            <TextBox x:Name="TxtPieceWholesale" Grid.Column="2" wm:WatermarkBehavior.Watermark="سعر الجملة" Margin="4" TextChanged="Price_TextChanged" />
+                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
+                                <TextBox x:Name="TxtPieceName" Text="قطعة" FontSize="13"
+                                         Padding="10,8" BorderThickness="0" Background="Transparent"
+                                         HorizontalAlignment="Center" />
+                            </Border>
+                            <Border Grid.Column="1" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
+                                <TextBox x:Name="TxtPieceRetail" wm:WatermarkBehavior.Watermark="سعر القطاعي *"
+                                         FontSize="13" Padding="10,8" BorderThickness="0"
+                                         Background="Transparent" TextChanged="Price_TextChanged" />
+                            </Border>
+                            <Border Grid.Column="2" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
+                                <TextBox x:Name="TxtPieceWholesale" wm:WatermarkBehavior.Watermark="سعر الجملة"
+                                         FontSize="13" Padding="10,8" BorderThickness="0"
+                                         Background="Transparent" TextChanged="Price_TextChanged" />
+                            </Border>
                         </Grid>
                     </StackPanel>
                 </Border>
 
-                <!-- Box Level -->
-                <Border Style="{StaticResource CardStyle}" Padding="20" Margin="0,0,0,16">
+                <!-- Step: Box Level -->
+                <Border CornerRadius="14" Background="White" Padding="24,20" Margin="0,0,0,16">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="#000" />
+                    </Border.Effect>
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <Border Width="26" Height="26" CornerRadius="13" Background="#00897B" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <Border Width="28" Height="28" CornerRadius="14" Background="#00897B">
                                 <TextBlock Text="3" FontSize="13" FontWeight="Bold" Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="العلبة" FontSize="14" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" />
-                            <TextBlock Text="(اختياري)" FontSize="12" Foreground="#90A4AE" VerticalAlignment="Center" Margin="8,0,0,0" />
+                            <TextBlock Text="العلبة" FontSize="15" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            <Border CornerRadius="4" Background="#E0F2F1" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="اختياري" FontSize="10" FontWeight="SemiBold" Foreground="#00897B" />
+                            </Border>
                         </StackPanel>
 
                         <CheckBox x:Name="ChkHasBox" Content="يوجد علبة" FontWeight="SemiBold" Foreground="#37474F"
-                                  Checked="ChkHasBox_Checked" Unchecked="ChkHasBox_Unchecked" Margin="0,0,0,12" />
+                                  FontSize="13" Checked="ChkHasBox_Checked" Unchecked="ChkHasBox_Unchecked"
+                                  Margin="0,0,0,14" />
 
-                        <Border x:Name="BoxPanel" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8"
-                                Padding="14" Background="#FAFAFA" IsEnabled="False" Opacity="0.5">
+                        <Border x:Name="BoxPanel" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10"
+                                Padding="16" Background="#F8F9FA" IsEnabled="False" Opacity="0.5">
                             <StackPanel>
-                                <TextBlock Text="العلبة تحتوي على:" FontSize="12" Foreground="#78909C" Margin="0,0,0,10" />
+                                <TextBlock Text="العلبة تحتوي على:" FontSize="12" FontWeight="SemiBold" Foreground="#78909C" Margin="0,0,0,12" />
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -122,40 +149,60 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="TxtBoxName" Grid.Column="0" Text="علبة" Margin="3" />
-                                    <TextBox x:Name="TxtBoxQty" Grid.Column="1" wm:WatermarkBehavior.Watermark="عدد القطع *" Margin="3" TextChanged="Qty_TextChanged" />
-                                    <TextBox x:Name="TxtBoxRetail" Grid.Column="2"
-                                             wm:WatermarkBehavior.Watermark="سعر القطاعي" Margin="3"
-                                             Background="#F0F4FF" TextChanged="Price_TextChanged" />
-                                    <TextBox x:Name="TxtBoxWholesale" Grid.Column="3"
-                                             wm:WatermarkBehavior.Watermark="سعر الجملة" Margin="3"
-                                             Background="#F0F4FF" TextChanged="Price_TextChanged" />
+                                    <Border Grid.Column="0" CornerRadius="6" BorderBrush="#E8E8E8" BorderThickness="1" Padding="0" Margin="2" Background="White">
+                                        <TextBox x:Name="TxtBoxName" Text="علبة" FontSize="12"
+                                                 Padding="8,6" BorderThickness="0" Background="Transparent"
+                                                 HorizontalAlignment="Center" />
+                                    </Border>
+                                    <Border Grid.Column="1" CornerRadius="6" BorderBrush="#E8E8E8" BorderThickness="1" Padding="0" Margin="2" Background="White">
+                                        <TextBox x:Name="TxtBoxQty" wm:WatermarkBehavior.Watermark="عدد القطع *"
+                                                 FontSize="12" Padding="8,6" BorderThickness="0"
+                                                 Background="Transparent" TextChanged="Qty_TextChanged" />
+                                    </Border>
+                                    <Border Grid.Column="2" CornerRadius="6" BorderBrush="#E8E8E8" BorderThickness="1" Padding="0" Margin="2" Background="#F0F4FF">
+                                        <TextBox x:Name="TxtBoxRetail" wm:WatermarkBehavior.Watermark="سعر القطاعي"
+                                                 FontSize="12" Padding="8,6" BorderThickness="0"
+                                                 Background="Transparent" TextChanged="Price_TextChanged" />
+                                    </Border>
+                                    <Border Grid.Column="3" CornerRadius="6" BorderBrush="#E8E8E8" BorderThickness="1" Padding="0" Margin="2" Background="#F0F4FF">
+                                        <TextBox x:Name="TxtBoxWholesale" wm:WatermarkBehavior.Watermark="سعر الجملة"
+                                                 FontSize="12" Padding="8,6" BorderThickness="0"
+                                                 Background="Transparent" TextChanged="Price_TextChanged" />
+                                    </Border>
                                 </Grid>
-                                <TextBlock Text="* السعر يُحتسب تلقائياً من سعر القطعة × عدد القطع" FontSize="11" Foreground="#90A4AE" Margin="3,8,0,0" />
+                                <TextBlock Text="* السعر يُحتسب تلقائياً من سعر القطعة × عدد القطع"
+                                           FontSize="10" Foreground="#90A4AE" Margin="2,10,0,0" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </Border>
 
-                <!-- Carton Level -->
-                <Border Style="{StaticResource CardStyle}" Padding="20" Margin="0,0,0,20">
+                <!-- Step: Carton Level -->
+                <Border CornerRadius="14" Background="White" Padding="24,20" Margin="0,0,0,24">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="#000" />
+                    </Border.Effect>
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <Border Width="26" Height="26" CornerRadius="13" Background="#00897B" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <Border Width="28" Height="28" CornerRadius="14" Background="#00897B">
                                 <TextBlock Text="4" FontSize="13" FontWeight="Bold" Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="الكرتونة" FontSize="14" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" />
-                            <TextBlock Text="(اختياري)" FontSize="12" Foreground="#90A4AE" VerticalAlignment="Center" Margin="8,0,0,0" />
+                            <TextBlock Text="الكرتونة" FontSize="15" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" Margin="10,0,0,0" />
+                            <Border CornerRadius="4" Background="#E0F2F1" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="اختياري" FontSize="10" FontWeight="SemiBold" Foreground="#00897B" />
+                            </Border>
                         </StackPanel>
 
                         <CheckBox x:Name="ChkHasCarton" Content="يوجد كرتونة" FontWeight="SemiBold" Foreground="#37474F"
-                                  Checked="ChkHasCarton_Checked" Unchecked="ChkHasCarton_Unchecked" Margin="0,0,0,12" />
+                                  FontSize="13" Checked="ChkHasCarton_Checked" Unchecked="ChkHasCarton_Unchecked"
+                                  Margin="0,0,0,14" />
 
-                        <Border x:Name="CartonPanel" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8"
-                                Padding="14" Background="#FAFAFA" IsEnabled="False" Opacity="0.5">
+                        <Border x:Name="CartonPanel" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10"
+                                Padding="16" Background="#F8F9FA" IsEnabled="False" Opacity="0.5">
                             <StackPanel>
-                                <TextBlock x:Name="TxtCartonUnitLabel" Text="الكرتونة تحتوي على:" FontSize="12" Foreground="#78909C" Margin="0,0,0,10" />
+                                <TextBlock x:Name="TxtCartonUnitLabel" Text="الكرتونة تحتوي على:" FontSize="12"
+                                           FontWeight="SemiBold" Foreground="#78909C" Margin="0,0,0,12" />
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -163,44 +210,58 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="TxtCartonName" Grid.Column="0" Text="كرتونة" Margin="3" />
-                                    <TextBox x:Name="TxtCartonQty" Grid.Column="1" wm:WatermarkBehavior.Watermark="العدد *" Margin="3" TextChanged="Qty_TextChanged" />
-                                    <TextBox x:Name="TxtCartonRetail" Grid.Column="2"
-                                             wm:WatermarkBehavior.Watermark="سعر القطاعي" Margin="3"
-                                             Background="#F0F4FF" TextChanged="Price_TextChanged" />
-                                    <TextBox x:Name="TxtCartonWholesale" Grid.Column="3"
-                                             wm:WatermarkBehavior.Watermark="سعر الجملة" Margin="3"
-                                             Background="#F0F4FF" TextChanged="Price_TextChanged" />
+                                    <Border Grid.Column="0" CornerRadius="6" BorderBrush="#E8E8E8" BorderThickness="1" Padding="0" Margin="2" Background="White">
+                                        <TextBox x:Name="TxtCartonName" Text="كرتونة" FontSize="12"
+                                                 Padding="8,6" BorderThickness="0" Background="Transparent"
+                                                 HorizontalAlignment="Center" />
+                                    </Border>
+                                    <Border Grid.Column="1" CornerRadius="6" BorderBrush="#E8E8E8" BorderThickness="1" Padding="0" Margin="2" Background="White">
+                                        <TextBox x:Name="TxtCartonQty" wm:WatermarkBehavior.Watermark="العدد *"
+                                                 FontSize="12" Padding="8,6" BorderThickness="0"
+                                                 Background="Transparent" TextChanged="Qty_TextChanged" />
+                                    </Border>
+                                    <Border Grid.Column="2" CornerRadius="6" BorderBrush="#E8E8E8" BorderThickness="1" Padding="0" Margin="2" Background="#F0F4FF">
+                                        <TextBox x:Name="TxtCartonRetail" wm:WatermarkBehavior.Watermark="سعر القطاعي"
+                                                 FontSize="12" Padding="8,6" BorderThickness="0"
+                                                 Background="Transparent" TextChanged="Price_TextChanged" />
+                                    </Border>
+                                    <Border Grid.Column="3" CornerRadius="6" BorderBrush="#E8E8E8" BorderThickness="1" Padding="0" Margin="2" Background="#F0F4FF">
+                                        <TextBox x:Name="TxtCartonWholesale" wm:WatermarkBehavior.Watermark="سعر الجملة"
+                                                 FontSize="12" Padding="8,6" BorderThickness="0"
+                                                 Background="Transparent" TextChanged="Price_TextChanged" />
+                                    </Border>
                                 </Grid>
-                                <TextBlock x:Name="TxtCartonHint" Text="* السعر يُحتسب تلقائياً" FontSize="11" Foreground="#90A4AE" Margin="3,8,0,0" />
+                                <TextBlock x:Name="TxtCartonHint" Text="* السعر يُحتسب تلقائياً"
+                                           FontSize="10" Foreground="#90A4AE" Margin="2,10,0,0" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </Border>
 
                 <!-- Actions -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,4,0,4">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                     <Button x:Name="BtnSave" Click="BtnSave_Click"
-                            Height="40" Cursor="Hand" Padding="24,0"
+                            Height="44" Padding="28,0" Cursor="Hand"
                             Background="#1A237E" Foreground="White" BorderThickness="0"
-                            FontSize="13" FontWeight="SemiBold">
+                            FontSize="14" FontWeight="SemiBold">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border x:Name="border" Background="{TemplateBinding Background}"
-                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                <Border x:Name="b" CornerRadius="10"
+                                        Background="{TemplateBinding Background}"
+                                        Padding="{TemplateBinding Padding}">
                                     <StackPanel Orientation="Horizontal">
-                                        <Path Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                        <Path Width="18" Height="18" Fill="White" Stretch="Uniform"
                                               VerticalAlignment="Center"
                                               Data="M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41-1.41L9,16.17Z" />
-                                        <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
+                                        <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" />
                                     </StackPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                        <Setter TargetName="b" Property="Opacity" Value="0.88" />
                                     </Trigger>
                                     <Trigger Property="IsPressed" Value="True">
-                                        <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                        <Setter TargetName="b" Property="Opacity" Value="0.75" />
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -208,31 +269,31 @@
                         حفظ
                     </Button>
                     <Button Click="BtnCancel_Click"
-                            Height="40" Cursor="Hand" Padding="24,0" Margin="12,0,0,0"
+                            Height="44" Padding="28,0" Cursor="Hand" Margin="14,0,0,0"
                             Background="#78909C" Foreground="White" BorderThickness="0"
-                            FontSize="13" FontWeight="SemiBold">
+                            FontSize="14" FontWeight="SemiBold">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border x:Name="border" Background="{TemplateBinding Background}"
-                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                <Border x:Name="b" CornerRadius="10"
+                                        Background="{TemplateBinding Background}"
+                                        Padding="{TemplateBinding Padding}">
                                     <StackPanel Orientation="Horizontal">
-                                        <Path Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                        <Path Width="18" Height="18" Fill="White" Stretch="Uniform"
                                               VerticalAlignment="Center"
                                               Data="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                                        <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
+                                        <TextBlock VerticalAlignment="Center" Margin="10,0,0,0">إلغاء</TextBlock>
                                     </StackPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                        <Setter TargetName="b" Property="Opacity" Value="0.88" />
                                     </Trigger>
                                     <Trigger Property="IsPressed" Value="True">
-                                        <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                        <Setter TargetName="b" Property="Opacity" Value="0.75" />
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Button.Template>
-                        إلغاء
                     </Button>
                 </StackPanel>
             </StackPanel>

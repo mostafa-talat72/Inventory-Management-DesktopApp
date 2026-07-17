@@ -76,6 +76,16 @@ namespace ProductApp.Views
             Loaded += OnLoaded;
         }
 
+        public AddOrderDialog(AppDbContext db, Invoice invoice)
+        {
+            InitializeComponent();
+            _db = db;
+            _inv = new InventoryService(db);
+            _invoice = invoice;
+            _customer = invoice.Customer;
+            Loaded += OnLoadedForInvoice;
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _invoice = FindExistingInvoice();
@@ -89,6 +99,14 @@ namespace ProductApp.Views
             {
                 InvoiceBadge.Visibility = Visibility.Collapsed;
             }
+            LoadProducts();
+        }
+
+        private void OnLoadedForInvoice(object sender, RoutedEventArgs e)
+        {
+            TxtSubtitle.Text = _invoice!.CustomerName ?? "نقدي";
+            InvoiceBadge.Visibility = Visibility.Visible;
+            TxtInvoiceId.Text = _invoice.Id.ToString();
             LoadProducts();
         }
 

@@ -40,33 +40,62 @@
                                  TextChanged="SearchBox_TextChanged" Padding="12,10" BorderThickness="0"
                                  Background="Transparent" FontSize="13" />
                     </Border>
-                    <Button Grid.Column="1" Click="AddCustomer_Click"
-                            Height="40" Cursor="Hand" Padding="20,0"
-                            Background="#1A237E" Foreground="White" BorderThickness="0"
-                            FontSize="13" FontWeight="SemiBold">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="border" Background="{TemplateBinding Background}"
-                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Path Width="16" Height="16" Fill="White" Stretch="Uniform"
-                                              VerticalAlignment="Center"
-                                              Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                                        <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="border" Property="Opacity" Value="0.85" />
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter TargetName="border" Property="Opacity" Value="0.7" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                        إضافة عميل
-                    </Button>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Click="AllInvoices_Click"
+                                Height="40" Cursor="Hand" Padding="20,0" Margin="0,0,10,0"
+                                Background="#6A1B9A" Foreground="White" BorderThickness="0"
+                                FontSize="13" FontWeight="SemiBold">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                                            CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                                  VerticalAlignment="Center"
+                                                  Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
+                                            <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            كل الفواتير
+                        </Button>
+                        <Button Click="AddCustomer_Click"
+                                Height="40" Cursor="Hand" Padding="20,0"
+                                Background="#1A237E" Foreground="White" BorderThickness="0"
+                                FontSize="13" FontWeight="SemiBold">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                                            CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                                  VerticalAlignment="Center"
+                                                  Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                                            <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            إضافة عميل
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </Border>
 

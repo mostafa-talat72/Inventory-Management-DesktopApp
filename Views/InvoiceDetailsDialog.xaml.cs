@@ -612,6 +612,38 @@ public partial class InvoiceDetailsDialog : UserControl
             ConfirmDialog.DialogType.Warning);
     }
 
+    private void BtnAddOrder_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new AddOrderDialog(_db, _invoice);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true)
+            {
+                _db.Entry(_invoice).Reload();
+                LoadData();
+            }
+        };
+        mainWindow.ShowOverlay(dialog);
+    }
+
+    private void BtnManageOrders_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new ManageOrdersDialog(_db, _invoice);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true)
+            {
+                _db.Entry(_invoice).Reload();
+                LoadData();
+            }
+        };
+        mainWindow.ShowOverlay(dialog);
+    }
+
     private void BtnTransfer_Click(object sender, RoutedEventArgs e)
     {
         var mainWindow = (MainWindow)Window.GetWindow(this);

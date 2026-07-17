@@ -56,6 +56,12 @@ public partial class CustomersPage : Page
         TxtCashInvoiceCount.Text = cashCount > 0 ? $"{cashCount} فاتورة" : "لا توجد فواتير";
     }
 
+    private void AllInvoices_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        mainWindow.NavigateToPage("Invoices");
+    }
+
     private void CashCustomer_Click(object sender, RoutedEventArgs e)
     {
         var mainWindow = (MainWindow)Window.GetWindow(this);
@@ -120,9 +126,14 @@ public partial class CustomersPage : Page
         dynamic item = fe.DataContext;
         if (item == null) return;
         Customer customer = item.Customer;
-        ConfirmDialog.Show("تأكيد الحذف", $"هل أنت متأكد من حذف {customer.Name}؟\nسيتم حذف جميع فواتير ومعاملات العميل.", result => {
+        ConfirmDialog.Show("تأكيد الحذف", $"هل أنت متأكد من حذف {customer.Name}؟\nسيتم نقل جميع فواتيره إلى نقدي ثم حذف العميل.", result => {
             if (!result) return;
-            _db.Invoices.RemoveRange(_db.Invoices.Where(i => i.CustomerId == customer.Id));
+            var invoices = _db.Invoices.Where(i => i.CustomerId == customer.Id).ToList();
+            foreach (var inv in invoices)
+            {
+                inv.CustomerId = null;
+                inv.CustomerName = "نقدي";
+            }
             _db.Customers.Remove(customer);
             _db.SaveChanges();
             LoadCustomers();

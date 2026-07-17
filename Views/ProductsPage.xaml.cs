@@ -16,7 +16,6 @@ public partial class ProductsPage : Page
     private readonly InventoryService _inv;
     private Product? _selectedProduct;
     private bool _loaded;
-    private List<Product> _allProducts = [];
 
     public ProductsPage()
     {
@@ -34,21 +33,61 @@ public partial class ProductsPage : Page
             query = query.Where(p => p.Name.Contains(search));
 
         var products = query.ToList();
+        var totalStockPieces = 0;
+        var lowStockCount = 0;
+
         var cards = products.Select(p =>
         {
             var units = _db.ProductUnits.AsNoTracking().Where(u => u.ProductId == p.Id).OrderBy(u => u.UnitType).ToList();
+            var stockDisplay = _inv.GetStockDisplay(p);
+            var stockPieces = _inv.GetAvailableStock(p);
+            totalStockPieces += stockPieces;
+
+            var isLowStock = stockPieces <= 0;
+            if (isLowStock) lowStockCount++;
+
+            var (stockBg, stockFg) = isLowStock
+                ? ("#FFEBEE", "#C62828")
+                : ("#E8F5E9", "#2E7D32");
+
             return new
             {
                 p.Name,
                 UnitsDisplay = string.Join(" → ", units.Select(u => u.Name)),
-                StockDisplay = _inv.GetStockDisplay(p),
+                StockDisplay = stockDisplay,
+                StockBgColor = stockBg,
+                StockFgColor = stockFg,
                 RetailDisplay = units.Count > 0 ? units.Min(u => u.RetailPrice).ToString("N2") : "-",
                 WholesaleDisplay = units.Count > 0 ? units.Min(u => u.WholesalePrice).ToString("N2") : "-",
-                Product = p
+                Product = p,
+                SelectCommand = new RelayCommand(() => SelectProduct(p)),
+                EditCommand = new RelayCommand(() => OpenEditDialog(p)),
+                DeleteCommand = new RelayCommand(() => DeleteProduct(p))
             };
         }).ToList();
 
         ProductsList.ItemsSource = cards;
+
+        TxtTotalProducts.Text = products.Count.ToString();
+        TxtTotalStock.Text = totalStockPieces.ToString("N0");
+        TxtLowStock.Text = lowStockCount.ToString();
+    }
+
+    private void RefreshAndRestoreSelection()
+    {
+        var product = _selectedProduct;
+        LoadProducts();
+        if (product != null)
+        {
+            _selectedProduct = product;
+            ShowUnits(product);
+        }
+    }
+
+    private void SelectProduct(Product product)
+    {
+        _selectedProduct = product;
+        ShowUnits(product);
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -58,39 +97,6 @@ public partial class ProductsPage : Page
         if (text == WatermarkBehavior.GetWatermark(SearchBox))
             return;
         LoadProducts(text);
-    }
-
-    private void ProductsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (ProductsList.SelectedItem == null)
-        {
-            _selectedProduct = null;
-            UnitsPanel.Visibility = Visibility.Collapsed;
-            DividerLine.Visibility = Visibility.Collapsed;
-            return;
-        }
-        dynamic item = ProductsList.SelectedItem;
-        _selectedProduct = item.Product;
-        ShowUnits(_selectedProduct);
-    }
-
-    private void ProductsList_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-    {
-        try
-        {
-            var source = e.OriginalSource as DependencyObject;
-            while (source != null)
-            {
-                if (source is ListBoxItem)
-                    return;
-                source = VisualTreeHelper.GetParent(source);
-            }
-            ProductsList.SelectedItem = null;
-        }
-        catch
-        {
-            // ignore - content elements (Run etc.) may not support visual tree walk
-        }
     }
 
     private void ShowUnits(Product product)
@@ -135,8 +141,8 @@ public partial class ProductsPage : Page
                     _ => ""
                 },
                 ContainsDisplay = contains,
-                RetailDisplay = u.RetailPrice,
-                WholesaleDisplay = u.WholesalePrice,
+                RetailDisplay = $"{u.RetailPrice:N2} ج.م",
+                WholesaleDisplay = $"{u.WholesalePrice:N2} ج.م",
                 LevelIcon = icon,
                 LevelColor = color
             };
@@ -146,30 +152,6 @@ public partial class ProductsPage : Page
         TxtUnitSubHeader.Text = product.Name;
         UnitsPanel.Visibility = Visibility.Visible;
         DividerLine.Visibility = Visibility.Visible;
-    }
-
-    private void RefreshAndRestoreSelection()
-    {
-        var product = _selectedProduct;
-        LoadProducts();
-        if (product != null)
-        {
-            _selectedProduct = product;
-            ShowUnits(product);
-        }
-    }
-
-    private void StockMovement_Click(object sender, RoutedEventArgs e)
-    {
-        if (_selectedProduct == null) return;
-        var mainWindow = (MainWindow)Window.GetWindow(this);
-        var dialog = new StockMovementDialog(_db, _selectedProduct);
-        mainWindow.ShowOverlay(dialog);
-        dialog.DialogClosed += (s, r) =>
-        {
-            mainWindow.HideOverlay();
-            RefreshAndRestoreSelection();
-        };
     }
 
     private void AddProduct_Click(object sender, RoutedEventArgs e)
@@ -189,21 +171,6 @@ public partial class ProductsPage : Page
         };
     }
 
-    private void EditProduct_Click(object sender, RoutedEventArgs e)
-    {
-        var btn = (Button)sender;
-        dynamic item = btn.DataContext;
-        var product = (Product)item.Product;
-
-        OpenEditDialog(product);
-    }
-
-    private void EditProduct_FromUnits(object sender, RoutedEventArgs e)
-    {
-        if (_selectedProduct != null)
-            OpenEditDialog(_selectedProduct);
-    }
-
     private void OpenEditDialog(Product product)
     {
         var mainWindow = (MainWindow)Window.GetWindow(this);
@@ -217,12 +184,8 @@ public partial class ProductsPage : Page
         };
     }
 
-    private void DeleteProduct_Click(object sender, RoutedEventArgs e)
+    private void DeleteProduct(Product product)
     {
-        var btn = (Button)sender;
-        dynamic item = btn.DataContext;
-        var product = (Product)item.Product;
-
         ConfirmDialog.Show("تأكيد الحذف", $"هل أنت متأكد من حذف {product.Name}؟", result => {
             if (!result) return;
             _db.ProductUnits.RemoveRange(_db.ProductUnits.Where(u => u.ProductId == product.Id));
@@ -234,6 +197,25 @@ public partial class ProductsPage : Page
             UnitsPanel.Visibility = Visibility.Collapsed;
             DividerLine.Visibility = Visibility.Collapsed;
         }, ConfirmDialog.DialogType.Danger);
+    }
+
+    private void EditProduct_FromUnits(object sender, RoutedEventArgs e)
+    {
+        if (_selectedProduct != null)
+            OpenEditDialog(_selectedProduct);
+    }
+
+    private void StockMovement_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedProduct == null) return;
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new StockMovementDialog(_db, _selectedProduct);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            RefreshAndRestoreSelection();
+        };
     }
 
     private void StockIn_Click(object sender, RoutedEventArgs e)
@@ -261,5 +243,14 @@ public partial class ProductsPage : Page
             if (r == true)
                 RefreshAndRestoreSelection();
         };
+    }
+
+    public class RelayCommand : ICommand
+    {
+        private readonly Action _execute;
+        public event EventHandler? CanExecuteChanged { add { } remove { } }
+        public RelayCommand(Action execute) => _execute = execute;
+        public bool CanExecute(object? parameter) => true;
+        public void Execute(object? parameter) => _execute();
     }
 }

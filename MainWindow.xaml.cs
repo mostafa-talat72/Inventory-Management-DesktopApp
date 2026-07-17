@@ -22,7 +22,7 @@ public partial class MainWindow : Window
             NavigateToPage(page);
     }
 
-    private void NavigateToPage(string page)
+    public void NavigateToPage(string page)
     {
         _currentPage = page;
         UpdateNavButtons();
@@ -83,21 +83,4 @@ public partial class MainWindow : Window
         HideOverlay();
     }
 
-    public void NavigateToInvoice(int invoiceId)
-    {
-        _currentPage = "Invoices";
-        UpdateNavButtons();
-        var page = new InvoicesPage();
-        MainFrame.Navigate(page);
-        page.SelectInvoice(invoiceId);
-    }
-
-    public void NavigateToCustomerInvoices(int customerId, string customerName)
-    {
-        _currentPage = "Invoices";
-        UpdateNavButtons();
-        var page = new InvoicesPage();
-        MainFrame.Navigate(page);
-        page.ShowCustomerContext(customerId, customerName);
-    }
 }

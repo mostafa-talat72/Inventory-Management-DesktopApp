@@ -153,3 +153,5 @@ H:\My Work\Product App\obj\Debug\net9.0-windows\Views\AddOrderDialog.baml
 H:\My Work\Product App\obj\Debug\net9.0-windows\ProductApp.sourcelink.json
 H:\My Work\Product App\obj\Debug\net9.0-windows\Views\ChangeCustomerDialog.baml
 H:\My Work\Product App\obj\Debug\net9.0-windows\Views\ChangeCustomerDialog.g.cs
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\MergeInvoicesDialog.baml
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\MergeInvoicesDialog.g.cs
