@@ -637,6 +637,14 @@ public partial class InvoiceDetailsDialog : UserControl
             mainWindow.HideOverlay();
             if (r == true)
             {
+                // تحقق إن الفاتورة لسه موجودة قبل ما نحاول نحملها
+                bool invoiceExists = _db.Invoices.Any(i => i.Id == _invoice.Id);
+                if (!invoiceExists)
+                {
+                    // الفاتورة اتحذفت — أغلق نافذة التفاصيل
+                    DialogClosed?.Invoke(this, true);
+                    return;
+                }
                 _db.Entry(_invoice).Reload();
                 LoadData();
             }
