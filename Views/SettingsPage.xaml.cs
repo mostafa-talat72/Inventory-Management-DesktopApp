@@ -299,7 +299,8 @@ public partial class SettingsPage : UserControl
                 try
                 {
                     var dbPath = System.IO.Path.Combine(
-                        AppDomain.CurrentDomain.BaseDirectory, "app.db");
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "MTE Stock", "inventory.db");
 
                     // نسخ احتياطي تلقائي للداتابيز الحالية قبل الاستيراد
                     if (!string.IsNullOrWhiteSpace(_config.BackupFolder) && System.IO.Directory.Exists(_config.BackupFolder))
@@ -352,7 +353,8 @@ public partial class SettingsPage : UserControl
                 try
                 {
                     var dbPath = System.IO.Path.Combine(
-                        AppDomain.CurrentDomain.BaseDirectory, "app.db");
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "MTE Stock", "inventory.db");
 
                     // نسخ احتياطي تلقائي قبل الحذف لو فيه مجلد محدد
                     if (!string.IsNullOrWhiteSpace(_config.BackupFolder) && System.IO.Directory.Exists(_config.BackupFolder))

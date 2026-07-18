@@ -90,7 +90,9 @@ public partial class App : Application
 
     private void LogError(System.Exception ex)
     {
-        var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "error.log");
+        var logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTE Stock");
+        if (!Directory.Exists(logDir)) Directory.CreateDirectory(logDir);
+        var logPath = Path.Combine(logDir, "error.log");
         var msg = $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)}]\n{ex}\n";
         if (ex.InnerException != null)
             msg += $"INNER:\n{ex.InnerException}\n";

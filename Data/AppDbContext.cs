@@ -16,9 +16,14 @@ public class AppDbContext : DbContext
     public DbSet<InventoryBatch> InventoryBatches => Set<InventoryBatch>();
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
 
+    private static readonly string DbFolder = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTE Stock");
+
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-        var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "inventory.db");
+        if (!Directory.Exists(DbFolder))
+            Directory.CreateDirectory(DbFolder);
+        var dbPath = Path.Combine(DbFolder, "inventory.db");
         options.UseSqlite($"Data Source={dbPath}");
     }
 

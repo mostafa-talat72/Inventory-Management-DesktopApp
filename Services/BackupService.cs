@@ -15,7 +15,9 @@ public class BackupService
     public BackupService(AppConfig config)
     {
         _config = config;
-        _dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "inventory.db");
+        _dbPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "MTE Stock", "inventory.db");
     }
 
     public string CreateBackup()

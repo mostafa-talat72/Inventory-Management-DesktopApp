@@ -7,8 +7,9 @@ namespace ProductApp.Services;
 
 public class AppConfig
 {
-    private static readonly string ConfigPath = Path.Combine(
-        AppDomain.CurrentDomain.BaseDirectory, "config.json");
+    private static readonly string ConfigDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTE Stock");
+    private static readonly string ConfigPath = Path.Combine(ConfigDir, "config.json");
 
     public string PasswordHash { get; set; } = "";
     public string LocationName { get; set; } = "";
