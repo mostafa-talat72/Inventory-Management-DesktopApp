@@ -23,11 +23,9 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Metrics Row -->
+            <!-- Metrics Rows -->
             <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="*" />
@@ -38,9 +36,11 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="16" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- Card 1: مبيعات اليوم -->
+                <!-- Row 1: Today stats -->
                 <Border Grid.Column="0" Grid.Row="0" CornerRadius="16" Background="White" Padding="20">
                     <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
                     <StackPanel>
@@ -48,7 +48,7 @@
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="مبيعات اليوم" FontSize="13" Foreground="#78909C" />
-                                <TextBlock x:Name="TxtTodaySales" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#1A237E" Margin="0,6,0,0" />
+                                <TextBlock x:Name="TxtTodaySales" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#2E7D32" Margin="0,6,0,0" />
                             </StackPanel>
                             <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#E8F5E9" VerticalAlignment="Top">
                                 <Path Width="20" Height="20" Fill="#2E7D32" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -59,18 +59,54 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Card 2: إجمالي المبيعات -->
                 <Border Grid.Column="2" Grid.Row="0" CornerRadius="16" Background="White" Padding="20">
                     <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
                     <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="إجمالي المبيعات" FontSize="13" Foreground="#78909C" />
-                                <TextBlock x:Name="TxtTotalSales" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#1A237E" Margin="0,6,0,0" />
+                                <TextBlock Text="تكاليف اليوم" FontSize="13" Foreground="#78909C" />
+                                <TextBlock x:Name="TxtTodayCost" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#C62828" Margin="0,6,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#FFEBEE" VerticalAlignment="Top">
+                                <Path Width="20" Height="20" Fill="#C62828" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
+                            </Border>
+                        </Grid>
+                        <TextBlock x:Name="TxtTodayCostCount" Text="0 فاتورة" FontSize="11" Foreground="#B0BEC5" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4" Grid.Row="0" CornerRadius="16" Background="White" Padding="20">
+                    <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="أرباح اليوم" FontSize="13" Foreground="#78909C" />
+                                <TextBlock x:Name="TxtTodayProfit" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#1565C0" Margin="0,6,0,0" />
                             </StackPanel>
                             <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#E3F2FD" VerticalAlignment="Top">
                                 <Path Width="20" Height="20" Fill="#1565C0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41-1.41L9,16.17Z" />
+                            </Border>
+                        </Grid>
+                        <TextBlock x:Name="TxtTodayProfitMargin" Text="0%" FontSize="11" Foreground="#B0BEC5" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Row 2: Total stats -->
+                <Border Grid.Column="0" Grid.Row="2" CornerRadius="16" Background="White" Padding="20">
+                    <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="إجمالي المبيعات" FontSize="13" Foreground="#78909C" />
+                                <TextBlock x:Name="TxtTotalSales" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#2E7D32" Margin="0,6,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#E8F5E9" VerticalAlignment="Top">
+                                <Path Width="20" Height="20" Fill="#2E7D32" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
                             </Border>
                         </Grid>
@@ -78,8 +114,25 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Card 3: إجمالي الأرباح -->
-                <Border Grid.Column="4" Grid.Row="0" CornerRadius="16" Background="White" Padding="20">
+                <Border Grid.Column="2" Grid.Row="2" CornerRadius="16" Background="White" Padding="20">
+                    <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="إجمالي التكاليف" FontSize="13" Foreground="#78909C" />
+                                <TextBlock x:Name="TxtTotalCost" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#C62828" Margin="0,6,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#FFCDD2" VerticalAlignment="Top">
+                                <Path Width="20" Height="20" Fill="#B71C1C" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                            </Border>
+                        </Grid>
+                        <TextBlock x:Name="TxtTotalCostCount" Text="0 فاتورة" FontSize="11" Foreground="#B0BEC5" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4" Grid.Row="2" CornerRadius="16" Background="White" Padding="20">
                     <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
                     <StackPanel>
                         <Grid>
@@ -97,27 +150,8 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Card 4: المنتجات -->
-                <Border Grid.Column="6" Grid.Row="0" CornerRadius="16" Background="White" Padding="20">
-                    <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
-                    <StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="المنتجات" FontSize="13" Foreground="#78909C" />
-                                <TextBlock x:Name="TxtTotalProducts" Text="0" FontSize="26" FontWeight="Bold" Foreground="#1A237E" Margin="0,6,0,0" />
-                            </StackPanel>
-                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#F3E5F5" VerticalAlignment="Top">
-                                <Path Width="20" Height="20" Fill="#7B1FA2" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                      Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
-                            </Border>
-                        </Grid>
-                        <TextBlock x:Name="TxtLowStock" Text="0 منخفض" FontSize="11" Foreground="#C62828" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Row 2: العملاء + العملاء الجدد -->
-                <Border Grid.Column="0" Grid.Row="2" CornerRadius="16" Background="White" Padding="20">
+                <!-- Row 3: Customers, Pending, Cancelled -->
+                <Border Grid.Column="0" Grid.Row="4" CornerRadius="16" Background="White" Padding="20">
                     <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
                     <StackPanel>
                         <Grid>
@@ -135,8 +169,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Card 6: الفواتير المعلقة -->
-                <Border Grid.Column="2" Grid.Row="2" CornerRadius="16" Background="White" Padding="20">
+                <Border Grid.Column="2" Grid.Row="4" CornerRadius="16" Background="White" Padding="20">
                     <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
                     <StackPanel>
                         <Grid>
@@ -154,27 +187,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Card 7: مخزون منخفض -->
-                <Border Grid.Column="4" Grid.Row="2" CornerRadius="16" Background="White" Padding="20">
-                    <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
-                    <StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="مخزون منخفض" FontSize="13" Foreground="#78909C" />
-                                <TextBlock x:Name="TxtLowStockCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="#C62828" Margin="0,6,0,0" />
-                            </StackPanel>
-                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#FFEBEE" VerticalAlignment="Top">
-                                <Path Width="20" Height="20" Fill="#C62828" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                      Data="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-                            </Border>
-                        </Grid>
-                        <TextBlock Text="منتجات تحتاج إعادة توريد" FontSize="11" Foreground="#B0BEC5" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Card 8: الفواتير الملغاة -->
-                <Border Grid.Column="6" Grid.Row="2" CornerRadius="16" Background="White" Padding="20">
+                <Border Grid.Column="4" Grid.Row="4" CornerRadius="16" Background="White" Padding="20">
                     <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
                     <StackPanel>
                         <Grid>

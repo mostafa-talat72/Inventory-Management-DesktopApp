@@ -22,6 +22,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Width="44" Height="44" CornerRadius="14" Background="#E8EAF6">
                     <Path Width="22" Height="22" Fill="#1A237E" Stretch="Uniform"
@@ -32,6 +33,27 @@
                     <TextBlock Text="كل الفواتير" FontSize="22" FontWeight="Bold" Foreground="#1A237E" />
                     <TextBlock Text="جميع فواتير العملاء والنقدي" FontSize="11" Foreground="#90A4AE" Margin="0,1,0,0" />
                 </StackPanel>
+                <Button Grid.Column="2" Click="OpenNewInvoice"
+                        Height="40" Cursor="Hand" Padding="16,0"
+                        VerticalAlignment="Center">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b" Background="#1A237E" CornerRadius="10" Padding="16,0">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#283593" /></Trigger>
+                                <Trigger Property="IsPressed" Value="True"><Setter TargetName="b" Property="Background" Value="#0D155B" /></Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <Path Grid.Column="0" Width="16" Height="16" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                              Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                        <TextBlock Grid.Column="1" Text="  إنشاء فاتورة جديدة" FontSize="13" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Grid>
+                </Button>
             </Grid>
         </Border>
 

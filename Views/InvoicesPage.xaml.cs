@@ -484,6 +484,85 @@ public partial class InvoicesPage : Page
         };
     }
 
+    private void OpenNewInvoice(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        if (mainWindow == null) return;
+
+        var db = new AppDbContext();
+
+        if (!db.Customers.Any())
+        {
+            HandleCustomerSelected(db, mainWindow, null);
+            return;
+        }
+
+        var dialog = new SelectCustomerDialog(db);
+        mainWindow.ShowOverlay(dialog);
+        dialog.CustomerSelected += (_, customer) =>
+        {
+            HandleCustomerSelected(db, mainWindow, customer);
+        };
+    }
+
+    private void HandleCustomerSelected(AppDbContext db, MainWindow mainWindow, Customer? customer)
+    {
+        var unpaidInvoices = db.Invoices
+            .Where(i => (customer == null ? i.CustomerId == null : i.CustomerId == customer.Id)
+                && (i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid))
+            .OrderByDescending(i => i.Id)
+            .ToList();
+
+        if (unpaidInvoices.Count > 0)
+        {
+            var dialog = new SelectInvoiceDialog(db, customer);
+            mainWindow.ShowOverlay(dialog);
+            dialog.InvoiceSelected += (invoice) =>
+            {
+                OpenAddOrder(db, mainWindow, customer, invoice);
+            };
+        }
+        else
+        {
+            OpenAddOrder(db, mainWindow, customer, null);
+        }
+    }
+
+    private void OpenAddOrder(AppDbContext db, MainWindow mainWindow, Customer? customer, Invoice? invoice)
+    {
+        var isNew = false;
+        if (invoice == null)
+        {
+            invoice = new Invoice
+            {
+                CustomerId = customer?.Id,
+                CustomerName = customer?.Name ?? "نقدي",
+                CreatedAt = DateTime.Now,
+                Status = InvoiceStatus.Open
+            };
+            db.Invoices.Add(invoice);
+            db.SaveChanges();
+            isNew = true;
+        }
+        var addOrder = new AddOrderDialog(db, invoice);
+        mainWindow.ShowOverlay(addOrder);
+        addOrder.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (isNew && r != true)
+            {
+                db.Entry(invoice).Collection(i => i.Orders).Load();
+                if (!invoice.Orders.Any())
+                {
+                    db.Invoices.Remove(invoice);
+                    db.SaveChanges();
+                }
+            }
+            db.Dispose();
+            LoadData();
+        };
+    }
+
     private void PrintInvoice(Invoice invoice)
     {
         var printer = new ReceiptPrinter(_db);

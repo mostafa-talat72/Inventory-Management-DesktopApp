@@ -67,6 +67,10 @@ public partial class InvoiceDetailsDialog : UserControl
         BtnDeleteInvoice.Visibility = _invoice.Status == InvoiceStatus.Cancelled
             ? Visibility.Collapsed : Visibility.Visible;
 
+        // Show/hide discount button
+        BtnDiscount.Visibility = _invoice.Status == InvoiceStatus.Paid || _invoice.Status == InvoiceStatus.Cancelled
+            ? Visibility.Collapsed : Visibility.Visible;
+
         // Order items — group by product, merge retail + wholesale
         var productGroups = _invoice.Orders
             .SelectMany(o => o.Items)
