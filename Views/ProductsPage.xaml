@@ -169,6 +169,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0" CornerRadius="10" BorderBrush="#E8E8E8" BorderThickness="1"
@@ -190,6 +191,18 @@
                                      Background="Transparent" FontSize="13"
                                      VerticalAlignment="Center" />
                         </Grid>
+                    </Border>
+                    <Border Grid.Column="2" CornerRadius="10" Background="#F5F5F5" Padding="0" Height="42">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                            <TextBlock Text="عرض:" FontSize="12" Foreground="#78909C" VerticalAlignment="Center" />
+                            <ComboBox x:Name="PageSizeCombo" Margin="6,0,0,0"
+                                      VerticalAlignment="Center" FontSize="12" Width="60">
+                                <ComboBoxItem Content="12" />
+                                <ComboBoxItem Content="24" />
+                                <ComboBoxItem Content="48" />
+                                <ComboBoxItem Content="الكل" />
+                            </ComboBox>
+                        </StackPanel>
                     </Border>
                 </Grid>
             </Border>
@@ -339,6 +352,31 @@
                     </ItemsControl>
             </Border>
 
+            <!-- Pagination -->
+            <Border CornerRadius="14" Background="White" Padding="12" Margin="0,0,0,12">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" x:Name="BtnPrevPage" CornerRadius="8" Background="#F5F5F5"
+                            Padding="12,6" Cursor="Hand" MouseLeftButtonDown="PrevPage_Click">
+                        <TextBlock Text="السابق" FontSize="12" Foreground="#1A237E" FontWeight="SemiBold" />
+                    </Border>
+                    <TextBlock Grid.Column="1" x:Name="TxtPageInfo" Text="صفحة 1 من 1"
+                               FontSize="12" Foreground="#546E7A" VerticalAlignment="Center" Margin="16,0" />
+                    <Border Grid.Column="2" x:Name="BtnNextPage" CornerRadius="8" Background="#F5F5F5"
+                            Padding="12,6" Cursor="Hand" MouseLeftButtonDown="NextPage_Click">
+                        <TextBlock Text="التالي" FontSize="12" Foreground="#1A237E" FontWeight="SemiBold" />
+                    </Border>
+                    <ComboBox Grid.Column="3" x:Name="PageJumpCombo" Margin="12,0,0,0"
+                              VerticalAlignment="Center" FontSize="12" Width="70"
+                              SelectionChanged="PageJump_Changed" />
+                </Grid>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

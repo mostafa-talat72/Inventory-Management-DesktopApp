@@ -1,7 +1,10 @@
+using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Microsoft.EntityFrameworkCore;
 using ProductApp.Converters;
 using ProductApp.Data;
@@ -13,29 +16,48 @@ namespace ProductApp.Views;
 public partial class ProductsPage : Page
 {
     private readonly AppDbContext _db;
+    private readonly DispatcherTimer _searchTimer = new();
+    private int _currentPage = 1;
+    private int _pageSize = 12;
+    private int _totalItems;
+    private string? _currentSearch;
     private bool _loaded;
+    private bool _isLoading;
 
     public ProductsPage()
     {
         _db = new AppDbContext();
         InitializeComponent();
-        LoadProducts();
+        PageSizeCombo.SelectionChanged += PageSize_Changed;
+        PageJumpCombo.SelectionChanged += PageJump_Changed;
         _loaded = true;
+        LoadProducts();
     }
 
-    private void LoadProducts(string? search = null)
+    private void LoadProducts()
     {
-        var query = _db.Products.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(p => p.Name.Contains(search));
+        if (_isLoading) return;
+        _isLoading = true;
+        try
+        {
+            var query = _db.Products.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(_currentSearch))
+            query = query.Where(p => p.Name.Contains(_currentSearch));
 
-        var products = query.ToList();
+        _totalItems = query.Count();
+        var totalPages = Math.Max(1, (int)Math.Ceiling((double)_totalItems / _pageSize));
+        _currentPage = Math.Clamp(_currentPage, 1, totalPages);
+        var skip = (_currentPage - 1) * _pageSize;
+
+        var pageProducts = _pageSize > 0
+            ? query.OrderBy(p => p.Name).Skip(skip).Take(_pageSize).ToList()
+            : query.OrderBy(p => p.Name).ToList();
+
         var totalStockPieces = 0;
         var lowStockCount = 0;
-
         var inv = new InventoryService(_db);
 
-        var cards = products.Select(p =>
+        var cards = pageProducts.Select(p =>
         {
             var units = _db.ProductUnits.AsNoTracking().Where(u => u.ProductId == p.Id).OrderBy(u => u.UnitType).ToList();
             var stockDisplay = inv.GetStockDisplay(p);
@@ -66,19 +88,64 @@ public partial class ProductsPage : Page
         }).ToList();
 
         ProductsList.ItemsSource = cards;
-
-        TxtTotalProducts.Text = products.Count.ToString();
+        TxtTotalProducts.Text = _totalItems.ToString();
         TxtTotalStock.Text = totalStockPieces.ToString("0");
         TxtLowStock.Text = lowStockCount.ToString();
+
+        TxtPageInfo.Text = $"{_totalItems} منتج - صفحة {_currentPage} من {totalPages}";
+        BtnPrevPage.Opacity = _currentPage > 1 ? 1.0 : 0.3;
+        BtnNextPage.Opacity = _currentPage < totalPages ? 1.0 : 0.3;
+
+        PageJumpCombo.Items.Clear();
+        for (int i = 1; i <= totalPages; i++)
+            PageJumpCombo.Items.Add($"صفحة {i}");
+        if (totalPages > 0 && _currentPage <= totalPages)
+            PageJumpCombo.SelectedIndex = _currentPage - 1;
+
+        PageSizeCombo.SelectedIndex = _pageSize switch
+        {
+            12 => 0, 24 => 1, 48 => 2, _ => 3
+        };
+        }
+        finally { _isLoading = false; }
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (!_loaded) return;
         var text = SearchBox.Text;
         if (text == WatermarkBehavior.GetWatermark(SearchBox))
             return;
-        LoadProducts(text);
+        _currentSearch = string.IsNullOrWhiteSpace(text) ? null : text;
+        _currentPage = 1;
+        _searchTimer.Stop();
+        _searchTimer.Start();
+    }
+
+    private void PageSize_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (_isLoading) return;
+        _pageSize = PageSizeCombo.SelectedItem is ComboBoxItem item && int.TryParse(item.Content?.ToString(), out var ps) && ps > 0
+            ? ps : int.MaxValue;
+        _currentPage = 1;
+        LoadProducts();
+    }
+
+    private void PrevPage_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (_currentPage > 1) { _currentPage--; LoadProducts(); }
+    }
+
+    private void NextPage_Click(object sender, MouseButtonEventArgs e)
+    {
+        var totalPages = Math.Max(1, (int)Math.Ceiling((double)_totalItems / _pageSize));
+        if (_currentPage < totalPages) { _currentPage++; LoadProducts(); }
+    }
+
+    private void PageJump_Changed(object? sender, SelectionChangedEventArgs e)
+    {
+        if (!_loaded || _isLoading || PageJumpCombo.SelectedIndex < 0) return;
+        _currentPage = PageJumpCombo.SelectedIndex + 1;
+        LoadProducts();
     }
 
     private void OpenUnitLevelsDialog(Product product)
@@ -89,8 +156,7 @@ public partial class ProductsPage : Page
         dialog.DialogClosed += (s, r) =>
         {
             mainWindow.HideOverlay();
-            if (r == true)
-                LoadProducts();
+            if (r == true) LoadProducts();
         };
     }
 
@@ -102,8 +168,7 @@ public partial class ProductsPage : Page
         dialog.DialogClosed += (s, r) =>
         {
             mainWindow.HideOverlay();
-            if (r == true)
-                LoadProducts();
+            if (r == true) LoadProducts();
         };
     }
 
@@ -115,8 +180,7 @@ public partial class ProductsPage : Page
         dialog.DialogClosed += (s, r) =>
         {
             mainWindow.HideOverlay();
-            if (r == true)
-                LoadProducts();
+            if (r == true) LoadProducts();
         };
     }
 
@@ -141,8 +205,7 @@ public partial class ProductsPage : Page
         dialog.DialogClosed += (s, r) =>
         {
             mainWindow.HideOverlay();
-            if (r == true)
-                LoadProducts();
+            if (r == true) LoadProducts();
         };
     }
 

@@ -1,8 +1,11 @@
+using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Microsoft.EntityFrameworkCore;
 using ProductApp.Data;
 using ProductApp.Models;
@@ -13,30 +16,32 @@ namespace ProductApp.Views;
 public partial class InvoicesPage : Page
 {
     private readonly AppDbContext _db;
-    private List<Invoice> _allInvoices = new();
+    private readonly DispatcherTimer _searchTimer = new();
     private string _filterMode = "Unpaid";
     private bool _sortAscending;
     private int _pageSize = 20;
     private int _displayCount;
     private readonly HashSet<int> _selectedIds = new();
     private bool _showAll;
+    private int _totalFiltered;
 
     public InvoicesPage()
     {
         _db = new AppDbContext();
         InitializeComponent();
+        _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
+        _searchTimer.Tick += (_, _) => { _searchTimer.Stop(); ApplyFilter(); };
         LoadData();
     }
 
     private void LoadData()
     {
-        _allInvoices = _db.Invoices.OrderByDescending(i => i.CreatedAt).ToList();
         SetFilter("Unpaid");
     }
 
-    private List<Invoice> GetFiltered()
+    private IQueryable<Invoice> GetBaseQuery()
     {
-        var q = _allInvoices.AsEnumerable();
+        var q = _db.Invoices.AsNoTracking();
 
         q = _filterMode switch
         {
@@ -55,22 +60,25 @@ public partial class InvoicesPage : Page
 
         q = _sortAscending ? q.OrderBy(i => i.CreatedAt) : q.OrderByDescending(i => i.CreatedAt);
 
-        return q.ToList();
+        return q;
     }
 
     private void ApplyFilter()
     {
-        var filtered = GetFiltered();
-        var totalFiltered = filtered.Count;
+        var query = GetBaseQuery();
+        _totalFiltered = query.Count();
 
-        TxtInvoiceCount.Text = totalFiltered.ToString();
-        TxtTotalAmount.Text = $"{filtered.Sum(i => i.TotalAmount):0.##} ج.م";
-        TxtPaidAmount.Text = $"{filtered.Sum(i => i.TotalPaid):0.##} ج.م";
-        TxtRemainingAmount.Text = $"{filtered.Sum(i => i.Remaining):0.##} ج.م";
+        var showCount = _showAll ? _totalFiltered : Math.Min(_pageSize, _totalFiltered);
+        var invoices = query.Take(showCount).ToList();
+
+        TxtInvoiceCount.Text = _totalFiltered.ToString();
+        TxtTotalAmount.Text = $"{invoices.Sum(i => i.TotalAmount):0.##} ج.م";
+        TxtPaidAmount.Text = $"{invoices.Sum(i => i.TotalPaid):0.##} ج.م";
+        TxtRemainingAmount.Text = $"{invoices.Sum(i => i.Remaining):0.##} ج.م";
 
         InvoicesPanel.Children.Clear();
 
-        if (totalFiltered == 0)
+        if (_totalFiltered == 0)
         {
             var filterLabel = _filterMode switch
             {
@@ -128,14 +136,13 @@ public partial class InvoicesPage : Page
             return;
         }
 
-        _displayCount = _showAll ? totalFiltered : Math.Min(_pageSize, totalFiltered);
-        var toShow = filtered.Take(_displayCount).ToList();
+        _displayCount = invoices.Count;
 
-        foreach (var invoice in toShow)
+        foreach (var invoice in invoices)
             InvoicesPanel.Children.Add(CreateInvoiceCard(invoice));
 
-        ShowMoreBar.Visibility = _displayCount < totalFiltered ? Visibility.Visible : Visibility.Collapsed;
-        TxtShowMore.Text = $"عرض المزيد ({totalFiltered - _displayCount} متبقي)";
+        ShowMoreBar.Visibility = _displayCount < _totalFiltered ? Visibility.Visible : Visibility.Collapsed;
+        TxtShowMore.Text = $"عرض المزيد ({_totalFiltered - _displayCount} متبقي)";
     }
 
     private Border CreateInvoiceCard(Invoice invoice)
@@ -461,7 +468,8 @@ public partial class InvoicesPage : Page
     {
         SearchWatermark.Visibility = string.IsNullOrEmpty(TxtSearch.Text) ? Visibility.Visible : Visibility.Collapsed;
         _showAll = true;
-        ApplyFilter();
+        _searchTimer.Stop();
+        _searchTimer.Start();
     }
 
     private void OpenInvoice(Invoice invoice)

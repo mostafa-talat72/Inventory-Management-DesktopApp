@@ -87,6 +87,17 @@
 
                 <!-- Navigation -->
                 <StackPanel Grid.Row="2" Margin="12,8,12,0">
+                    <Button x:Name="BtnDashboard" Style="{StaticResource NavButton}" Click="NavigateToPage" Tag="Dashboard">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="1" Text="لوحة التحكم" FontSize="14" VerticalAlignment="Center" Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" />
+                            <Path Grid.Column="0" Width="20" Height="20" Fill="White" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,12,0"
+                                  Data="M3,13H8V23H3V13M10,14H15V23H10V14M17,10H22V23H17V10M3,3.03L8,3V11H3V3.03M10,4H15V12H10V4M17,5H22V8H17V5Z" />
+                        </Grid>
+                    </Button>
                     <Button x:Name="BtnProducts" Style="{StaticResource NavButton}" Click="NavigateToPage" Tag="Products">
                         <Grid>
                             <Grid.ColumnDefinitions>

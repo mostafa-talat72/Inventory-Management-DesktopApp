@@ -473,10 +473,25 @@ public partial class ReportsPage : Page
         {
             Points = revPoints,
             Stroke = (Brush)new BrushConverter().ConvertFromString("#3F51B5")!,
-            StrokeThickness = 2.5,
+            StrokeThickness = 3,
             StrokeLineJoin = PenLineJoin.Round
         };
         ChartCanvas.Children.Add(revLine);
+
+        // — Gradient fill under revenue line —
+        var revFill = new Polygon
+        {
+            Fill = new LinearGradientBrush(
+                Color.FromRgb(63, 81, 181),
+                Color.FromArgb(20, 63, 81, 181),
+                90.0),
+            StrokeThickness = 0
+        };
+        var revFillPoints = new PointCollection(revPoints);
+        revFillPoints.Add(new Point(revPoints[^1].X, topMargin + plotH));
+        revFillPoints.Insert(0, new Point(revPoints[0].X, topMargin + plotH));
+        revFill.Points = revFillPoints;
+        ChartCanvas.Children.Insert(ChartCanvas.Children.Count - 1, revFill);
 
         var costLine = new Polyline
         {

@@ -9,7 +9,7 @@ namespace ProductApp;
 public partial class MainWindow : Window
 {
     private readonly Stack<UserControl> _overlayStack = new();
-    private string _currentPage = "Products";
+    private string _currentPage = "Dashboard";
 
     public MainWindow()
     {
@@ -18,7 +18,7 @@ public partial class MainWindow : Window
         var config = AppConfig.Load();
         UpdateLocationName(config.LocationName);
 
-        NavigateToPage("Products");
+        NavigateToPage("Dashboard");
     }
 
     public void UpdateLocationName(string name)
@@ -45,6 +45,9 @@ public partial class MainWindow : Window
 
         switch (page)
         {
+            case "Dashboard":
+                MainFrame.Navigate(new DashboardPage());
+                break;
             case "Products":
                 MainFrame.Navigate(new ProductsPage());
                 break;
@@ -65,7 +68,7 @@ public partial class MainWindow : Window
 
     private void UpdateNavButtons()
     {
-        foreach (var btn in new[] { BtnProducts, BtnCustomers, BtnInvoices, BtnReports, BtnSettings })
+        foreach (var btn in new[] { BtnDashboard, BtnProducts, BtnCustomers, BtnInvoices, BtnReports, BtnSettings })
         {
             var isActive = btn.Tag?.ToString() == _currentPage;
             btn.BorderBrush = isActive

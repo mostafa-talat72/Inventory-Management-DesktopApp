@@ -163,3 +163,9 @@ H:\My Work\Product App\obj\Debug\net9.0-windows\Views\LoginDialog.g.cs
 H:\My Work\Product App\obj\Debug\net9.0-windows\Views\SettingsPage.g.cs
 H:\My Work\Product App\obj\Debug\net9.0-windows\Views\PrintPreviewDialog.baml
 H:\My Work\Product App\obj\Debug\net9.0-windows\Views\PrintPreviewDialog.g.cs
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\DashboardPage.baml
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\DashboardPage.g.cs
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\SelectCustomerDialog.baml
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\SelectCustomerDialog.g.cs
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\SelectInvoiceDialog.baml
+H:\My Work\Product App\obj\Debug\net9.0-windows\Views\SelectInvoiceDialog.g.cs

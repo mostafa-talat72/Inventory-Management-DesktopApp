@@ -190,4 +190,33 @@ public partial class PrintPreviewDialog : UserControl
         try { if (File.Exists(_tempFilePath)) File.Delete(_tempFilePath); } catch { }
         DialogClosed?.Invoke(this, false);
     }
+
+    private void BtnPdf_Click(object sender, RoutedEventArgs e)
+    {
+        var saveDialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "PDF (*.pdf)|*.pdf",
+            FileName = $"فاتورة_{(_invoice?.Id.ToString() ?? "export")}.pdf",
+            DefaultExt = ".pdf"
+        };
+
+        if (saveDialog.ShowDialog() != true) return;
+
+        var success = PdfExportService.ExportHtmlToPdf(_html, saveDialog.FileName);
+        if (success)
+        {
+            NotificationManager.ShowSuccess("تم تصدير الفاتورة بنجاح بصيغة PDF");
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(saveDialog.FileName) { UseShellExecute = true }); } catch { }
+        }
+        else
+        {
+            var result = MessageBox.Show(
+                "تعذر تصدير PDF باستخدام المتصفح.\nهل تريد فتح الفاتورة في المتصفح لطباعتها PDF يدوياً؟",
+                "تصدير PDF", MessageBoxButton.YesNo, MessageBoxImage.Information);
+            if (result == MessageBoxResult.Yes)
+            {
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(_tempFilePath) { UseShellExecute = true }); } catch { }
+            }
+        }
+    }
 }
