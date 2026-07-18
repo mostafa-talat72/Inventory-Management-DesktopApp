@@ -256,4 +256,138 @@ public partial class SettingsPage : UserControl
             NotificationManager.ShowError($"فشلت الطباعة التجريبية: {ex.Message}");
         }
     }
+
+    private void BtnRestoreBackup_Click(object sender, RoutedEventArgs e)
+    {
+        TxtRestoreError.Visibility = Visibility.Collapsed;
+
+        var password = TxtRestorePassword.Password;
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            TxtRestoreError.Text = "الرجاء إدخال كلمة المرور";
+            TxtRestoreError.Visibility = Visibility.Visible;
+            return;
+        }
+
+        if (!_config.VerifyPassword(password))
+        {
+            TxtRestoreError.Text = "كلمة المرور غير صحيحة";
+            TxtRestoreError.Visibility = Visibility.Visible;
+            TxtRestorePassword.Password = "";
+            return;
+        }
+
+        TxtRestorePassword.Password = "";
+
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "اختر ملف النسخة الاحتياطية",
+            Filter = "Database Files (*.db)|*.db|All Files (*.*)|*.*",
+            FilterIndex = 1
+        };
+
+        if (dialog.ShowDialog() != true) return;
+
+        var sourceFile = dialog.FileName;
+
+        ConfirmDialog.Show(
+            "تأكيد استيراد النسخة الاحتياطية",
+            $"هل أنت متأكد من استيراد النسخة الاحتياطية؟\nسيتم استبدال قاعدة البيانات الحالية بالكامل.\n\nالملف المحدد: {System.IO.Path.GetFileName(sourceFile)}",
+            result =>
+            {
+                if (!result) return;
+                try
+                {
+                    var dbPath = System.IO.Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory, "app.db");
+
+                    // نسخ احتياطي تلقائي للداتابيز الحالية قبل الاستيراد
+                    if (!string.IsNullOrWhiteSpace(_config.BackupFolder) && System.IO.Directory.Exists(_config.BackupFolder))
+                    {
+                        var autoBackup = System.IO.Path.Combine(
+                            _config.BackupFolder,
+                            $"before_restore_{DateTime.Now:yyyyMMdd_HHmmss}.db");
+                        System.IO.File.Copy(dbPath, autoBackup, true);
+                    }
+
+                    System.IO.File.Copy(sourceFile, dbPath, overwrite: true);
+                    NotificationManager.ShowSuccess("تم استيراد النسخة الاحتياطية بنجاح — أعد تشغيل البرنامج لتطبيق التغييرات");
+                }
+                catch (Exception ex)
+                {
+                    NotificationManager.ShowError($"فشل استيراد النسخة الاحتياطية: {ex.Message}");
+                }
+            },
+            ConfirmDialog.DialogType.Warning);
+    }
+
+    private void BtnDeleteDatabase_Click(object sender, RoutedEventArgs e)
+    {
+        TxtDeleteError.Visibility = Visibility.Collapsed;
+
+        var password = TxtDeletePassword.Password;
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            TxtDeleteError.Text = "الرجاء إدخال كلمة المرور";
+            TxtDeleteError.Visibility = Visibility.Visible;
+            return;
+        }
+
+        if (!_config.VerifyPassword(password))
+        {
+            TxtDeleteError.Text = "كلمة المرور غير صحيحة";
+            TxtDeleteError.Visibility = Visibility.Visible;
+            TxtDeletePassword.Password = "";
+            return;
+        }
+
+        TxtDeletePassword.Password = "";
+
+        ConfirmDialog.Show(
+            "تأكيد حذف قاعدة البيانات",
+            "تحذير: سيتم حذف جميع البيانات نهائياً\n(الفواتير، المنتجات، العملاء، المخزون، الحركات)\n\nهذا الإجراء لا يمكن التراجع عنه. هل أنت متأكد تماماً؟",
+            result =>
+            {
+                if (!result) return;
+                try
+                {
+                    var dbPath = System.IO.Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory, "app.db");
+
+                    // نسخ احتياطي تلقائي قبل الحذف لو فيه مجلد محدد
+                    if (!string.IsNullOrWhiteSpace(_config.BackupFolder) && System.IO.Directory.Exists(_config.BackupFolder))
+                    {
+                        var autoBackup = System.IO.Path.Combine(
+                            _config.BackupFolder,
+                            $"before_delete_{DateTime.Now:yyyyMMdd_HHmmss}.db");
+                        System.IO.File.Copy(dbPath, autoBackup, true);
+                    }
+
+                    // حذف الداتابيز
+                    if (System.IO.File.Exists(dbPath))
+                        System.IO.File.Delete(dbPath);
+
+                    // حذف الـ WAL و SHM files لو موجودين
+                    if (System.IO.File.Exists(dbPath + "-wal"))
+                        System.IO.File.Delete(dbPath + "-wal");
+                    if (System.IO.File.Exists(dbPath + "-shm"))
+                        System.IO.File.Delete(dbPath + "-shm");
+
+                    NotificationManager.ShowSuccess("تم حذف قاعدة البيانات — سيتم إعادة تشغيل البرنامج الآن");
+
+                    // إعادة تشغيل البرنامج لإنشاء داتابيز جديدة فارغة
+                    var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                    if (exe != null)
+                    {
+                        System.Diagnostics.Process.Start(exe);
+                        Application.Current.Shutdown();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    NotificationManager.ShowError($"فشل حذف قاعدة البيانات: {ex.Message}");
+                }
+            },
+            ConfirmDialog.DialogType.Danger);
+    }
 }

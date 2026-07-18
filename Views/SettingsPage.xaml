@@ -303,13 +303,15 @@
                                     <TextBlock Text="  استعراض" Margin="4,0,0,0" />
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="BtnBackupNow" Click="BtnBackupNow_Click" Grid.Column="2" Background="#2E7D32" Style="{StaticResource SaveBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
-                                          Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-                                    <TextBlock Text="  نسخ احتياطي الآن" Margin="4,0,0,0" />
-                                </StackPanel>
-                            </Button>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button x:Name="BtnBackupNow" Click="BtnBackupNow_Click" Background="#2E7D32" Style="{StaticResource SaveBtn}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                              Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                                        <TextBlock Text="  نسخ احتياطي الآن" Margin="4,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
                         </Grid>
 
                         <!-- Backup Status Card -->
@@ -434,6 +436,168 @@
                         </Border>
                     </StackPanel>
                 </Grid>
+            </Border>
+
+            <!-- DANGER ZONE -->
+            <Border CornerRadius="12" Margin="0,0,0,20" BorderBrush="#FFCDD2" BorderThickness="1.5"
+                    Background="White">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08" Color="#C62828" />
+                </Border.Effect>
+                <StackPanel>
+                    <!-- Header -->
+                    <Border CornerRadius="10,10,0,0" Padding="24,16">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#FFEBEE" Offset="0"/>
+                                <GradientStop Color="#FFF8F8" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="40" Height="40" CornerRadius="10" Background="#C62828" VerticalAlignment="Center">
+                                <Path Width="20" Height="20" Fill="White" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                                <TextBlock Text="منطقة الخطر" FontSize="16" FontWeight="Bold" Foreground="#B71C1C"/>
+                                <TextBlock Text="هذه الإجراءات لا يمكن التراجع عنها — يُرجى توخي الحذر الشديد"
+                                           FontSize="11" Foreground="#E57373" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <Border Grid.Column="2" CornerRadius="6" Background="#FFCDD2" Padding="10,4" VerticalAlignment="Center">
+                                <TextBlock Text="⚠ تحذير" FontSize="11" FontWeight="Bold" Foreground="#C62828"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Divider -->
+                    <Border Height="1" Background="#FFCDD2" Margin="0"/>
+
+                    <!-- Body -->
+                    <StackPanel Margin="24,20,24,24">
+
+                        <!-- Row: الاستيراد والحذف جنب بعض -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- استيراد نسخة احتياطية -->
+                            <Border Grid.Column="0" CornerRadius="10" BorderBrush="#FFE0B2" BorderThickness="1"
+                                    Background="#FFFBF8" Padding="18,16">
+                                <StackPanel>
+                                    <!-- Icon + Title -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <Border Width="34" Height="34" CornerRadius="8" Background="#FFF3E0" VerticalAlignment="Center">
+                                            <Path Width="16" Height="16" Fill="#E65100" Stretch="Uniform"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM12 13l-4-4h3V6h2v3h3l-4 4z"/>
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                                            <TextBlock Text="استيراد نسخة احتياطية" FontSize="13" FontWeight="Bold" Foreground="#E65100"/>
+                                            <TextBlock Text="استبدال قاعدة البيانات الحالية" FontSize="10" Foreground="#FFAB76"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <TextBlock FontSize="11" Foreground="#8D6E63" TextWrapping="Wrap" Margin="0,0,0,14"
+                                               Text="سيتم استبدال جميع البيانات الحالية بمحتوى الملف المحدد. تأكد من اختيار الملف الصحيح."/>
+
+                                    <TextBlock Text="كلمة المرور" FontSize="11" FontWeight="SemiBold" Foreground="#E65100" Margin="0,0,0,5"/>
+                                    <Border BorderThickness="1.5" BorderBrush="#FFE0B2" CornerRadius="8" Padding="2" Margin="0,0,0,6">
+                                        <PasswordBox x:Name="TxtRestorePassword" Height="36" FontSize="13" BorderThickness="0" Padding="10,0"/>
+                                    </Border>
+                                    <TextBlock x:Name="TxtRestoreError" FontSize="11" Foreground="#E53935" Visibility="Collapsed" Margin="0,0,0,8"/>
+
+                                    <Button x:Name="BtnRestoreBackup" Click="BtnRestoreBackup_Click"
+                                            Height="38" Cursor="Hand" HorizontalAlignment="Stretch"
+                                            Background="#E65100" Foreground="White"
+                                            BorderThickness="0" FontSize="13" FontWeight="Bold">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="14,0">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                                              Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM12 13l-4-4h3V6h2v3h3l-4 4z"/>
+                                                        <TextBlock Text="  استيراد نسخة" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="border" Property="Opacity" Value="0.7"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- حذف قاعدة البيانات -->
+                            <Border Grid.Column="2" CornerRadius="10" BorderBrush="#FFCDD2" BorderThickness="1"
+                                    Background="#FFF8F8" Padding="18,16">
+                                <StackPanel>
+                                    <!-- Icon + Title -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <Border Width="34" Height="34" CornerRadius="8" Background="#FFEBEE" VerticalAlignment="Center">
+                                            <Path Width="16" Height="16" Fill="#C62828" Stretch="Uniform"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                                            <TextBlock Text="حذف قاعدة البيانات" FontSize="13" FontWeight="Bold" Foreground="#C62828"/>
+                                            <TextBlock Text="حذف نهائي لجميع البيانات" FontSize="10" Foreground="#EF9A9A"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <TextBlock FontSize="11" Foreground="#8D6E63" TextWrapping="Wrap" Margin="0,0,0,14"
+                                               Text="سيُحذف كل شيء: الفواتير، المنتجات، العملاء، المخزون، والحركات. لا يمكن استعادتها."/>
+
+                                    <TextBlock Text="كلمة المرور" FontSize="11" FontWeight="SemiBold" Foreground="#C62828" Margin="0,0,0,5"/>
+                                    <Border BorderThickness="1.5" BorderBrush="#FFCDD2" CornerRadius="8" Padding="2" Margin="0,0,0,6">
+                                        <PasswordBox x:Name="TxtDeletePassword" Height="36" FontSize="13" BorderThickness="0" Padding="10,0"/>
+                                    </Border>
+                                    <TextBlock x:Name="TxtDeleteError" FontSize="11" Foreground="#E53935" Visibility="Collapsed" Margin="0,0,0,8"/>
+
+                                    <Button x:Name="BtnDeleteDatabase" Click="BtnDeleteDatabase_Click"
+                                            Height="38" Cursor="Hand" HorizontalAlignment="Stretch"
+                                            Background="#C62828" Foreground="White"
+                                            BorderThickness="0" FontSize="13" FontWeight="Bold">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="14,0">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                                              Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                                        <TextBlock Text="  حذف كل البيانات" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="border" Property="Opacity" Value="0.7"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                    </StackPanel>
+                </StackPanel>
             </Border>
 
         </StackPanel>
