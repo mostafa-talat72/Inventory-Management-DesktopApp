@@ -22,6 +22,7 @@ namespace ProductApp.Views
         private readonly InventoryService _inv;
         private readonly Customer? _customer;
         private Invoice? _invoice;
+        private Order? _orderToEdit;
         private readonly Dictionary<int, OrderItemEntry> _entries = new();
 
         private class OrderItemEntry
@@ -86,6 +87,18 @@ namespace ProductApp.Views
             Loaded += OnLoadedForInvoice;
         }
 
+        // Constructor للتعديل على طلب موجود
+        public AddOrderDialog(AppDbContext db, Invoice invoice, Order orderToEdit)
+        {
+            InitializeComponent();
+            _db = db;
+            _inv = new InventoryService(db);
+            _invoice = invoice;
+            _customer = invoice.Customer;
+            _orderToEdit = orderToEdit;
+            Loaded += OnLoadedForEditOrder;
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _invoice = FindExistingInvoice();
@@ -108,6 +121,67 @@ namespace ProductApp.Views
             InvoiceBadge.Visibility = Visibility.Visible;
             TxtInvoiceId.Text = _invoice.Id.ToString();
             LoadProducts();
+        }
+
+        private void OnLoadedForEditOrder(object sender, RoutedEventArgs e)
+        {
+            TxtSubtitle.Text = _invoice!.CustomerName ?? "نقدي";
+            InvoiceBadge.Visibility = Visibility.Visible;
+            TxtInvoiceId.Text = _invoice.Id.ToString();
+
+            // تغيير نص الزر للتعديل
+            if (BtnSave is Button saveBtn)
+                saveBtn.Content = "حفظ التعديلات";
+
+            // في وضع التعديل: احمل المنتجات الموجودة في الطلب فقط
+            if (_orderToEdit != null)
+            {
+                _db.Entry(_orderToEdit).Collection(o => o.Items).Load();
+                foreach (var item in _orderToEdit.Items)
+                {
+                    _db.Entry(item).Reference(oi => oi.Product).Load();
+                    _db.Entry(item.Product).Collection(p => p.Units).Load();
+                }
+
+                // أضف كل منتج من الطلب للـ entries
+                var productsInOrder = _orderToEdit.Items
+                    .Select(i => i.Product)
+                    .DistinctBy(p => p.Id)
+                    .ToList();
+
+                foreach (var product in productsInOrder)
+                    AddProductToOrder(product);
+
+                // عبي الكميات
+                PreFillOrderItems(_orderToEdit);
+            }
+
+            // حمّل المنتجات للبحث (search panel لإضافة منتجات جديدة)
+            LoadProducts();
+        }
+
+        private void PreFillOrderItems(Order order)
+        {
+            // تعبئة الـ entries بكميات الطلب القديم
+            foreach (var item in order.Items)
+            {
+                if (!_entries.TryGetValue(item.ProductId, out var entry)) continue;
+
+                bool isWholesale = item.PriceType == PriceType.Wholesale;
+                if (isWholesale)
+                {
+                    if (entry.WholesaleCartonTb != null) entry.WholesaleCartonTb.Text = item.CartonQuantity.ToString();
+                    if (entry.WholesaleBoxTb    != null) entry.WholesaleBoxTb.Text    = item.BoxQuantity.ToString();
+                    if (entry.WholesalePieceTb  != null) entry.WholesalePieceTb.Text  = item.PieceQuantity.ToString();
+                }
+                else
+                {
+                    if (entry.RetailCartonTb != null) entry.RetailCartonTb.Text = item.CartonQuantity.ToString();
+                    if (entry.RetailBoxTb    != null) entry.RetailBoxTb.Text    = item.BoxQuantity.ToString();
+                    if (entry.RetailPieceTb  != null) entry.RetailPieceTb.Text  = item.PieceQuantity.ToString();
+                }
+            }
+            UpdateSummary();
         }
 
         private Invoice? FindExistingInvoice()
@@ -454,6 +528,13 @@ namespace ProductApp.Views
                 }
             }
 
+            // لو وضع تعديل — ارجع مخزون الطلب القديم أولاً
+            if (_orderToEdit != null)
+            {
+                SaveEditOrder();
+                return;
+            }
+
             // Create invoice if none existed
             if (_invoice == null)
             {
@@ -501,6 +582,47 @@ namespace ProductApp.Views
             TxtInvoiceId.Text = _invoice.Id.ToString();
 
             NotificationManager.ShowSuccess($"تم إضافة {count} منتج للفاتورة #{_invoice.Id} بنجاح.");
+            DialogClosed?.Invoke(this, true);
+        }
+
+        private void SaveEditOrder()
+        {
+            var order = _orderToEdit!;
+
+            // ارجع مخزون كل item قديم
+            foreach (var oldItem in order.Items.ToList())
+            {
+                _db.Entry(oldItem).Reference(oi => oi.Product!).Load();
+                int oldPieces = _inv.CalculatePieceEquivalent(oldItem.Product!, oldItem.CartonQuantity, oldItem.BoxQuantity, oldItem.PieceQuantity);
+
+                var batch = _db.InventoryBatches
+                    .Where(b => b.ProductId == oldItem.ProductId && b.RemainingQuantity > 0)
+                    .OrderByDescending(b => b.PurchaseDate).FirstOrDefault();
+                if (batch != null) batch.RemainingQuantity += oldPieces;
+
+                _invoice!.TotalAmount -= oldItem.Total;
+                _db.OrderItems.Remove(oldItem);
+            }
+
+            // أضف الـ items الجديدة على نفس الـ order
+            foreach (var entry in _entries.Values)
+            {
+                if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
+                    AddOrderItem(order, entry, PriceType.Retail);
+                if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
+                    AddOrderItem(order, entry, PriceType.Wholesale);
+            }
+
+            _db.SaveChanges();
+
+            // إعادة حساب الإجمالي
+            var orderIds = _db.Orders.Where(o => o.InvoiceId == _invoice!.Id).Select(o => o.Id).ToList();
+            _invoice!.TotalAmount = _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).Sum(oi => oi.Total);
+            _db.SaveChanges();
+
+            App.AppBackup?.BackupIfOnOperation();
+
+            NotificationManager.ShowSuccess($"تم تعديل الطلب وتحديث الفاتورة #{_invoice.Id} بنجاح.");
             DialogClosed?.Invoke(this, true);
         }
 
