@@ -110,4 +110,31 @@ public partial class MainWindow : Window
     {
         HideOverlay();
     }
+
+    private void Logout_Click(object sender, RoutedEventArgs e)
+    {
+        ConfirmDialog.Show(
+            "تسجيل الخروج",
+            "هل أنت متأكد من تسجيل الخروج؟ سيتم إعادة توجيهك إلى شاشة الدخول.",
+            confirmed =>
+            {
+                if (!confirmed) return;
+
+                Hide();
+
+                var login = new LoginDialog(AppConfig.Load());
+                login.Owner = null;
+                login.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                if (login.ShowDialog() == true)
+                {
+                    NavigateToPage("Dashboard");
+                    Show();
+                }
+                else
+                    Application.Current.Shutdown();
+            },
+            ConfirmDialog.DialogType.Danger,
+            "تسجيل الخروج",
+            "إلغاء");
+    }
 }

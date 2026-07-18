@@ -41,6 +41,40 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style TargetType="Button" x:Key="LogoutButton">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0,0,3,0" />
+            <Setter Property="Foreground" Value="#90A4AE" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Padding="16,0">
+                            <ContentPresenter HorizontalAlignment="Right"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#18EF5350" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="#EF5350" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#30EF5350" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="#EF5350" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -59,6 +93,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -155,11 +190,31 @@
                     </Button>
                 </StackPanel>
 
+                <!-- Logout -->
+                <StackPanel Grid.Row="3" Margin="12,4,12,0">
+                    <Border Height="1" Background="#FFFFFF" Opacity="0.06" Margin="4,0,4,6" />
+                    <Button Style="{StaticResource LogoutButton}" Click="Logout_Click">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="1" Text="تسجيل الخروج" FontSize="13" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" />
+                            <Path Grid.Column="0" Width="18" Height="18" Stretch="Uniform"
+                                  VerticalAlignment="Center" Margin="0,0,12,0"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                  Data="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                        </Grid>
+                    </Button>
+                </StackPanel>
+
                 <!-- Divider -->
-                <Border Grid.Row="3" Height="1" Background="#FFFFFF" Opacity="0.1" Margin="24,0" />
+                <Border Grid.Row="4" Height="1" Background="#FFFFFF" Opacity="0.1" Margin="24,0" />
 
                 <!-- Footer -->
-                <StackPanel Grid.Row="4" Margin="24,16,24,20">
+                <StackPanel Grid.Row="5" Margin="24,16,24,20">
                     <TextBlock Text="الإصدار 1.0" FontSize="11" Foreground="#546E7A"
                                HorizontalAlignment="Right" />
                     <!-- Developer Signature -->
