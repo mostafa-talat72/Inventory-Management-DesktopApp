@@ -9,7 +9,7 @@
         </Border.Effect>
         <StackPanel>
             <Border CornerRadius="16,16,0,0" Background="#FAFAFA" Padding="28,28">
-                <Path x:Name="IconPath" Width="48" Height="48" Fill="#F57F17" Stretch="Uniform"
+                <Path FlowDirection="LeftToRight" x:Name="IconPath" Width="48" Height="48" Fill="#F57F17" Stretch="Uniform"
                       HorizontalAlignment="Center"
                       Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
             </Border>

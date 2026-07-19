@@ -51,6 +51,15 @@ public partial class App : Application
                     fe.Language = XmlLanguage.GetLanguage("ar-SA");
             }));
 
+        // Fix all icons direction (RTL reverses Path geometry)
+        EventManager.RegisterClassHandler(typeof(System.Windows.Shapes.Path),
+            FrameworkElement.LoadedEvent,
+            new RoutedEventHandler((s, _) =>
+            {
+                if (s is System.Windows.Shapes.Path p)
+                    p.FlowDirection = FlowDirection.LeftToRight;
+            }));
+
         AppDomain.CurrentDomain.UnhandledException += (s, args) =>
         {
             if (args.ExceptionObject is System.Exception ex)

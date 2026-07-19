@@ -96,7 +96,7 @@
                                 <GradientStop Color="#C5CAE9" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
-                        <Path Width="24" Height="24" Fill="#1A237E" Stretch="Uniform"
+                        <Path FlowDirection="LeftToRight" Width="24" Height="24" Fill="#1A237E" Stretch="Uniform"
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
                     </Border>
@@ -121,7 +121,7 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Border Width="32" Height="32" CornerRadius="8" Background="#1A237E" VerticalAlignment="Center">
-                                <Path Width="16" Height="16" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
@@ -190,7 +190,7 @@
                         <Button x:Name="BtnSaveLocation" Click="BtnSaveLocation_Click"
                                 Background="#1A237E" Style="{StaticResource SaveBtn}" HorizontalAlignment="Left" Margin="0,14,0,0">
                             <StackPanel Orientation="Horizontal">
-                                <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                       Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                                 <TextBlock Text="  حفظ" Margin="4,0,0,0" />
                             </StackPanel>
@@ -213,7 +213,7 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Border Width="32" Height="32" CornerRadius="8" Background="#E65100" VerticalAlignment="Center">
-                                <Path Width="16" Height="16" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
@@ -251,7 +251,7 @@
                         <TextBlock x:Name="TxtPasswordError" FontSize="11" Foreground="#E53935" Visibility="Collapsed" Margin="0,8,0,0" />
                         <Button x:Name="BtnChangePassword" Click="BtnChangePassword_Click" Background="#E65100" Style="{StaticResource SaveBtn}" HorizontalAlignment="Left" Margin="0,14,0,0">
                             <StackPanel Orientation="Horizontal">
-                                <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                       Data="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z" />
                                  <TextBlock Text="  تغيير كلمة المرور" Margin="4,0,0,0" />
                             </StackPanel>
@@ -274,7 +274,7 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Border Width="32" Height="32" CornerRadius="8" Background="#2E7D32" VerticalAlignment="Center">
-                                <Path Width="16" Height="16" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
@@ -298,7 +298,7 @@
                             </Border>
                             <Button x:Name="BtnBrowseFolder" Click="BtnBrowseFolder_Click" Grid.Column="1" Style="{StaticResource SecBtn}" Margin="8,0,8,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <Path Width="14" Height="14" Fill="#546E7A" Stretch="Uniform" VerticalAlignment="Center"
+                                    <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#546E7A" Stretch="Uniform" VerticalAlignment="Center"
                                           Data="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
                                     <TextBlock Text="  استعراض" Margin="4,0,0,0" />
                                 </StackPanel>
@@ -306,7 +306,7 @@
                             <StackPanel Grid.Column="2" Orientation="Horizontal">
                                 <Button x:Name="BtnBackupNow" Click="BtnBackupNow_Click" Background="#2E7D32" Style="{StaticResource SaveBtn}">
                                     <StackPanel Orientation="Horizontal">
-                                        <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                        <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                               Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
                                         <TextBlock Text="  نسخ احتياطي الآن" Margin="4,0,0,0" />
                                     </StackPanel>
@@ -323,7 +323,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Border Width="28" Height="28" CornerRadius="6" Background="#E8F5E9" VerticalAlignment="Center">
-                                    <Path Width="14" Height="14" Fill="#2E7D32" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#2E7D32" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                           Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                                 </Border>
                                 <TextBlock x:Name="TxtBackupInfo" Grid.Column="1" FontSize="12" Foreground="#546E7A" VerticalAlignment="Center" Margin="12,0,0,0" />
@@ -363,7 +363,7 @@
 
                                 <Button x:Name="BtnSaveBackupSettings" Click="BtnSaveBackupSettings_Click" Background="#2E7D32" Style="{StaticResource SaveBtn}" HorizontalAlignment="Left" Margin="0,14,0,0">
                                     <StackPanel Orientation="Horizontal">
-                                        <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                        <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                               Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                                         <TextBlock Text="  حفظ إعدادات النسخ الاحتياطي" Margin="4,0,0,0" />
                                     </StackPanel>
@@ -388,7 +388,7 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Border Width="32" Height="32" CornerRadius="8" Background="#1565C0" VerticalAlignment="Center">
-                                <Path Width="16" Height="16" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
@@ -410,14 +410,14 @@
                             </Border>
                             <Button x:Name="BtnSavePrinter" Click="BtnSavePrinter_Click" Grid.Column="1" Background="#1565C0" Style="{StaticResource SaveBtn}" Margin="8,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                    <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                           Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                                     <TextBlock Text="  حفظ" Margin="4,0,0,0" />
                                 </StackPanel>
                             </Button>
                             <Button x:Name="BtnTestPrint" Click="BtnTestPrint_Click" Grid.Column="2" Style="{StaticResource SecBtn}">
                                 <StackPanel Orientation="Horizontal">
-                                    <Path Width="14" Height="14" Fill="#546E7A" Stretch="Uniform" VerticalAlignment="Center"
+                                    <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#546E7A" Stretch="Uniform" VerticalAlignment="Center"
                                           Data="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z" />
                                     <TextBlock Text="  طباعة تجريبية" Margin="4,0,0,0" />
                                 </StackPanel>
@@ -429,7 +429,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Path Grid.Column="0" Width="14" Height="14" Fill="#1565C0" Stretch="Uniform" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Grid.Column="0" Width="14" Height="14" Fill="#1565C0" Stretch="Uniform" VerticalAlignment="Center"
                                       Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                                 <TextBlock x:Name="TxtPrinterInfo" Grid.Column="1" FontSize="12" Foreground="#546E7A" VerticalAlignment="Center" Margin="8,0,0,0" />
                             </Grid>
@@ -460,7 +460,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Border Width="40" Height="40" CornerRadius="10" Background="#C62828" VerticalAlignment="Center">
-                                <Path Width="20" Height="20" Fill="White" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="White" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
                             </Border>
@@ -496,7 +496,7 @@
                                     <!-- Icon + Title -->
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                         <Border Width="34" Height="34" CornerRadius="8" Background="#FFF3E0" VerticalAlignment="Center">
-                                            <Path Width="16" Height="16" Fill="#E65100" Stretch="Uniform"
+                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#E65100" Stretch="Uniform"
                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM12 13l-4-4h3V6h2v3h3l-4 4z"/>
                                         </Border>
@@ -523,7 +523,7 @@
                                             <ControlTemplate TargetType="Button">
                                                 <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="14,0">
                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                        <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                                        <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                                               Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM12 13l-4-4h3V6h2v3h3l-4 4z"/>
                                                         <TextBlock Text="  استيراد نسخة" VerticalAlignment="Center"/>
                                                     </StackPanel>
@@ -549,7 +549,7 @@
                                     <!-- Icon + Title -->
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                         <Border Width="34" Height="34" CornerRadius="8" Background="#FFEBEE" VerticalAlignment="Center">
-                                            <Path Width="16" Height="16" Fill="#C62828" Stretch="Uniform"
+                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#C62828" Stretch="Uniform"
                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                                         </Border>
@@ -576,7 +576,7 @@
                                             <ControlTemplate TargetType="Button">
                                                 <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="14,0">
                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                        <Path Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                                        <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                                               Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                                                         <TextBlock Text="  حذف كل البيانات" VerticalAlignment="Center"/>
                                                     </StackPanel>

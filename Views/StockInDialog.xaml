@@ -23,7 +23,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0" Width="50" Height="50" CornerRadius="16" Background="#E0F2F1">
-                    <Path Width="24" Height="24" Fill="#00695C" Stretch="Uniform"
+                    <Path FlowDirection="LeftToRight" Width="24" Height="24" Fill="#00695C" Stretch="Uniform"
                           HorizontalAlignment="Center" VerticalAlignment="Center"
                           Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
                 </Border>
@@ -48,7 +48,7 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border" Background="{TemplateBinding Background}"
                                     CornerRadius="8" Padding="0">
-                                <Path Width="18" Height="18" Fill="#78909C" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="#78909C" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                             </Border>
@@ -86,7 +86,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Width="42" Background="Transparent">
-                            <Path Width="16" Height="16" Fill="#B0BEC5" Stretch="Uniform"
+                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#B0BEC5" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                         </Border>
@@ -203,7 +203,7 @@
 
                                         <!-- Row 0: icon + name + total cost + remove -->
                                         <Border Grid.Column="0" Width="24" Height="24" CornerRadius="5" Background="#E0F2F1">
-                                            <Path Width="11" Height="11" Fill="#00695C" Stretch="Uniform"
+                                            <Path FlowDirection="LeftToRight" Width="11" Height="11" Fill="#00695C" Stretch="Uniform"
                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
                                         </Border>
@@ -218,7 +218,7 @@
                                                 <ControlTemplate TargetType="Button">
                                                     <Border x:Name="b" Background="{TemplateBinding Background}"
                                                             CornerRadius="4" Padding="0">
-                                                        <Path Width="11" Height="11" Fill="#E53935" Stretch="Uniform"
+                                                        <Path FlowDirection="LeftToRight" Width="11" Height="11" Fill="#E53935" Stretch="Uniform"
                                                               HorizontalAlignment="Center" VerticalAlignment="Center"
                                                               Data="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 19,6.41Z" />
                                                     </Border>
@@ -323,7 +323,7 @@
                                 Background="{TemplateBinding Background}"
                                 Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Width="18" Height="18" Fill="White" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="White" Stretch="Uniform"
                                       VerticalAlignment="Center"
                                       Data="M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41-1.41L9,16.17Z" />
                                 <TextBlock Text="حفظ الكل" Margin="10,0,0,0" VerticalAlignment="Center" />
@@ -350,7 +350,7 @@
                                 Background="{TemplateBinding Background}"
                                 Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Width="18" Height="18" Fill="White" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="White" Stretch="Uniform"
                                       VerticalAlignment="Center"
                                       Data="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                                 <TextBlock Text="إلغاء" Margin="10,0,0,0" VerticalAlignment="Center" />

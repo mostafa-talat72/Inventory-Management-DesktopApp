@@ -22,7 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="#EDE7F6">
-                    <Path Width="22" Height="22" Fill="#4527A0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="#4527A0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                           Data="M18 8H6V6c0-2.21 1.79-4 4-4h4c2.21 0 4 1.79 4 4v2zm3 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V10c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2zm-6 5c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1s.45 1 1 1h4c.55 0 1-.45 1-1z" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
@@ -33,7 +33,7 @@
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.08" Color="#000" />
                     </Border.Effect>
-                    <Path Width="14" Height="14" Fill="#78909C" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#78909C" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                           Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                 </Border>
             </Grid>
@@ -78,7 +78,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Path Grid.Column="0" Width="18" Height="18" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Grid.Column="0" Width="18" Height="18" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                       Data="M18 8H6V6c0-2.21 1.79-4 4-4h4c2.21 0 4 1.79 4 4v2zm3 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V10c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2zm-6 5c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1s.45 1 1 1h4c.55 0 1-.45 1-1z" />
                                 <TextBlock Grid.Column="1" Text="  طباعة" FontSize="14" FontWeight="SemiBold"
                                            Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
@@ -108,7 +108,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Path Grid.Column="0" Width="18" Height="18" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                <Path FlowDirection="LeftToRight" Grid.Column="0" Width="18" Height="18" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                       Data="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" />
                                 <TextBlock Grid.Column="1" Text="  تصدير PDF" FontSize="14" FontWeight="SemiBold"
                                            Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />

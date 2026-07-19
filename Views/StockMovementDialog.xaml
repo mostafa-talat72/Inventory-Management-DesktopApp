@@ -21,7 +21,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0" Width="50" Height="50" CornerRadius="16" Background="#FFF3E0">
-                    <Path Width="24" Height="24" Fill="#E65100" Stretch="Uniform"
+                    <Path FlowDirection="LeftToRight" Width="24" Height="24" Fill="#E65100" Stretch="Uniform"
                           HorizontalAlignment="Center" VerticalAlignment="Center"
                           Data="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
                 </Border>
@@ -30,7 +30,7 @@
                     <TextBlock Text="سجل حركة المخزون" FontSize="22" FontWeight="Bold" Foreground="#1A237E" />
                     <Border Background="#F0F0FF" CornerRadius="8" Padding="10,5" Margin="0,6,0,0">
                         <StackPanel Orientation="Horizontal">
-                            <Path Width="14" Height="14" Fill="#3F51B5" Stretch="Uniform"
+                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#3F51B5" Stretch="Uniform"
                                   VerticalAlignment="Center"
                                   Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
                             <TextBlock x:Name="TxtSubtitle" Text="" FontSize="13" FontWeight="SemiBold"
@@ -47,7 +47,7 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border" Background="{TemplateBinding Background}"
                                     CornerRadius="8" Padding="0">
-                                <Path Width="18" Height="18" Fill="#78909C" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="#78909C" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                             </Border>
@@ -85,7 +85,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="#D0D0FF">
-                            <Path Width="22" Height="22" Fill="#3F51B5" Stretch="Uniform"
+                            <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="#3F51B5" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
                         </Border>
@@ -105,7 +105,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="#C8E6C9">
-                            <Path Width="22" Height="22" Fill="#2E7D32" Stretch="Uniform"
+                            <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="#2E7D32" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
                         </Border>
@@ -123,7 +123,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="#FFE0B2">
-                            <Path Width="22" Height="22" Fill="#E65100" Stretch="Uniform"
+                            <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="#E65100" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L21 8l-9 9z" />
                         </Border>
@@ -261,7 +261,7 @@
                                                     <ControlTemplate TargetType="Button">
                                                         <Border x:Name="border" Background="{TemplateBinding Background}"
                                                                 CornerRadius="6" Padding="0">
-                                                            <Path Width="14" Height="14" Fill="#546E7A" Stretch="Uniform"
+                                                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#546E7A" Stretch="Uniform"
                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                                   Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
                                                         </Border>
@@ -296,7 +296,7 @@
                                                     <ControlTemplate TargetType="Button">
                                                         <Border x:Name="border" Background="{TemplateBinding Background}"
                                                                 CornerRadius="6" Padding="0">
-                                                            <Path Width="14" Height="14" Fill="#E53935" Stretch="Uniform"
+                                                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#E53935" Stretch="Uniform"
                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                                   Data="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 19,6.41Z" />
                                                         </Border>
@@ -337,7 +337,7 @@
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,48,0,48">
                         <Border Width="72" Height="72" CornerRadius="36" Background="#F5F5F5"
                                 HorizontalAlignment="Center">
-                            <Path Width="32" Height="32" Fill="#B0BEC5" Stretch="Uniform"
+                            <Path FlowDirection="LeftToRight" Width="32" Height="32" Fill="#B0BEC5" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
                         </Border>
@@ -361,7 +361,7 @@
                                 Background="{TemplateBinding Background}"
                                 Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Width="18" Height="18" Fill="White" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="White" Stretch="Uniform"
                                       VerticalAlignment="Center"
                                       Data="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                                 <TextBlock Text="إغلاق" Margin="10,0,0,0" VerticalAlignment="Center" />

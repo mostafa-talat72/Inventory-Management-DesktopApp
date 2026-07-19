@@ -32,7 +32,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="White" Opacity="0.2">
-                        <Path Width="22" Height="22" Fill="White" Stretch="Uniform"
+                        <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="White" Stretch="Uniform"
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z" />
                     </Border>
@@ -44,7 +44,7 @@
                             Background="Transparent" BorderThickness="0"
                             Cursor="Hand" Width="32" Height="32"
                             ToolTip="إغلاق" VerticalAlignment="Top">
-                        <Path Width="16" Height="16" Fill="#CE93D8" Stretch="Uniform"
+                        <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#CE93D8" Stretch="Uniform"
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                     </Button>
@@ -60,7 +60,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0" Width="32" Height="32" CornerRadius="8" Background="#F3E5F5">
-                        <Path Width="16" Height="16" Fill="#7B1FA2" Stretch="Uniform"
+                        <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#7B1FA2" Stretch="Uniform"
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M12 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-10c4.2 0 8 3.22 8 8.2 0 3.32-2.67 7.25-8 11.8-5.33-4.55-8-8.48-8-11.8C4 5.22 7.8 2 12 2z" />
                     </Border>
@@ -81,7 +81,7 @@
             <Border x:Name="TargetBadge" Grid.Row="2" Margin="24,10,24,0" CornerRadius="8" Background="#F3E5F5"
                     Padding="12,8" Visibility="Collapsed" BorderBrush="#CE93D8" BorderThickness="1">
                 <StackPanel Orientation="Horizontal">
-                    <Path Width="16" Height="16" Fill="#7B1FA2" Stretch="Uniform" VerticalAlignment="Center"
+                    <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#7B1FA2" Stretch="Uniform" VerticalAlignment="Center"
                           Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                     <TextBlock x:Name="TxtTargetInfo" Text="" FontSize="12" FontWeight="Bold" Foreground="#7B1FA2" Margin="6,0,0,0" />
                     <TextBlock Text="(اضغط لتغيير الهدف)" FontSize="10" Foreground="#9C27B0" Margin="10,0,0,0" VerticalAlignment="Center" />
@@ -145,7 +145,7 @@
                                     <Border x:Name="border" Background="#B0BEC5"
                                             CornerRadius="10" Padding="{TemplateBinding Padding}">
                                         <StackPanel Orientation="Horizontal">
-                                            <Path Width="18" Height="18" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
+                                            <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="White" Stretch="Uniform" VerticalAlignment="Center"
                                                   Data="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z" />
                                             <ContentPresenter VerticalAlignment="Center" Margin="10,0,0,0" />
                                         </StackPanel>

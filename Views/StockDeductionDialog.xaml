@@ -21,7 +21,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0" Width="50" Height="50" CornerRadius="16" Background="#FFEBEE">
-                    <Path Width="24" Height="24" Fill="#C62828" Stretch="Uniform"
+                    <Path FlowDirection="LeftToRight" Width="24" Height="24" Fill="#C62828" Stretch="Uniform"
                           HorizontalAlignment="Center" VerticalAlignment="Center"
                           Data="M19,13H5V11H19V13Z" />
                 </Border>
@@ -39,7 +39,7 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border" Background="{TemplateBinding Background}"
                                     CornerRadius="8" Padding="0">
-                                <Path Width="18" Height="18" Fill="#78909C" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="#78909C" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                             </Border>
@@ -160,7 +160,7 @@
                                 Background="{TemplateBinding Background}"
                                 Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Width="18" Height="18" Fill="White" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="White" Stretch="Uniform"
                                       VerticalAlignment="Center"
                                       Data="M19,13H5V11H19V13Z" />
                                 <TextBlock Text="تأكيد الخصم" Margin="10,0,0,0" VerticalAlignment="Center" />
@@ -187,7 +187,7 @@
                                 Background="{TemplateBinding Background}"
                                 Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Width="18" Height="18" Fill="White" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="White" Stretch="Uniform"
                                       VerticalAlignment="Center"
                                       Data="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                                 <TextBlock Text="إلغاء" Margin="10,0,0,0" VerticalAlignment="Center" />

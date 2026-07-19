@@ -18,7 +18,7 @@
             <Border Grid.Row="0" Background="#2E7D32" CornerRadius="16,16,0,0" Padding="24,22,24,18">
                 <StackPanel>
                     <Border Width="48" Height="48" CornerRadius="24" Background="White" HorizontalAlignment="Center" Margin="0,0,0,12">
-                        <Path Width="24" Height="24" Fill="#2E7D32" Stretch="Uniform"
+                        <Path FlowDirection="LeftToRight" Width="24" Height="24" Fill="#2E7D32" Stretch="Uniform"
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                     </Border>
@@ -62,7 +62,7 @@
                             <Border x:Name="border" Background="{TemplateBinding Background}"
                                     CornerRadius="10" Padding="{TemplateBinding Padding}">
                                 <StackPanel Orientation="Horizontal">
-                                    <Path Width="18" Height="18" Fill="White" Stretch="Uniform"
+                                    <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="White" Stretch="Uniform"
                                           VerticalAlignment="Center"
                                           Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                                     <ContentPresenter VerticalAlignment="Center" Margin="10,0,0,0" />

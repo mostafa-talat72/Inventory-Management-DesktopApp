@@ -17,7 +17,7 @@
             <!-- Header with icon -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                 <Border Width="44" Height="44" CornerRadius="14" Background="#E8EAF6">
-                    <Path Width="22" Height="22" Fill="#1A237E" Stretch="Uniform"
+                    <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="#1A237E" Stretch="Uniform"
                           HorizontalAlignment="Center" VerticalAlignment="Center"
                           Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                 </Border>
@@ -50,7 +50,7 @@
                                     <Border x:Name="border" Background="{TemplateBinding Background}"
                                             CornerRadius="8" Padding="{TemplateBinding Padding}">
                                         <StackPanel Orientation="Horizontal">
-                                            <Path Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
                                                   VerticalAlignment="Center"
                                                   Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
                                             <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
@@ -77,7 +77,7 @@
                                     <Border x:Name="border" Background="{TemplateBinding Background}"
                                             CornerRadius="8" Padding="{TemplateBinding Padding}">
                                         <StackPanel Orientation="Horizontal">
-                                            <Path Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
                                                   VerticalAlignment="Center"
                                                   Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
                                             <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
@@ -138,7 +138,7 @@
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
                                     Background="#FFF3E0" VerticalAlignment="Center">
-                                <Path Width="18" Height="18" Fill="#FF6F00" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="#FF6F00" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M11.5 1L13.91 5.59L19 6.09L15.25 9.72L16.82 14.78L11.5 12.09L6.18 14.78L7.75 9.72L4 6.09L9.09 5.59L11.5 1M11.5 4.84L10.34 7.08L7.82 7.5L9.66 9.28L9.16 11.78L11.5 10.56L13.84 11.78L13.34 9.28L15.18 7.5L12.66 7.08L11.5 4.84M20 12C18.95 12 18.08 12.67 17.77 13.61C17.46 13.77 17.2 14 17.03 14.31L15.56 13.75L15.04 15.25L16.36 15.75C16.28 16.11 16.25 16.5 16.25 16.88C16.25 17.26 16.28 17.64 16.36 18L15.04 18.5L15.56 20L17.03 19.44C17.2 19.75 17.46 20 17.77 20.16C18.08 21.09 18.95 21.75 20 21.75C21.05 21.75 21.92 21.09 22.23 20.16C22.54 20 22.8 19.75 22.97 19.44L24.44 20L24.96 18.5L23.64 18C23.72 17.64 23.75 17.26 23.75 16.88C23.75 16.5 23.72 16.11 23.64 15.75L24.96 15.25L24.44 13.75L22.97 14.31C22.8 14 22.54 13.77 22.23 13.61C21.92 12.67 21.05 12 20 12M20 15.5C20.83 15.5 21.5 16.17 21.5 17C21.5 17.83 20.83 18.5 20 18.5C19.17 18.5 18.5 17.83 18.5 17C18.5 16.17 19.17 15.5 20 15.5Z" />
                             </Border>
@@ -219,7 +219,7 @@
                                         <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
                                                 Background="{Binding StatusColor, Converter={StaticResource StatusColorConverter}}"
                                                 VerticalAlignment="Center">
-                                            <Path Width="18" Height="18" Fill="{Binding StatusColor, Converter={StaticResource StatusBorderConverter}}"
+                                            <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="{Binding StatusColor, Converter={StaticResource StatusBorderConverter}}"
                                                   Stretch="Uniform"
                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
@@ -239,7 +239,7 @@
                                                     <ControlTemplate TargetType="Button">
                                                         <Border x:Name="border" Background="{TemplateBinding Background}"
                                                                 CornerRadius="6" Padding="0">
-                                                            <Path Width="14" Height="14" Fill="#546E7A" Stretch="Uniform"
+                                                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#546E7A" Stretch="Uniform"
                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                                   Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
                                                         </Border>
@@ -262,7 +262,7 @@
                                                     <ControlTemplate TargetType="Button">
                                                         <Border x:Name="border" Background="{TemplateBinding Background}"
                                                                 CornerRadius="6" Padding="0">
-                                                            <Path Width="14" Height="14" Fill="#E53935" Stretch="Uniform"
+                                                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#E53935" Stretch="Uniform"
                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                                   Data="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 19,6.41Z" />
                                                         </Border>

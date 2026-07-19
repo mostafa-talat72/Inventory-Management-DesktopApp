@@ -22,7 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Width="44" Height="44" CornerRadius="14" Background="#E8EAF6">
-                    <Path Width="22" Height="22" Fill="#1A237E" Stretch="Uniform"
+                    <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="#1A237E" Stretch="Uniform"
                           HorizontalAlignment="Center" VerticalAlignment="Center"
                           Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                 </Border>
@@ -38,7 +38,7 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border" Background="{TemplateBinding Background}"
                                     CornerRadius="8" Padding="0">
-                                <Path Width="18" Height="18" Fill="#78909C" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="#78909C" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                             </Border>
@@ -65,7 +65,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Path Grid.Column="0" Width="18" Height="18" Fill="#90A4AE" Stretch="Uniform"
+                    <Path FlowDirection="LeftToRight" Grid.Column="0" Width="18" Height="18" Fill="#90A4AE" Stretch="Uniform"
                           Margin="14,0,0,0" VerticalAlignment="Center"
                           Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                     <TextBox x:Name="TxtSearch"
@@ -93,7 +93,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="#FFE082">
-                        <Path Width="20" Height="20" Fill="#E65100" Stretch="Uniform"
+                        <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#E65100" Stretch="Uniform"
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
                     </Border>
@@ -136,7 +136,7 @@
                         <Border x:Name="border" Background="{TemplateBinding Background}"
                                 CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
                                       VerticalAlignment="Center"
                                       Data="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                                 <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
