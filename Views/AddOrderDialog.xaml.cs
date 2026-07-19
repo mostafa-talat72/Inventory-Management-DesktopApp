@@ -34,12 +34,12 @@ namespace ProductApp.Views
             public TextBox WholesaleCartonTb = null!, WholesaleBoxTb = null!, WholesalePieceTb = null!;
             public TextBlock TotalTb = null!;
 
-            public int RetailCarton => ParseInt(RetailCartonTb.Text);
-            public int RetailBox => ParseInt(RetailBoxTb.Text);
-            public int RetailPiece => ParseInt(RetailPieceTb.Text);
-            public int WholesaleCarton => ParseInt(WholesaleCartonTb.Text);
-            public int WholesaleBox => ParseInt(WholesaleBoxTb.Text);
-            public int WholesalePiece => ParseInt(WholesalePieceTb.Text);
+            public int RetailCarton => ParseInt(RetailCartonTb?.Text);
+            public int RetailBox => ParseInt(RetailBoxTb?.Text);
+            public int RetailPiece => ParseInt(RetailPieceTb?.Text);
+            public int WholesaleCarton => ParseInt(WholesaleCartonTb?.Text);
+            public int WholesaleBox => ParseInt(WholesaleBoxTb?.Text);
+            public int WholesalePiece => ParseInt(WholesalePieceTb?.Text);
 
             public decimal RetailTotal
             {
@@ -495,135 +495,186 @@ namespace ProductApp.Views
 
         private void BtnSaveOrder_Click(object sender, RoutedEventArgs e)
         {
-            if (_entries.Count == 0)
+            try
             {
-                NotificationManager.ShowWarning("لم يتم إضافة أي منتجات.");
-                return;
-            }
-
-            if (!_entries.Values.Any(entry => entry.Total > 0))
-            {
-                NotificationManager.ShowWarning("يجب تحديد كمية واحدة على الأقل لأحد المنتجات.");
-                return;
-            }
-
-            // Pre-check stock for all entries before saving anything
-            foreach (var entry in _entries.Values)
-            {
-                if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
+                if (_entries.Count == 0)
                 {
-                    if (!_inv.IsStockSufficient(entry.Product, entry.RetailCarton, entry.RetailBox, entry.RetailPiece))
+                    NotificationManager.ShowWarning("لم يتم إضافة أي منتجات.");
+                    return;
+                }
+
+                if (!_entries.Values.Any(entry => entry.Total > 0))
+                {
+                    NotificationManager.ShowWarning("يجب تحديد كمية واحدة على الأقل لأحد المنتجات.");
+                    return;
+                }
+
+                // لو وضع تعديل — ارجع مخزون الطلب القديم أولاً (بدون فحص مسبق)
+                if (_orderToEdit != null)
+                {
+                    SaveEditOrder();
+                    return;
+                }
+
+                // Pre-check stock for new orders only
+                foreach (var entry in _entries.Values)
+                {
+                    if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
                     {
-                        NotificationManager.ShowWarning($"المخزون غير كافٍ لـ {entry.Product.Name} (قطاعي)");
-                        return;
+                        if (!_inv.IsStockSufficient(entry.Product, entry.RetailCarton, entry.RetailBox, entry.RetailPiece))
+                        {
+                            NotificationManager.ShowWarning($"المخزون غير كافٍ لـ {entry.Product.Name} (قطاعي)");
+                            return;
+                        }
+                    }
+                    if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
+                    {
+                        if (!_inv.IsStockSufficient(entry.Product, entry.WholesaleCarton, entry.WholesaleBox, entry.WholesalePiece))
+                        {
+                            NotificationManager.ShowWarning($"المخزون غير كافٍ لـ {entry.Product.Name} (جملة)");
+                            return;
+                        }
                     }
                 }
-                if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
+
+                // Create invoice if none existed
+                if (_invoice == null)
                 {
-                    if (!_inv.IsStockSufficient(entry.Product, entry.WholesaleCarton, entry.WholesaleBox, entry.WholesalePiece))
+                    _invoice = new Invoice
                     {
-                        NotificationManager.ShowWarning($"المخزون غير كافٍ لـ {entry.Product.Name} (جملة)");
-                        return;
-                    }
+                        CustomerId = _customer?.Id,
+                        CustomerName = _customer?.Name ?? "نقدي",
+                        InvoiceDate = DateTime.Now,
+                        TotalAmount = 0,
+                        Status = InvoiceStatus.Open
+                    };
+                    _db.Invoices.Add(_invoice);
+                    _db.SaveChanges();
+
+                    App.AppBackup?.BackupIfOnOperation();
+                    InvoiceBadge.Visibility = Visibility.Visible;
+                    TxtInvoiceId.Text = _invoice.Id.ToString();
                 }
-            }
 
-            // لو وضع تعديل — ارجع مخزون الطلب القديم أولاً
-            if (_orderToEdit != null)
-            {
-                SaveEditOrder();
-                return;
-            }
+                // Create a new Order for this batch
+                var order = new Order { InvoiceId = _invoice.Id };
+                _db.Orders.Add(order);
+                _db.SaveChanges();
 
-            // Create invoice if none existed
-            if (_invoice == null)
-            {
-                _invoice = new Invoice
+                foreach (var entry in _entries.Values)
                 {
-                    CustomerId = _customer?.Id,
-                    CustomerName = _customer?.Name ?? "نقدي",
-                    InvoiceDate = DateTime.Now,
-                    TotalAmount = 0,
-                    Status = InvoiceStatus.Open
-                };
-                _db.Invoices.Add(_invoice);
-            _db.SaveChanges();
+                    if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
+                        AddOrderItem(order, entry, PriceType.Retail);
+                    if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
+                        AddOrderItem(order, entry, PriceType.Wholesale);
+                }
 
-            App.AppBackup?.BackupIfOnOperation();
-                InvoiceBadge.Visibility = Visibility.Visible;
+                // Save items first, then recalculate total from DB
+                _db.SaveChanges();
+                var orderIds = _db.Orders.Where(o => o.InvoiceId == _invoice.Id).Select(o => o.Id).ToList();
+                _invoice.TotalAmount = _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).Sum(oi => oi.Total);
+                _db.SaveChanges();
+
+                App.AppBackup?.BackupIfOnOperation();
+
+                int count = _entries.Count;
+                _entries.Clear();
+                OrderItemsPanel.Children.Clear();
+                UpdateSummary();
                 TxtInvoiceId.Text = _invoice.Id.ToString();
+
+                NotificationManager.ShowSuccess($"تم إضافة {count} منتج للفاتورة #{_invoice.Id} بنجاح.");
+                DialogClosed?.Invoke(this, true);
             }
-
-            // Create a new Order for this batch
-            var order = new Order { InvoiceId = _invoice.Id };
-            _db.Orders.Add(order);
-            _db.SaveChanges();
-
-            foreach (var entry in _entries.Values)
+            catch (System.Exception ex)
             {
-                if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
-                    AddOrderItem(order, entry, PriceType.Retail);
-                if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
-                    AddOrderItem(order, entry, PriceType.Wholesale);
+                LogError(ex);
+                NotificationManager.ShowError($"حدث خطأ أثناء الحفظ: {ex.Message}");
             }
+        }
 
-            // Save items first, then recalculate total from DB
-            _db.SaveChanges();
-            var orderIds = _db.Orders.Where(o => o.InvoiceId == _invoice.Id).Select(o => o.Id).ToList();
-            _invoice.TotalAmount = _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).Sum(oi => oi.Total);
-            _db.SaveChanges();
-
-            App.AppBackup?.BackupIfOnOperation();
-
-            int count = _entries.Count;
-            _entries.Clear();
-            OrderItemsPanel.Children.Clear();
-            UpdateSummary();
-            TxtInvoiceId.Text = _invoice.Id.ToString();
-
-            NotificationManager.ShowSuccess($"تم إضافة {count} منتج للفاتورة #{_invoice.Id} بنجاح.");
-            DialogClosed?.Invoke(this, true);
+        private void LogError(System.Exception ex)
+        {
+            try
+            {
+                var msg = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n{ex}\n";
+                if (ex.InnerException != null)
+                    msg += $"INNER:\n{ex.InnerException}\n";
+                var localPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "error.log");
+                System.IO.File.AppendAllText(localPath, msg);
+            }
+            catch { }
         }
 
         private void SaveEditOrder()
         {
-            var order = _orderToEdit!;
-
-            // ارجع مخزون كل item قديم
-            foreach (var oldItem in order.Items.ToList())
+            try
             {
-                _db.Entry(oldItem).Reference(oi => oi.Product!).Load();
-                int oldPieces = _inv.CalculatePieceEquivalent(oldItem.Product!, oldItem.CartonQuantity, oldItem.BoxQuantity, oldItem.PieceQuantity);
+                var order = _orderToEdit!;
 
-                var batch = _db.InventoryBatches
-                    .Where(b => b.ProductId == oldItem.ProductId && b.RemainingQuantity > 0)
-                    .OrderByDescending(b => b.PurchaseDate).FirstOrDefault();
-                if (batch != null) batch.RemainingQuantity += oldPieces;
+                // ارجع مخزون كل item قديم واحفظ فوراً
+                foreach (var oldItem in order.Items.ToList())
+                {
+                    _db.Entry(oldItem).Reference(oi => oi.Product!).Load();
+                    int oldPieces = _inv.CalculatePieceEquivalent(oldItem.Product!, oldItem.CartonQuantity, oldItem.BoxQuantity, oldItem.PieceQuantity);
 
-                _invoice!.TotalAmount -= oldItem.Total;
-                _db.OrderItems.Remove(oldItem);
+                    var batch = _db.InventoryBatches
+                        .Where(b => b.ProductId == oldItem.ProductId && b.RemainingQuantity > 0)
+                        .OrderByDescending(b => b.PurchaseDate).FirstOrDefault();
+                    if (batch != null) batch.RemainingQuantity += oldPieces;
+
+                    _invoice!.TotalAmount -= oldItem.Total;
+                    _db.OrderItems.Remove(oldItem);
+                }
+                _db.SaveChanges();
+
+                // فحص المخزون بعد إرجاع الكميات القديمة وحفظها في قاعدة البيانات
+                foreach (var entry in _entries.Values)
+                {
+                    if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
+                    {
+                        if (!_inv.IsStockSufficient(entry.Product, entry.RetailCarton, entry.RetailBox, entry.RetailPiece))
+                        {
+                            NotificationManager.ShowWarning($"المخزون غير كافٍ لـ {entry.Product.Name} (قطاعي)");
+                            return;
+                        }
+                    }
+                    if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
+                    {
+                        if (!_inv.IsStockSufficient(entry.Product, entry.WholesaleCarton, entry.WholesaleBox, entry.WholesalePiece))
+                        {
+                            NotificationManager.ShowWarning($"المخزون غير كافٍ لـ {entry.Product.Name} (جملة)");
+                            return;
+                        }
+                    }
+                }
+
+                // أضف الـ items الجديدة على نفس الـ order
+                foreach (var entry in _entries.Values)
+                {
+                    if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
+                        AddOrderItem(order, entry, PriceType.Retail);
+                    if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
+                        AddOrderItem(order, entry, PriceType.Wholesale);
+                }
+
+                _db.SaveChanges();
+
+                // إعادة حساب الإجمالي
+                var orderIds = _db.Orders.Where(o => o.InvoiceId == _invoice!.Id).Select(o => o.Id).ToList();
+                _invoice!.TotalAmount = _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).Sum(oi => oi.Total);
+                _db.SaveChanges();
+
+                App.AppBackup?.BackupIfOnOperation();
+
+                NotificationManager.ShowSuccess($"تم تعديل الطلب وتحديث الفاتورة #{_invoice.Id} بنجاح.");
+                DialogClosed?.Invoke(this, true);
             }
-
-            // أضف الـ items الجديدة على نفس الـ order
-            foreach (var entry in _entries.Values)
+            catch (System.Exception ex)
             {
-                if (entry.RetailCarton > 0 || entry.RetailBox > 0 || entry.RetailPiece > 0)
-                    AddOrderItem(order, entry, PriceType.Retail);
-                if (entry.WholesaleCarton > 0 || entry.WholesaleBox > 0 || entry.WholesalePiece > 0)
-                    AddOrderItem(order, entry, PriceType.Wholesale);
+                LogError(ex);
+                NotificationManager.ShowError($"حدث خطأ أثناء حفظ التعديل: {ex.Message}");
             }
-
-            _db.SaveChanges();
-
-            // إعادة حساب الإجمالي
-            var orderIds = _db.Orders.Where(o => o.InvoiceId == _invoice!.Id).Select(o => o.Id).ToList();
-            _invoice!.TotalAmount = _db.OrderItems.Where(oi => orderIds.Contains(oi.OrderId)).Sum(oi => oi.Total);
-            _db.SaveChanges();
-
-            App.AppBackup?.BackupIfOnOperation();
-
-            NotificationManager.ShowSuccess($"تم تعديل الطلب وتحديث الفاتورة #{_invoice.Id} بنجاح.");
-            DialogClosed?.Invoke(this, true);
         }
 
         private void AddOrderItem(Order order, OrderItemEntry entry, PriceType priceType)
@@ -688,8 +739,8 @@ namespace ProductApp.Views
             LoadProducts(TxtSearch.Text.Trim());
         }
 
-        private static int ParseInt(string text) =>
-            int.TryParse(text, out int v) ? v : 0;
+        private static int ParseInt(string? text) =>
+            text != null && int.TryParse(text, out int v) ? v : 0;
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {

@@ -485,11 +485,8 @@ H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.GeneratedMS
 H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.AssemblyInfoInputs.cache
 H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.AssemblyInfo.cs
 H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.csproj.CoreCompileInputs.cache
-H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.sourcelink.json
 H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.csproj.Up2Date
 H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.dll
 H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\refint\ProductApp.dll
 H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.genruntimeconfig.cache
 H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ref\ProductApp.dll
-H:\My Work\Product App\bin\Release\net9.0-windows\win-x64\ProductApp.pdb
-H:\My Work\Product App\obj\Release\net9.0-windows\win-x64\ProductApp.pdb

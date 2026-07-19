@@ -95,10 +95,13 @@
             <!-- Developer Signature -->
             <Border Grid.Row="4" Background="#F5F5F5" CornerRadius="0,0,12,12" Padding="0,10,0,12" Margin="0,14,0,0">
                 <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="يرجى التواصل مع المطور"
+                               FontSize="9" Foreground="#999999"
+                               HorizontalAlignment="Center" />
                     <TextBlock Text="تم تصميم وتطوير هذا النظام بواسطة"
                                FontSize="9" Foreground="#AAAAAA"
-                               HorizontalAlignment="Center" />
-                    <TextBlock Text="المهندس مصطفى طلعت للحلول البرمجيه"
+                               HorizontalAlignment="Center" Margin="0,4,0,0" />
+                    <TextBlock Text="المهندس مصطفى طلعت - للحلول البرمجية"
                                FontSize="10" FontWeight="Bold" Foreground="#888888"
                                HorizontalAlignment="Center" Margin="0,2,0,0" />
                     <TextBlock Text="01116626164"

@@ -18,6 +18,12 @@ public partial class App : Application
     {
         LogError(e.Exception);
         e.Handled = true;
+        var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTE Stock", "error.log");
+        MessageBox.Show(
+            $"حدث خطأ غير متوقع:\n{e.Exception.Message}\n\nتم تسجيل الخطأ في:\n{logPath}",
+            "خطأ في البرنامج",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
         Shutdown();
     }
 
@@ -60,7 +66,6 @@ public partial class App : Application
         {
             using var db = new AppDbContext();
             db.Database.EnsureCreated();
-            DbSeeder.Seed(db);
         }
         catch (System.Exception ex)
         {
@@ -85,6 +90,7 @@ public partial class App : Application
 
         // Show main window
         var mainWin = new MainWindow();
+        mainWin.Closed += (_, _) => Shutdown();
         mainWin.Show();
     }
 
@@ -97,5 +103,12 @@ public partial class App : Application
         if (ex.InnerException != null)
             msg += $"INNER:\n{ex.InnerException}\n";
         File.AppendAllText(logPath, msg);
+
+        try
+        {
+            var localPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "error.log");
+            File.AppendAllText(localPath, msg);
+        }
+        catch { }
     }
 }

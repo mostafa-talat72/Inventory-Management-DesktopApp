@@ -312,7 +312,21 @@ public partial class SettingsPage : UserControl
                     }
 
                     System.IO.File.Copy(sourceFile, dbPath, overwrite: true);
-                    NotificationManager.ShowSuccess("تم استيراد النسخة الاحتياطية بنجاح — أعد تشغيل البرنامج لتطبيق التغييرات");
+
+                    if (System.IO.File.Exists(dbPath + "-wal"))
+                        System.IO.File.Delete(dbPath + "-wal");
+                    if (System.IO.File.Exists(dbPath + "-shm"))
+                        System.IO.File.Delete(dbPath + "-shm");
+
+                    NotificationManager.ShowSuccess("تم استيراد النسخة الاحتياطية — سيتم إعادة تشغيل البرنامج الآن");
+
+                    var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName
+                        ?? Environment.ProcessPath;
+                    if (exe != null)
+                    {
+                        System.Diagnostics.Process.Start(exe);
+                        Application.Current.Shutdown();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -378,7 +392,8 @@ public partial class SettingsPage : UserControl
                     NotificationManager.ShowSuccess("تم حذف قاعدة البيانات — سيتم إعادة تشغيل البرنامج الآن");
 
                     // إعادة تشغيل البرنامج لإنشاء داتابيز جديدة فارغة
-                    var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                    var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName
+                        ?? Environment.ProcessPath;
                     if (exe != null)
                     {
                         System.Diagnostics.Process.Start(exe);

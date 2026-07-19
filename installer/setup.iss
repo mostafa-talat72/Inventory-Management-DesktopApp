@@ -34,7 +34,7 @@ ClickNext=انقر فوق "التالي" للمتابعة، أو "إلغاء" ل
 ReadyLabel2a=تم تصميم وتطوير هذا النظام بواسطة%nالمهندس مصطفى طلعت - للحلول البرمجية%n01116626164%n%nسيتم تثبيت البرنامج في المسار التالي:
 
 [Files]
-Source: "..\publish\app\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]

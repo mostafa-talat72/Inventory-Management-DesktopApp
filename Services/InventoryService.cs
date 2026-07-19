@@ -108,25 +108,66 @@ public class InventoryService
 
     public string GetStockDisplay(Product product)
     {
-        int totalPieces = GetAvailableStock(product);
-        int ppc = GetPiecesPerCarton(product);
-        int ppb = GetPiecesPerBox(product);
-        int bpc = GetBoxesPerCarton(product);
+        var units = _db.ProductUnits.Where(u => u.ProductId == product.Id).OrderBy(u => u.UnitType).ToList();
+        bool hasCarton = units.Any(u => u.UnitType == UnitType.Carton);
+        bool hasBox = units.Any(u => u.UnitType == UnitType.Box);
+        bool hasPiece = units.Any(u => u.UnitType == UnitType.Piece);
 
-        if (ppc > 1)
+        int total = GetAvailableStock(product);
+
+        // Carton → Box → Piece (full hierarchy)
+        if (hasCarton && hasBox && hasPiece)
         {
-            int cartons = totalPieces / ppc;
-            int remainder = totalPieces % ppc;
-
-            if (bpc > 1)
-            {
-                int boxes = remainder / ppb;
-                int pieces = remainder % ppb;
-                return $"{cartons} كرتونة, {boxes} علبة, {pieces} قطعة";
-            }
-            return $"{cartons} كرتونة, {remainder} قطعة";
+            int ppc = GetPiecesPerCarton(product);
+            int ppb = GetPiecesPerBox(product);
+            int cartons = total / ppc;
+            int afterCartons = total % ppc;
+            int boxes = afterCartons / ppb;
+            int pieces = afterCartons % ppb;
+            return $"{cartons} كرتونة, {boxes} علبة, {pieces} قطعة";
         }
-        return $"{totalPieces} قطعة";
+
+        // Carton → Box (no piece)
+        if (hasCarton && hasBox && !hasPiece)
+        {
+            int bpc = GetBoxesPerCarton(product);
+            int cartons = total / bpc;
+            int remBoxes = total % bpc;
+            if (cartons > 0 && remBoxes > 0)
+                return $"{cartons} كرتونة, {remBoxes} علبة";
+            if (cartons > 0)
+                return $"{cartons} كرتونة";
+            return $"{remBoxes} علبة";
+        }
+
+        // Carton → Piece (no box)
+        if (hasCarton && !hasBox && hasPiece)
+        {
+            int ppc = GetPiecesPerCarton(product);
+            int cartons = total / ppc;
+            int pieces = total % ppc;
+            return $"{cartons} كرتونة, {pieces} قطعة";
+        }
+
+        // Carton only
+        if (hasCarton && !hasBox && !hasPiece)
+            return $"{total} كرتونة";
+
+        // Box → Piece (no carton)
+        if (!hasCarton && hasBox && hasPiece)
+        {
+            int ppb = GetPiecesPerBox(product);
+            int boxes = total / ppb;
+            int pieces = total % ppb;
+            return boxes > 0 ? $"{boxes} علبة, {pieces} قطعة" : $"{pieces} قطعة";
+        }
+
+        // Box only
+        if (!hasCarton && hasBox && !hasPiece)
+            return $"{total} علبة";
+
+        // Piece only (or fallback)
+        return $"{total} قطعة";
     }
 
     public async Task StockIn(Product product, int cartonQty, int boxQty, int pieceQty, decimal totalCost, string? notes = null)
@@ -146,6 +187,11 @@ public class InventoryService
         };
         _db.InventoryBatches.Add(batch);
 
+        string reasonParts = "وارد";
+        if (cartonQty > 0) reasonParts += $" - {cartonQty} كرتونة";
+        if (boxQty > 0) reasonParts += $" - {boxQty} علبة";
+        if (pieceQty > 0) reasonParts += $" - {pieceQty} قطعة";
+
         _db.InventoryMovements.Add(new InventoryMovement
         {
             ProductId = product.Id,
@@ -153,7 +199,7 @@ public class InventoryService
             Quantity = totalPieces,
             CostPrice = costPerPiece,
             ReferenceType = ReferenceType.Purchase,
-            Notes = notes ?? $"وارد - {cartonQty} كرتونة, {boxQty} علبة, {pieceQty} قطعة"
+            Notes = notes ?? reasonParts
         });
 
         await _db.SaveChangesAsync();

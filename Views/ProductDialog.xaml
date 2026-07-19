@@ -89,31 +89,39 @@
                             </Border>
                             <TextBlock Text="القطعة" FontSize="15" FontWeight="SemiBold" Foreground="#37474F" VerticalAlignment="Center" Margin="10,0,0,0" />
                             <Border CornerRadius="4" Background="#E8EAF6" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="الوحدة الأساسية" FontSize="10" FontWeight="SemiBold" Foreground="#3F51B5" />
+                                <TextBlock Text="اختياري" FontSize="10" FontWeight="SemiBold" Foreground="#3F51B5" />
                             </Border>
                         </StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
-                                <TextBox x:Name="TxtPieceName" Text="قطعة" FontSize="13"
-                                         Padding="10,8" BorderThickness="0" Background="Transparent"
-                                         HorizontalAlignment="Center" />
-                            </Border>
-                            <Border Grid.Column="1" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
-                                <TextBox x:Name="TxtPieceRetail" wm:WatermarkBehavior.Watermark="سعر القطاعي *"
-                                         FontSize="13" Padding="10,8" BorderThickness="0"
-                                         Background="Transparent" TextChanged="Price_TextChanged" />
-                            </Border>
-                            <Border Grid.Column="2" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
-                                <TextBox x:Name="TxtPieceWholesale" wm:WatermarkBehavior.Watermark="سعر الجملة"
-                                         FontSize="13" Padding="10,8" BorderThickness="0"
-                                         Background="Transparent" TextChanged="Price_TextChanged" />
-                            </Border>
-                        </Grid>
+
+                        <CheckBox x:Name="ChkHasPiece" Content="يوجد قطعة" FontWeight="SemiBold" Foreground="#37474F"
+                                  FontSize="13" Checked="ChkHasPiece_Checked" Unchecked="ChkHasPiece_Unchecked"
+                                  Margin="0,0,0,14" />
+
+                        <Border x:Name="PiecePanel" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10"
+                                Padding="16" Background="#F8F9FA" IsEnabled="False" Opacity="0.5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
+                                    <TextBox x:Name="TxtPieceName" Text="قطعة" FontSize="13"
+                                             Padding="10,8" BorderThickness="0" Background="Transparent"
+                                             HorizontalAlignment="Center" />
+                                </Border>
+                                <Border Grid.Column="1" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
+                                    <TextBox x:Name="TxtPieceRetail" wm:WatermarkBehavior.Watermark="سعر القطاعي *"
+                                             FontSize="13" Padding="10,8" BorderThickness="0"
+                                             Background="Transparent" TextChanged="Price_TextChanged" />
+                                </Border>
+                                <Border Grid.Column="2" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Padding="0" Margin="3" Background="#FAFAFA">
+                                    <TextBox x:Name="TxtPieceWholesale" wm:WatermarkBehavior.Watermark="سعر الجملة"
+                                             FontSize="13" Padding="10,8" BorderThickness="0"
+                                             Background="Transparent" TextChanged="Price_TextChanged" />
+                                </Border>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </Border>
 
@@ -141,11 +149,11 @@
                         <Border x:Name="BoxPanel" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10"
                                 Padding="16" Background="#F8F9FA" IsEnabled="False" Opacity="0.5">
                             <StackPanel>
-                                <TextBlock Text="العلبة تحتوي على:" FontSize="12" FontWeight="SemiBold" Foreground="#78909C" Margin="0,0,0,12" />
+                                <TextBlock x:Name="TxtBoxUnitLabel" Text="العلبة تحتوي على: قطع" FontSize="12" FontWeight="SemiBold" Foreground="#78909C" Margin="0,0,0,12" />
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition x:Name="BoxQtyCol" Width="*" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
@@ -170,7 +178,7 @@
                                                  Background="Transparent" TextChanged="Price_TextChanged" />
                                     </Border>
                                 </Grid>
-                                <TextBlock Text="* السعر يُحتسب تلقائياً من سعر القطعة × عدد القطع"
+                                <TextBlock x:Name="TxtBoxHint" Text="* السعر يُحتسب تلقائياً من سعر القطعة × عدد القطع"
                                            FontSize="10" Foreground="#90A4AE" Margin="2,10,0,0" />
                             </StackPanel>
                         </Border>
@@ -206,7 +214,7 @@
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition x:Name="CartonQtyCol" Width="*" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>

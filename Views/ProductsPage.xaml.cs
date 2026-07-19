@@ -191,7 +191,8 @@ public partial class ProductsPage : Page
             _db.ProductUnits.RemoveRange(_db.ProductUnits.Where(u => u.ProductId == product.Id));
             _db.InventoryBatches.RemoveRange(_db.InventoryBatches.Where(b => b.ProductId == product.Id));
             _db.InventoryMovements.RemoveRange(_db.InventoryMovements.Where(m => m.ProductId == product.Id));
-            _db.Products.Remove(product);
+            var tracked = _db.Products.Find(product.Id);
+            if (tracked != null) _db.Products.Remove(tracked);
             _db.SaveChanges();
             LoadProducts();
         }, ConfirmDialog.DialogType.Danger);

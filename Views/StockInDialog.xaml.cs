@@ -1,8 +1,11 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ProductApp.Data;
+using ProductApp.Models;
 using ProductApp.Services;
 
 namespace ProductApp.Views;
@@ -22,7 +25,7 @@ public partial class StockInDialog : UserControl
         InitializeComponent();
         _db = new AppDbContext();
         _inv = new InventoryService(_db);
-        SelectedItemsGrid.ItemsSource = _selectedEntries;
+        SelectedItemsList.ItemsSource = _selectedEntries;
         LoadProductCards();
         _loaded = true;
     }
@@ -54,14 +57,15 @@ public partial class StockInDialog : UserControl
         if (_selectedEntries.Any(e => e.ProductId == product.Id))
             return;
 
+        var units = _db.ProductUnits.Where(u => u.ProductId == product.Id).ToList();
+
         _selectedEntries.Add(new StockInEntry
         {
             ProductId = product.Id,
             ProductName = product.Name,
-            CartonQty = 0,
-            BoxQty = 0,
-            PieceQty = 0,
-            TotalCost = 0m
+            HasCarton = units.Any(u => u.UnitType == UnitType.Carton),
+            HasBox = units.Any(u => u.UnitType == UnitType.Box),
+            HasPiece = units.Any(u => u.UnitType == UnitType.Piece)
         });
         UpdateSelectedCount();
     }
@@ -128,14 +132,30 @@ public partial class StockInDialog : UserControl
     }
 }
 
-public class StockInEntry
+public class StockInEntry : INotifyPropertyChanged
 {
     public int ProductId { get; set; }
     public string ProductName { get; set; } = "";
-    public int CartonQty { get; set; }
-    public int BoxQty { get; set; }
-    public int PieceQty { get; set; }
-    public decimal TotalCost { get; set; }
+
+    private int _cartonQty;
+    public int CartonQty { get => _cartonQty; set { _cartonQty = value; OnPropChanged(); } }
+
+    private int _boxQty;
+    public int BoxQty { get => _boxQty; set { _boxQty = value; OnPropChanged(); } }
+
+    private int _pieceQty;
+    public int PieceQty { get => _pieceQty; set { _pieceQty = value; OnPropChanged(); } }
+
+    private decimal _totalCost;
+    public decimal TotalCost { get => _totalCost; set { _totalCost = value; OnPropChanged(); } }
+
+    public bool HasCarton { get; set; }
+    public bool HasBox { get; set; }
+    public bool HasPiece { get; set; }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    private void OnPropChanged([CallerMemberName] string? n = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
 }
 
 public class StockInRelayCommand(Action execute) : ICommand

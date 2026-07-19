@@ -10,6 +10,7 @@
       "ProductApp/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Sqlite": "9.0.0",
+          "Microsoft.NET.ILLink.Tasks": "9.0.8",
           "QRCoder": "1.6.0",
           "ZXing.Net": "0.16.9",
           "runtimepack.Microsoft.NETCore.App.Runtime.win-x64": "9.0.8",
@@ -1129,6 +1130,7 @@
           }
         }
       },
+      "Microsoft.NET.ILLink.Tasks/9.0.8": {},
       "Microsoft.Win32.SystemEvents/6.0.0": {},
       "QRCoder/1.6.0": {
         "dependencies": {
@@ -1339,6 +1341,13 @@
       "sha512": "sha512-N3qEBzmLMYiASUlKxxFIISP4AiwuPTHF5uCh+2CWSwwzAJiIYx0kBJsS30cp1nvhSySFAVi30jecD307jV+8Kg==",
       "path": "microsoft.extensions.primitives/9.0.0",
       "hashPath": "microsoft.extensions.primitives.9.0.0.nupkg.sha512"
+    },
+    "Microsoft.NET.ILLink.Tasks/9.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-rd1CbIsMtVPtZNTIVD6Xydue//klYOOQIDpRgu3BHtv17AlpRs74/6QFbcYgMm/jL+naVU2T3OFLxVSLV5lQLQ==",
+      "path": "microsoft.net.illink.tasks/9.0.8",
+      "hashPath": "microsoft.net.illink.tasks.9.0.8.nupkg.sha512"
     },
     "Microsoft.Win32.SystemEvents/6.0.0": {
       "type": "package",

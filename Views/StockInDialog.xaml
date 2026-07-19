@@ -161,7 +161,7 @@
         <!-- Divider -->
         <Border Grid.Row="2" Height="1" Background="#E8E8E8" Margin="32,0" />
 
-        <!-- Step 2: Quantities and cost -->
+        <!-- Step 2: Quantities and cost (card design) -->
         <Border Grid.Row="3" CornerRadius="14" Background="White" Padding="24,20" Margin="32,12,32,12">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="#000" />
@@ -176,103 +176,137 @@
                     <TextBlock x:Name="TxtSelectedCount" Text="(لا توجد منتجات محددة)" FontSize="11" Foreground="#90A4AE" VerticalAlignment="Center" Margin="12,0,0,0" />
                 </StackPanel>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="260">
-                    <DataGrid x:Name="SelectedItemsGrid" AutoGenerateColumns="False"
-                              AlternatingRowBackground="#F8F9FA"
-                              BorderThickness="0" GridLinesVisibility="None"
-                              MinHeight="80" Margin="0,0,0,8"
-                              RowHeaderWidth="0" CanUserAddRows="False"
-                              Background="Transparent"
-                              HeadersVisibility="Column">
-                        <DataGrid.Resources>
-                            <Style TargetType="DataGridRow">
-                                <Setter Property="Height" Value="44" />
-                                <Setter Property="MinHeight" Value="44" />
-                                <Setter Property="BorderBrush" Value="#F0F0F0" />
-                                <Setter Property="BorderThickness" Value="0,0,0,1" />
-                            </Style>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="VerticalAlignment" Value="Center" />
-                                <Setter Property="Padding" Value="10,0" />
-                                <Setter Property="BorderThickness" Value="0" />
-                            </Style>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Height" Value="38" />
-                                <Setter Property="Background" Value="#F5F5F5" />
-                                <Setter Property="Foreground" Value="#546E7A" />
-                                <Setter Property="FontSize" Value="11" />
-                                <Setter Property="FontWeight" Value="SemiBold" />
-                                <Setter Property="BorderBrush" Value="#E0E0E0" />
-                                <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                <Setter Property="Padding" Value="8,0" />
-                            </Style>
-                        </DataGrid.Resources>
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="المنتج" Binding="{Binding ProductName}" IsReadOnly="True" Width="*" />
-                            <DataGridTextColumn Header="كرتونة" Binding="{Binding CartonQty}" Width="80">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="TextAlignment" Value="Center" />
-                                        <Setter Property="VerticalAlignment" Value="Center" />
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="علبة" Binding="{Binding BoxQty}" Width="80">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="TextAlignment" Value="Center" />
-                                        <Setter Property="VerticalAlignment" Value="Center" />
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="قطعة" Binding="{Binding PieceQty}" Width="80">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="TextAlignment" Value="Center" />
-                                        <Setter Property="VerticalAlignment" Value="Center" />
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="التكلفة الإجمالية" Binding="{Binding TotalCost, StringFormat={}{0:0.##}}" Width="140">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="TextAlignment" Value="Center" />
-                                        <Setter Property="VerticalAlignment" Value="Center" />
-                                        <Setter Property="FontWeight" Value="SemiBold" />
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTemplateColumn Width="60">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Click="RemoveEntry_Click"
-                                                Background="Transparent" BorderThickness="0"
-                                                Cursor="Hand" ToolTip="إزالة"
-                                                Width="28" Height="28">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="320">
+                    <ItemsControl x:Name="SelectedItemsList" Margin="0,0,0,8">
+                        <ItemsControl.Resources>
+                            <BooleanToVisibilityConverter x:Key="B2V" />
+                        </ItemsControl.Resources>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,6" CornerRadius="8" Background="White"
+                                        BorderBrush="#E8E8E8" BorderThickness="1">
+                                    <Grid Margin="12,8,12,8">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Row 0: icon + name + total cost + remove -->
+                                        <Border Grid.Column="0" Width="24" Height="24" CornerRadius="5" Background="#E0F2F1">
+                                            <Path Width="11" Height="11" Fill="#00695C" Stretch="Uniform"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="{Binding ProductName}" FontSize="13"
+                                                   FontWeight="SemiBold" Foreground="#37474F"
+                                                   VerticalAlignment="Center" Margin="8,0,0,0" />
+
+                                        <!-- Remove button -->
+                                        <Button Grid.Column="2" Click="RemoveEntry_Click" Background="Transparent" BorderThickness="0"
+                                                Cursor="Hand" ToolTip="إزالة" Width="22" Height="22" VerticalAlignment="Center">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
-                                                    <Border x:Name="border" Background="{TemplateBinding Background}"
-                                                            CornerRadius="6" Padding="0">
-                                                        <Path Width="14" Height="14" Fill="#E53935" Stretch="Uniform"
+                                                    <Border x:Name="b" Background="{TemplateBinding Background}"
+                                                            CornerRadius="4" Padding="0">
+                                                        <Path Width="11" Height="11" Fill="#E53935" Stretch="Uniform"
                                                               HorizontalAlignment="Center" VerticalAlignment="Center"
                                                               Data="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 19,6.41Z" />
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="border" Property="Background" Value="#FFEBEE" />
-                                                        </Trigger>
-                                                        <Trigger Property="IsPressed" Value="True">
-                                                            <Setter TargetName="border" Property="Background" Value="#FFCDD2" />
+                                                            <Setter TargetName="b" Property="Background" Value="#FFEBEE" />
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
                                             </Button.Template>
                                         </Button>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
+
+                                        <!-- Row 1: unit quantity boxes side by side -->
+                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,6,0,0">
+                                            <!-- Carton box -->
+                                            <Border CornerRadius="6" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                    Background="#FAFAFA" Padding="8,6"
+                                                    Visibility="{Binding HasCarton, Converter={StaticResource B2V}}">
+                                                <StackPanel>
+                                                    <TextBlock Text="كرتونة" FontSize="10" Foreground="#78909C"
+                                                               FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                                    <Border CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                            Background="White" Width="56" Height="24" Margin="0,4,0,0">
+                                                        <TextBox Text="{Binding CartonQty, UpdateSourceTrigger=LostFocus}"
+                                                                 FontSize="11" TextAlignment="Center"
+                                                                 BorderThickness="0" Background="Transparent"
+                                                                 VerticalAlignment="Center" Padding="2,0" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </Border>
+                                            <!-- Box box -->
+                                            <Border CornerRadius="6" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                    Background="#FAFAFA" Padding="8,6" Margin="8,0,0,0"
+                                                    Visibility="{Binding HasBox, Converter={StaticResource B2V}}">
+                                                <StackPanel>
+                                                    <TextBlock Text="علبة" FontSize="10" Foreground="#78909C"
+                                                               FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                                    <Border CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                            Background="White" Width="56" Height="24" Margin="0,4,0,0">
+                                                        <TextBox Text="{Binding BoxQty, UpdateSourceTrigger=LostFocus}"
+                                                                 FontSize="11" TextAlignment="Center"
+                                                                 BorderThickness="0" Background="Transparent"
+                                                                 VerticalAlignment="Center" Padding="2,0" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </Border>
+                                            <!-- Piece box -->
+                                            <Border CornerRadius="6" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                    Background="#FAFAFA" Padding="8,6" Margin="8,0,0,0"
+                                                    Visibility="{Binding HasPiece, Converter={StaticResource B2V}}">
+                                                <StackPanel>
+                                                    <TextBlock Text="قطعة" FontSize="10" Foreground="#78909C"
+                                                               FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                                    <Border CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                            Background="White" Width="56" Height="24" Margin="0,4,0,0">
+                                                        <TextBox Text="{Binding PieceQty, UpdateSourceTrigger=LostFocus}"
+                                                                 FontSize="11" TextAlignment="Center"
+                                                                 BorderThickness="0" Background="Transparent"
+                                                                 VerticalAlignment="Center" Padding="2,0" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </Border>
+                                            <!-- Total cost box -->
+                                            <Border CornerRadius="6" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                    Background="#FFFDE7" Padding="8,6" Margin="12,0,0,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="التكلفة" FontSize="10" Foreground="#F57F17"
+                                                               FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                                    <Border CornerRadius="4" BorderBrush="#E8D5A0" BorderThickness="1"
+                                                            Background="White" Width="80" Height="24" Margin="0,4,0,0">
+                                                        <Grid>
+                                                            <TextBox Text="{Binding TotalCost, StringFormat={}{0:0.##}, UpdateSourceTrigger=LostFocus}"
+                                                                     FontSize="11" TextAlignment="Center" FontWeight="Bold"
+                                                                     Foreground="#F57F17"
+                                                                     BorderThickness="0" Background="Transparent"
+                                                                     VerticalAlignment="Center" Padding="2,0" />
+                                                            <TextBlock Text="ج.م" FontSize="8" Foreground="#B0BEC5"
+                                                                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0" />
+                                                        </Grid>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </StackPanel>
         </Border>
