@@ -379,15 +379,26 @@ public partial class SettingsPage : UserControl
                         System.IO.File.Copy(dbPath, autoBackup, true);
                     }
 
-                    // حذف الداتابيز
-                    if (System.IO.File.Exists(dbPath))
-                        System.IO.File.Delete(dbPath);
-
-                    // حذف الـ WAL و SHM files لو موجودين
-                    if (System.IO.File.Exists(dbPath + "-wal"))
-                        System.IO.File.Delete(dbPath + "-wal");
-                    if (System.IO.File.Exists(dbPath + "-shm"))
-                        System.IO.File.Delete(dbPath + "-shm");
+                    // حذف الداتابيز مع إعادة المحاولة
+                    bool deleted = false;
+                    for (int attempt = 0; attempt < 5 && !deleted; attempt++)
+                    {
+                        try
+                        {
+                            if (attempt > 0) System.Threading.Thread.Sleep(500);
+                            GC.Collect();
+                            GC.WaitForPendingFinalizers();
+                            if (System.IO.File.Exists(dbPath))
+                                System.IO.File.Delete(dbPath);
+                            if (System.IO.File.Exists(dbPath + "-wal"))
+                                System.IO.File.Delete(dbPath + "-wal");
+                            if (System.IO.File.Exists(dbPath + "-shm"))
+                                System.IO.File.Delete(dbPath + "-shm");
+                            deleted = true;
+                        }
+                        catch { }
+                    }
+                    if (!deleted) throw new System.IO.IOException("لم يتم حذف قاعدة البيانات بعد 5 محاولات");
 
                     NotificationManager.ShowSuccess("تم حذف قاعدة البيانات — سيتم إعادة تشغيل البرنامج الآن");
 
