@@ -209,8 +209,63 @@ public partial class MovementEditDialog : UserControl
         _db.Entry(_movement).State = EntityState.Modified;
         await _db.SaveChangesAsync();
 
+        if (_item.MovementType == MovementType.StockIn)
+        {
+            await RecalculateOrderCosts();
+        }
+
         NotificationManager.ShowSuccess("تم تعديل الحركة بنجاح");
         DialogClosed?.Invoke(this, true);
+    }
+
+    private async Task RecalculateOrderCosts()
+    {
+        var batches = _db.InventoryBatches
+            .Where(b => b.ProductId == _product.Id)
+            .OrderBy(b => b.PurchaseDate)
+            .ToList();
+
+        var simulated = batches.ToDictionary(b => b.Id, b => b.RemainingQuantity);
+
+        var orderItems = _db.OrderItems
+            .Where(oi => oi.ProductId == _product.Id)
+            .OrderBy(oi => oi.CreatedAt)
+            .ThenBy(oi => oi.Id)
+            .ToList();
+
+        bool anyChanged = false;
+
+        foreach (var oi in orderItems)
+        {
+            int totalPieces = _inv.CalculatePieceEquivalent(_product, oi.CartonQuantity, oi.BoxQuantity, oi.PieceQuantity);
+            if (totalPieces <= 0) continue;
+
+            decimal totalCost = 0;
+            int remaining = totalPieces;
+
+            foreach (var batch in batches)
+            {
+                if (remaining <= 0) break;
+                int available = simulated[batch.Id];
+                if (available <= 0) continue;
+                int take = Math.Min(remaining, available);
+                totalCost += take * batch.CostPricePerPiece;
+                simulated[batch.Id] -= take;
+                remaining -= take;
+            }
+
+            if (Math.Abs(oi.CostPrice - totalCost) > 0.001m)
+            {
+                oi.CostPrice = totalCost;
+                _db.Entry(oi).State = EntityState.Modified;
+                anyChanged = true;
+            }
+        }
+
+        if (anyChanged)
+        {
+            await _db.SaveChangesAsync();
+        }
     }
 
     private void BtnCancel_Click(object sender, RoutedEventArgs e)
