@@ -537,7 +537,7 @@ public partial class CustomerInvoicesDialog : UserControl
         dialog.DialogClosed += (s, r) =>
         {
             mainWindow.HideOverlay();
-            if (r == true) LoadData();
+            LoadData();
         };
     }
 

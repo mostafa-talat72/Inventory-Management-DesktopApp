@@ -480,7 +480,7 @@ public partial class InvoicesPage : Page
         dialog.DialogClosed += (s, r) =>
         {
             mainWindow.HideOverlay();
-            if (r == true) LoadData();
+            LoadData();
         };
     }
 
@@ -577,7 +577,7 @@ public partial class InvoicesPage : Page
         dialog.DialogClosed += (s, r) =>
         {
             mainWindow.HideOverlay();
-            if (r == true) LoadData();
+            LoadData();
         };
         mainWindow.ShowOverlay(dialog);
     }
