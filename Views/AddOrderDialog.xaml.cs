@@ -619,7 +619,7 @@ namespace ProductApp.Views
                     int oldPieces = _inv.CalculatePieceEquivalent(oldItem.Product!, oldItem.CartonQuantity, oldItem.BoxQuantity, oldItem.PieceQuantity);
 
                     var batch = _db.InventoryBatches
-                        .Where(b => b.ProductId == oldItem.ProductId && b.RemainingQuantity > 0)
+                        .Where(b => b.ProductId == oldItem.ProductId)
                         .OrderByDescending(b => b.PurchaseDate).FirstOrDefault();
                     if (batch != null) batch.RemainingQuantity += oldPieces;
 
@@ -746,12 +746,14 @@ namespace ProductApp.Views
         {
             var mainWindow = Window.GetWindow(this) as MainWindow;
             if (mainWindow == null) return;
-            // Close current dialog first
-            DialogClosed?.Invoke(this, true);
-            // Then open invoice dialog
+            // Show invoice dialog on top of current dialog
             var dialog = new InvoiceDetailsDialog(_db, invoice);
             mainWindow.ShowOverlay(dialog);
-            dialog.DialogClosed += (_, _) => mainWindow.HideOverlay();
+            dialog.DialogClosed += (_, _) =>
+            {
+                mainWindow.HideOverlay(); // pop invoice dialog
+                DialogClosed?.Invoke(this, true); // close this dialog
+            };
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
