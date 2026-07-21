@@ -72,22 +72,45 @@
                             <TextBlock Text="كرتونة" FontSize="10" Foreground="#90A4AE" Margin="0,0,0,2" />
                             <TextBox x:Name="TxtCartonQty" Text="0" TextAlignment="Center"
                                      Padding="6,4" FontSize="14" BorderBrush="#E0E0E0" BorderThickness="1"
-                                     PreviewTextInput="NumberOnly_PreviewTextInput" />
+                                     PreviewTextInput="NumberOnly_PreviewTextInput"
+                                     TextChanged="Qty_TextChanged" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="4,0,4,0">
                             <TextBlock Text="علبة" FontSize="10" Foreground="#90A4AE" Margin="0,0,0,2" />
                             <TextBox x:Name="TxtBoxQty" Text="0" TextAlignment="Center"
                                      Padding="6,4" FontSize="14" BorderBrush="#E0E0E0" BorderThickness="1"
-                                     PreviewTextInput="NumberOnly_PreviewTextInput" />
+                                     PreviewTextInput="NumberOnly_PreviewTextInput"
+                                     TextChanged="Qty_TextChanged" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" Margin="4,0,0,0">
                             <TextBlock Text="قطعة" FontSize="10" Foreground="#90A4AE" Margin="0,0,0,2" />
                             <TextBox x:Name="TxtPieceQty" Text="0" TextAlignment="Center"
                                      Padding="6,4" FontSize="14" BorderBrush="#E0E0E0" BorderThickness="1"
-                                     PreviewTextInput="NumberOnly_PreviewTextInput" />
+                                     PreviewTextInput="NumberOnly_PreviewTextInput"
+                                     TextChanged="Qty_TextChanged" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
+
+                <Border CornerRadius="8" Background="#F5F5FF" Padding="14,10" Margin="0,0,12,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="التكلفة الإجمالية" FontSize="11" Foreground="#90A4AE" />
+                            <TextBox x:Name="TxtTotalCost" TextAlignment="Center"
+                                     Padding="6,4" FontSize="14" FontWeight="Bold" Foreground="#1A237E"
+                                     BorderBrush="#C5CAE9" BorderThickness="1" Margin="0,2,0,0"
+                                     TextChanged="TotalCost_TextChanged" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="سعر القطعة" FontSize="11" Foreground="#90A4AE" />
+                            <TextBlock x:Name="TxtCostPerPiece" Text="-" FontSize="16" FontWeight="Bold" Foreground="#F57F17" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
                 <Border CornerRadius="8" Background="#F5F5FF" Padding="14,10" Margin="0,0,0,0">
                     <Grid>

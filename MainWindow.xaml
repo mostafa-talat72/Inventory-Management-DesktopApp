@@ -5,7 +5,6 @@
         Icon="pack://application:,,,/app.ico"
         Width="1300" Height="800"
         WindowState="Maximized"
-        Language="ar-SA"
         WindowStartupLocation="CenterScreen"
         FlowDirection="RightToLeft"
         Background="#F0F2F5">

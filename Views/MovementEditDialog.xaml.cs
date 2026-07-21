@@ -17,6 +17,8 @@ public partial class MovementEditDialog : UserControl
     private readonly Product _product;
     private readonly MovementItem _item;
     private InventoryMovement? _movement;
+    private readonly int _ppc;
+    private readonly int _ppb;
 
     public MovementEditDialog(AppDbContext db, Product product, MovementItem item)
     {
@@ -31,17 +33,24 @@ public partial class MovementEditDialog : UserControl
         TxtTitle.Text = $"تعديل حركة - {item.TypeDisplay}";
         TxtSubtitle.Text = $"{product.Name} - {item.DateDisplay}";
 
-        int ppc = _inv.GetPiecesPerCarton(product);
-        int ppb = _inv.GetPiecesPerBox(product);
+        _ppc = _inv.GetPiecesPerCarton(product);
+        _ppb = _inv.GetPiecesPerBox(product);
         int total = item.Quantity;
-        int cartons = ppc > 0 ? total / ppc : 0;
-        int remainder = ppc > 0 ? total % ppc : total;
-        int boxes = ppb > 0 ? remainder / ppb : 0;
-        int pieces = ppb > 0 ? remainder % ppb : remainder;
+        int cartons = _ppc > 0 ? total / _ppc : 0;
+        int remainder = _ppc > 0 ? total % _ppc : total;
+        int boxes = _ppb > 0 ? remainder / _ppb : 0;
+        int pieces = _ppb > 0 ? remainder % _ppb : remainder;
 
         TxtCartonQty.Text = cartons.ToString();
         TxtBoxQty.Text = boxes.ToString();
         TxtPieceQty.Text = pieces.ToString();
+
+        if (_movement != null)
+        {
+            decimal totalCost = _movement.Quantity * _movement.CostPrice;
+            TxtTotalCost.Text = totalCost.ToString("0.##");
+            UpdateCostPerPiece();
+        }
 
         int available = _inv.GetAvailableStock(product);
         decimal fifoValue = _db.InventoryBatches
@@ -54,7 +63,37 @@ public partial class MovementEditDialog : UserControl
             ? $"{fifoValue / totalBatchPieces:0.##} ج.م/قطعة"
             : "-";
         TxtAvailableStock.Text = _inv.GetStockDisplay(product);
+    }
 
+    private void Qty_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_inv == null) return;
+        UpdateCostPerPiece();
+    }
+
+    private void TotalCost_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_inv == null) return;
+        UpdateCostPerPiece();
+    }
+
+    private void UpdateCostPerPiece()
+    {
+        int cartonQty = int.TryParse(TxtCartonQty.Text, out int c) ? c : 0;
+        int boxQty = int.TryParse(TxtBoxQty.Text, out int b) ? b : 0;
+        int pieceQty = int.TryParse(TxtPieceQty.Text, out int p) ? p : 0;
+        int totalPieces = _inv.CalculatePieceEquivalent(_product, cartonQty, boxQty, pieceQty);
+
+        if (decimal.TryParse(TxtTotalCost.Text, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out decimal totalCost)
+            && totalPieces > 0 && totalCost > 0)
+        {
+            TxtCostPerPiece.Text = $"{totalCost / totalPieces:0.##} ج.م";
+        }
+        else
+        {
+            TxtCostPerPiece.Text = "-";
+        }
     }
 
     private void NumberOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -107,10 +146,17 @@ public partial class MovementEditDialog : UserControl
                 }
             }
 
+            decimal.TryParse(TxtTotalCost.Text, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out decimal totalCost);
+
             // تحديث الدفعة
             batch.RemainingQuantity += qtyDiff;
             batch.InitialQuantity += qtyDiff;
-            _movement.CostPrice = _item.CostPrice > 0 ? _item.CostPrice : 0;
+            if (totalCost > 0 && newQty > 0)
+            {
+                batch.CostPricePerPiece = totalCost / newQty;
+                _movement.CostPrice = batch.CostPricePerPiece;
+            }
 
             _db.Entry(batch).State = EntityState.Modified;
         }
@@ -156,6 +202,9 @@ public partial class MovementEditDialog : UserControl
 
         _movement.Quantity = newQty;
         _movement.Notes = $"{_item.TypeDisplay} - {qtyDesc}";
+        if (decimal.TryParse(TxtTotalCost.Text, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out decimal tc) && tc > 0)
+            _movement.Notes += $", التكلفة: {tc:0.##}";
 
         _db.Entry(_movement).State = EntityState.Modified;
         await _db.SaveChangesAsync();

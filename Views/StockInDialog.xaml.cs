@@ -3,7 +3,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using ProductApp.Data;
 using ProductApp.Models;
 using ProductApp.Services;
@@ -106,13 +108,22 @@ public partial class StockInDialog : UserControl
             return;
         }
 
-        foreach (var entry in toSave)
+        foreach (var entry in _selectedEntries)
         {
-            if (entry.TotalCost <= 0)
+            if (entry.TotalCost <= 0 && (entry.CartonQty > 0 || entry.BoxQty > 0 || entry.PieceQty > 0))
             {
                 NotificationManager.ShowError($"الرجاء إدخال التكلفة الإجمالية لـ {entry.ProductName}");
                 return;
             }
+            if (!AreQuantitiesValid(entry))
+            {
+                NotificationManager.ShowError($"الرجاء إدخال أعداد صحيحة للكميات لـ {entry.ProductName}");
+                return;
+            }
+        }
+
+        foreach (var entry in toSave)
+        {
             var product = _db.Products.Find(entry.ProductId);
             if (product != null)
             {
@@ -124,6 +135,50 @@ public partial class StockInDialog : UserControl
 
         NotificationManager.ShowSuccess("تم إضافة المخزون بنجاح");
         DialogClosed?.Invoke(this, true);
+    }
+
+    private static readonly HashSet<string> _qtyFields = ["CartonQty", "BoxQty", "PieceQty"];
+
+    private bool AreQuantitiesValid(StockInEntry entry)
+    {
+        var container = SelectedItemsList.ItemContainerGenerator.ContainerFromItem(entry) as FrameworkElement;
+        if (container == null) return true;
+        var textBoxes = FindVisualChildren<TextBox>(container);
+        foreach (var tb in textBoxes)
+        {
+            var expr = BindingOperations.GetBindingExpression(tb, TextBox.TextProperty);
+            if (expr?.ResolvedSource != entry) continue;
+            if (!_qtyFields.Contains(expr.ParentBinding.Path.Path)) continue;
+            if (string.IsNullOrEmpty(tb.Text)) continue;
+            if (!int.TryParse(tb.Text, out var val) || val < 0)
+                return false;
+        }
+        return true;
+    }
+
+    private static List<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+    {
+        var list = new List<T>();
+        int count = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T t) list.Add(t);
+            list.AddRange(FindVisualChildren<T>(child));
+        }
+        return list;
+    }
+
+    private void Qty_PreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+        foreach (char c in e.Text)
+        {
+            if (!char.IsDigit(c))
+            {
+                e.Handled = true;
+                return;
+            }
+        }
     }
 
     private void BtnCancel_Click(object sender, RoutedEventArgs e)

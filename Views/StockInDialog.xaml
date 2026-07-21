@@ -243,9 +243,10 @@
                                                     <Border CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1"
                                                             Background="White" Width="56" Height="24" Margin="0,4,0,0">
                                                         <TextBox Text="{Binding CartonQty, UpdateSourceTrigger=LostFocus}"
-                                                                 FontSize="11" TextAlignment="Center"
-                                                                 BorderThickness="0" Background="Transparent"
-                                                                 VerticalAlignment="Center" Padding="2,0" />
+                                                                  FontSize="11" TextAlignment="Center"
+                                                                  BorderThickness="0" Background="Transparent"
+                                                                  VerticalAlignment="Center" Padding="2,0"
+                                                                  PreviewTextInput="Qty_PreviewTextInput" />
                                                     </Border>
                                                 </StackPanel>
                                             </Border>
@@ -259,9 +260,10 @@
                                                     <Border CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1"
                                                             Background="White" Width="56" Height="24" Margin="0,4,0,0">
                                                         <TextBox Text="{Binding BoxQty, UpdateSourceTrigger=LostFocus}"
-                                                                 FontSize="11" TextAlignment="Center"
-                                                                 BorderThickness="0" Background="Transparent"
-                                                                 VerticalAlignment="Center" Padding="2,0" />
+                                                                  FontSize="11" TextAlignment="Center"
+                                                                  BorderThickness="0" Background="Transparent"
+                                                                  VerticalAlignment="Center" Padding="2,0"
+                                                                  PreviewTextInput="Qty_PreviewTextInput" />
                                                     </Border>
                                                 </StackPanel>
                                             </Border>
@@ -275,9 +277,10 @@
                                                     <Border CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1"
                                                             Background="White" Width="56" Height="24" Margin="0,4,0,0">
                                                         <TextBox Text="{Binding PieceQty, UpdateSourceTrigger=LostFocus}"
-                                                                 FontSize="11" TextAlignment="Center"
-                                                                 BorderThickness="0" Background="Transparent"
-                                                                 VerticalAlignment="Center" Padding="2,0" />
+                                                                  FontSize="11" TextAlignment="Center"
+                                                                  BorderThickness="0" Background="Transparent"
+                                                                  VerticalAlignment="Center" Padding="2,0"
+                                                                  PreviewTextInput="Qty_PreviewTextInput" />
                                                     </Border>
                                                 </StackPanel>
                                             </Border>

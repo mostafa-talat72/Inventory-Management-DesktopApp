@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using ProductApp.Data;
@@ -228,14 +229,14 @@ public partial class ProductDialog : UserControl
         bool hasCarton = ChkHasCarton.IsChecked == true;
 
         decimal pieceRetail = 0, pieceWholesale = 0;
-        bool pieceValid = hasPiece && decimal.TryParse(TxtPieceRetail.Text, out pieceRetail);
+        bool pieceValid = hasPiece && TryParseDecimal(TxtPieceRetail.Text, out pieceRetail);
         if (hasPiece && !pieceValid)
         {
             _isUpdating = false;
             return;
         }
         if (pieceValid)
-            pieceWholesale = decimal.TryParse(TxtPieceWholesale.Text, out decimal pw) ? pw : pieceRetail;
+            pieceWholesale = TryParseDecimal(TxtPieceWholesale.Text, out decimal pw) ? pw : pieceRetail;
 
         bool boxQtyValid = false;
         int boxQty = 0;
@@ -265,8 +266,8 @@ public partial class ProductDialog : UserControl
 
             if (cartonFromBox)
             {
-                boxPricesValid = decimal.TryParse(TxtBoxRetail.Text, out boxRetail);
-                boxWholesale = decimal.TryParse(TxtBoxWholesale.Text, out decimal bw) ? bw : boxRetail;
+                boxPricesValid = TryParseDecimal(TxtBoxRetail.Text, out boxRetail);
+                boxWholesale = TryParseDecimal(TxtBoxWholesale.Text, out decimal bw) ? bw : boxRetail;
             }
 
             if (cartonFromBox && boxPricesValid)
@@ -296,6 +297,14 @@ public partial class ProductDialog : UserControl
             return;
         }
 
+        var name = TxtName.Text.Trim();
+        var excludeId = _product?.Id ?? 0;
+        if (_db.Products.Any(p => p.Name == name && p.Id != excludeId))
+        {
+            NotificationManager.ShowError("هذا الاسم موجود بالفعل");
+            return;
+        }
+
         bool hasPiece = ChkHasPiece.IsChecked == true;
         bool hasBox = ChkHasBox.IsChecked == true;
         bool hasCarton = ChkHasCarton.IsChecked == true;
@@ -306,17 +315,17 @@ public partial class ProductDialog : UserControl
             return;
         }
 
-        if (hasPiece && (string.IsNullOrWhiteSpace(TxtPieceRetail.Text) || !decimal.TryParse(TxtPieceRetail.Text, out _)))
+        if (hasPiece && (string.IsNullOrWhiteSpace(TxtPieceRetail.Text) || !TryParseDecimal(TxtPieceRetail.Text, out _)))
         {
             NotificationManager.ShowError("الرجاء إدخال سعر القطاعي للقطعة");
             return;
         }
-        if (hasBox && (string.IsNullOrWhiteSpace(TxtBoxRetail.Text) || !decimal.TryParse(TxtBoxRetail.Text, out _)))
+        if (hasBox && (string.IsNullOrWhiteSpace(TxtBoxRetail.Text) || !TryParseDecimal(TxtBoxRetail.Text, out _)))
         {
             NotificationManager.ShowError("الرجاء إدخال سعر القطاعي للعلبة");
             return;
         }
-        if (hasCarton && (string.IsNullOrWhiteSpace(TxtCartonRetail.Text) || !decimal.TryParse(TxtCartonRetail.Text, out _)))
+        if (hasCarton && (string.IsNullOrWhiteSpace(TxtCartonRetail.Text) || !TryParseDecimal(TxtCartonRetail.Text, out _)))
         {
             NotificationManager.ShowError("الرجاء إدخال سعر القطاعي للكرتونة");
             return;
@@ -335,7 +344,7 @@ public partial class ProductDialog : UserControl
             _db.Products.Add(product);
         }
 
-        product.Name = TxtName.Text.Trim();
+        product.Name = name;
         product.Description = TxtDescription.Text?.Trim();
         _db.SaveChanges();
 
@@ -345,8 +354,8 @@ public partial class ProductDialog : UserControl
 
         if (hasPiece)
         {
-            decimal pieceRetail = decimal.Parse(TxtPieceRetail.Text);
-            decimal pieceWholesale = decimal.TryParse(TxtPieceWholesale.Text, out decimal pw) ? pw : pieceRetail;
+            TryParseDecimal(TxtPieceRetail.Text, out decimal pieceRetail);
+            decimal pieceWholesale = TryParseDecimal(TxtPieceWholesale.Text, out decimal pw) ? pw : pieceRetail;
 
             pieceUnit = new ProductUnit
             {
@@ -365,8 +374,8 @@ public partial class ProductDialog : UserControl
         if (hasBox)
         {
             bool boxQtyValid = int.TryParse(TxtBoxQty.Text, out int boxQty) && boxQty > 0;
-            decimal boxRetail = decimal.TryParse(TxtBoxRetail.Text, out decimal br) ? br : 0;
-            decimal boxWholesale = decimal.TryParse(TxtBoxWholesale.Text, out decimal bw) ? bw : boxRetail;
+            decimal boxRetail = TryParseDecimal(TxtBoxRetail.Text, out decimal br) ? br : 0;
+            decimal boxWholesale = TryParseDecimal(TxtBoxWholesale.Text, out decimal bw) ? bw : boxRetail;
             string boxName = string.IsNullOrWhiteSpace(TxtBoxName.Text) ? "علبة" : TxtBoxName.Text.Trim();
 
             boxUnit = new ProductUnit
@@ -386,8 +395,8 @@ public partial class ProductDialog : UserControl
         if (hasCarton)
         {
             bool cartonQtyValid = int.TryParse(TxtCartonQty.Text, out int cartonQty) && cartonQty > 0;
-            decimal cartonRetail = decimal.TryParse(TxtCartonRetail.Text, out decimal cr) ? cr : 0;
-            decimal cartonWholesale = decimal.TryParse(TxtCartonWholesale.Text, out decimal cw) ? cw : cartonRetail;
+            decimal cartonRetail = TryParseDecimal(TxtCartonRetail.Text, out decimal cr) ? cr : 0;
+            decimal cartonWholesale = TryParseDecimal(TxtCartonWholesale.Text, out decimal cw) ? cw : cartonRetail;
             string cartonName = string.IsNullOrWhiteSpace(TxtCartonName.Text) ? "كرتونة" : TxtCartonName.Text.Trim();
 
             cartonUnit = new ProductUnit
@@ -426,6 +435,9 @@ public partial class ProductDialog : UserControl
         _db.SaveChanges();
         DialogClosed?.Invoke(this, true);
     }
+
+    private static bool TryParseDecimal(string? text, out decimal value) =>
+        decimal.TryParse(text?.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out value);
 
     private void BtnCancel_Click(object sender, RoutedEventArgs e)
     {

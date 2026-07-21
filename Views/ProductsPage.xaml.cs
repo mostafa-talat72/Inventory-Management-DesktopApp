@@ -57,7 +57,8 @@ public partial class ProductsPage : Page
         var lowStockCount = 0;
         var inv = new InventoryService(_db);
 
-        var cards = pageProducts.Select(p =>
+        var cards = new List<object>();
+        foreach (var p in pageProducts)
         {
             var units = _db.ProductUnits.AsNoTracking().Where(u => u.ProductId == p.Id).OrderBy(u => u.UnitType).ToList();
             var stockDisplay = inv.GetStockDisplay(p);
@@ -71,7 +72,7 @@ public partial class ProductsPage : Page
                 ? ("#FFEBEE", "#C62828")
                 : ("#E8F5E9", "#2E7D32");
 
-            return new
+            cards.Add(new
             {
                 p.Name,
                 UnitsDisplay = string.Join(" → ", units.Select(u => u.Name)),
@@ -84,8 +85,8 @@ public partial class ProductsPage : Page
                 SelectCommand = new RelayCommand(() => OpenUnitLevelsDialog(p)),
                 EditCommand = new RelayCommand(() => OpenEditDialog(p)),
                 DeleteCommand = new RelayCommand(() => DeleteProduct(p))
-            };
-        }).ToList();
+            });
+        }
 
         ProductsList.ItemsSource = cards;
         TxtTotalProducts.Text = _totalItems.ToString();
