@@ -85,13 +85,13 @@ public partial class ReportsPage : Page
             return new
             {
                 ProductName = g.Key,
-                CartonDisplay = $"كرتونة: {totalCartons:0}",
-                BoxDisplay = $"علبة: {totalBoxes:0}",
-                PieceDisplay = $"قطعة: {totalPieces:0}",
-                RetailRevDisplay = $"قطاعي: {retailRevenue:0.##} ج.م",
-                WholesaleRevDisplay = $"جملة: {wholesaleRevenue:0.##} ج.م",
-                RetailCostDisplay = $"قطاعي: {retailCost:0.##} ج.م",
-                WholesaleCostDisplay = $"جملة: {wholesaleCost:0.##} ج.م",
+                CartonDisplay = totalCartons > 0 ? $"كرتونة: {totalCartons:0}" : "",
+                BoxDisplay = totalBoxes > 0 ? $"علبة: {totalBoxes:0}" : "",
+                PieceDisplay = totalPieces > 0 ? $"قطعة: {totalPieces:0}" : "",
+                RetailRevDisplay = retailRevenue > 0 ? $"قطاعي: {retailRevenue:0.##} ج.م" : "",
+                WholesaleRevDisplay = wholesaleRevenue > 0 ? $"جملة: {wholesaleRevenue:0.##} ج.م" : "",
+                RetailCostDisplay = retailCost > 0 ? $"قطاعي: {retailCost:0.##} ج.م" : "",
+                WholesaleCostDisplay = wholesaleCost > 0 ? $"جملة: {wholesaleCost:0.##} ج.م" : "",
                 ProfitDisplay = profit.ToString("0.##") + " ج.م",
                 ProfitPercentDisplay = totalRevenue > 0
                     ? (profit / totalRevenue * 100).ToString("0.#") + "%"
@@ -116,13 +116,27 @@ public partial class ReportsPage : Page
         ReportCountBadge.Visibility = reportData.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtReportCount.Text = reportData.Count.ToString();
 
-        TxtFooterCarton.Text = "كرتونة: " + reportData.Sum(r => (int)r._cartonQty).ToString("0");
-        TxtFooterBox.Text = "علبة: " + reportData.Sum(r => (int)r._boxQty).ToString("0");
-        TxtFooterPiece.Text = "قطعة: " + reportData.Sum(r => (int)r._pieceQty).ToString("0");
-        TxtFooterRetailRev.Text = "قطاعي: " + reportData.Sum(r => (decimal)r._retailRev).ToString("0.##") + " ج.م";
-        TxtFooterWholesaleRev.Text = "جملة: " + reportData.Sum(r => (decimal)r._wholesaleRev).ToString("0.##") + " ج.م";
-        TxtFooterRetailCost.Text = "قطاعي: " + reportData.Sum(r => (decimal)r._retailCost).ToString("0.##") + " ج.م";
-        TxtFooterWholesaleCost.Text = "جملة: " + reportData.Sum(r => (decimal)r._wholesaleCost).ToString("0.##") + " ج.م";
+        var footerCarton = reportData.Sum(r => (int)r._cartonQty);
+        var footerBox = reportData.Sum(r => (int)r._boxQty);
+        var footerPiece = reportData.Sum(r => (int)r._pieceQty);
+        var footerRetailRev = reportData.Sum(r => (decimal)r._retailRev);
+        var footerWholesaleRev = reportData.Sum(r => (decimal)r._wholesaleRev);
+        var footerRetailCost = reportData.Sum(r => (decimal)r._retailCost);
+        var footerWholesaleCost = reportData.Sum(r => (decimal)r._wholesaleCost);
+        TxtFooterCarton.Text = footerCarton > 0 ? "كرتونة: " + footerCarton.ToString("0") : "";
+        TxtFooterCarton.Visibility = footerCarton > 0 ? Visibility.Visible : Visibility.Collapsed;
+        TxtFooterBox.Text = footerBox > 0 ? "علبة: " + footerBox.ToString("0") : "";
+        TxtFooterBox.Visibility = footerBox > 0 ? Visibility.Visible : Visibility.Collapsed;
+        TxtFooterPiece.Text = footerPiece > 0 ? "قطعة: " + footerPiece.ToString("0") : "";
+        TxtFooterPiece.Visibility = footerPiece > 0 ? Visibility.Visible : Visibility.Collapsed;
+        TxtFooterRetailRev.Text = footerRetailRev > 0 ? "قطاعي: " + footerRetailRev.ToString("0.##") + " ج.م" : "";
+        TxtFooterRetailRev.Visibility = footerRetailRev > 0 ? Visibility.Visible : Visibility.Collapsed;
+        TxtFooterWholesaleRev.Text = footerWholesaleRev > 0 ? "جملة: " + footerWholesaleRev.ToString("0.##") + " ج.م" : "";
+        TxtFooterWholesaleRev.Visibility = footerWholesaleRev > 0 ? Visibility.Visible : Visibility.Collapsed;
+        TxtFooterRetailCost.Text = footerRetailCost > 0 ? "قطاعي: " + footerRetailCost.ToString("0.##") + " ج.م" : "";
+        TxtFooterRetailCost.Visibility = footerRetailCost > 0 ? Visibility.Visible : Visibility.Collapsed;
+        TxtFooterWholesaleCost.Text = footerWholesaleCost > 0 ? "جملة: " + footerWholesaleCost.ToString("0.##") + " ج.م" : "";
+        TxtFooterWholesaleCost.Visibility = footerWholesaleCost > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtFooterProfit.Text = reportData.Sum(r => (decimal)r._profit).ToString("0.##") + " ج.م";
         TxtFooterMargin.Text = totalSales > 0 ? (totalProfit / totalSales * 100).ToString("0.#") + "%" : "0%";
     }
