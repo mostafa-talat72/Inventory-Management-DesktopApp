@@ -278,6 +278,7 @@ public partial class SettingsPage : UserControl
         }
 
         TxtRestorePassword.Password = "";
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
 
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
@@ -296,6 +297,7 @@ public partial class SettingsPage : UserControl
             result =>
             {
                 if (!result) return;
+                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
                 try
                 {
                     var dbPath = System.IO.Path.Combine(
@@ -311,12 +313,18 @@ public partial class SettingsPage : UserControl
                         System.IO.File.Copy(dbPath, autoBackup, true);
                     }
 
-                    System.IO.File.Copy(sourceFile, dbPath, overwrite: true);
+                    // احذف كل ملفات الداتابيز القديمة
+                    Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+                    foreach (var f in new[] { dbPath, dbPath + "-wal", dbPath + "-shm" })
+                    {
+                        for (int i = 0; i < 5; i++)
+                        {
+                            try { if (System.IO.File.Exists(f)) System.IO.File.Delete(f); break; }
+                            catch { if (i == 4) throw; System.Threading.Thread.Sleep(300); }
+                        }
+                    }
 
-                    if (System.IO.File.Exists(dbPath + "-wal"))
-                        System.IO.File.Delete(dbPath + "-wal");
-                    if (System.IO.File.Exists(dbPath + "-shm"))
-                        System.IO.File.Delete(dbPath + "-shm");
+                    System.IO.File.Copy(sourceFile, dbPath, overwrite: true);
 
                     NotificationManager.ShowSuccess("تم استيراد النسخة الاحتياطية — سيتم إعادة تشغيل البرنامج الآن");
 
