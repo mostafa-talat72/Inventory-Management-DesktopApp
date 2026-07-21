@@ -125,7 +125,7 @@ public partial class ManageOrdersDialog : UserControl
         var infoStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) };
         infoStack.Children.Add(new TextBlock
         {
-            Text = order.CreatedAt.ToString("yyyy/MM/dd - hh:mm tt"),
+            Text = $"{order.CreatedAt:yyyy/MM/dd - hh:mm} {(order.CreatedAt.Hour < 12 ? "ص" : "م")}",
             FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!
         });
         infoStack.Children.Add(new TextBlock

@@ -29,19 +29,20 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        // Force Arabic culture on all threads
-        var arCulture = new CultureInfo("ar-SA");
-        arCulture.DateTimeFormat.Calendar = new GregorianCalendar();
-        arCulture.NumberFormat.NumberGroupSeparator = "";
-        arCulture.NumberFormat.NumberDecimalSeparator = ".";
-        arCulture.NumberFormat.NumberDecimalDigits = 2;
-        arCulture.NumberFormat.CurrencyGroupSeparator = "";
-        arCulture.NumberFormat.CurrencyDecimalSeparator = ".";
-        arCulture.NumberFormat.PercentGroupSeparator = "";
-        CultureInfo.DefaultThreadCurrentCulture = arCulture;
-        CultureInfo.DefaultThreadCurrentUICulture = arCulture;
-        Thread.CurrentThread.CurrentCulture = arCulture;
-        Thread.CurrentThread.CurrentUICulture = arCulture;
+        // Use en-US for number formatting (Western digits 0-9, decimal = ".")
+        var numCulture = new CultureInfo("en-US");
+        numCulture.NumberFormat.NumberGroupSeparator = "";
+        numCulture.NumberFormat.NumberDecimalSeparator = ".";
+        numCulture.NumberFormat.NumberDecimalDigits = 2;
+        numCulture.NumberFormat.CurrencyGroupSeparator = "";
+        numCulture.NumberFormat.CurrencyDecimalSeparator = ".";
+        numCulture.NumberFormat.PercentGroupSeparator = "";
+        CultureInfo.DefaultThreadCurrentCulture = numCulture;
+        Thread.CurrentThread.CurrentCulture = numCulture;
+
+        // Arabic UI for resource localization
+        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ar-SA");
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo("ar-SA");
 
         // Fix all icons direction (RTL reverses Path geometry)
         EventManager.RegisterClassHandler(typeof(System.Windows.Shapes.Path),

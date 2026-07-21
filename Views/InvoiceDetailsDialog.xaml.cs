@@ -38,7 +38,7 @@ public partial class InvoiceDetailsDialog : UserControl
         var customerName = _invoice.Customer?.Name ?? _invoice.CustomerName ?? "نقدي";
         TxtTitle.Text = $"فاتورة #{_invoice.Id}";
         TxtCustomerName.Text = customerName;
-        TxtInvoiceDate.Text = _invoice.CreatedAt.ToString("yyyy/MM/dd hh:mm tt");
+        TxtInvoiceDate.Text = $"{_invoice.CreatedAt:yyyy/MM/dd hh:mm} {(_invoice.CreatedAt.Hour < 12 ? "ص" : "م")}";
 
         // Status badge
         var (statusText, statusBg, statusFg) = _invoice.Status switch

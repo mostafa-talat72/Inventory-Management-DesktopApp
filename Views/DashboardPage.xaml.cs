@@ -25,9 +25,9 @@ public partial class DashboardPage : Page
     {
         try
         {
-            TxtDashboardDate.Text = $"آخر تحديث: {DateTime.Now:yyyy/MM/dd - hh:mm tt}";
-
             var now = DateTime.Now;
+            TxtDashboardDate.Text = $"آخر تحديث: {now:yyyy/MM/dd - hh:mm} {(now.Hour < 12 ? "ص" : "م")}";
+
             var todayStart = now.Date;
             var todayEnd = todayStart.AddDays(1);
             var monthStart = new DateTime(now.Year, now.Month, 1);
@@ -165,7 +165,7 @@ public partial class DashboardPage : Page
         });
         infoStack.Children.Add(new TextBlock
         {
-            Text = $"{inv.CreatedAt:yyyy/MM/dd - hh:mm tt}",
+            Text = $"{inv.CreatedAt:yyyy/MM/dd - hh:mm} {(inv.CreatedAt.Hour < 12 ? "ص" : "م")}",
             FontSize = 10,
             Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
             Margin = new Thickness(0, 2, 0, 0)

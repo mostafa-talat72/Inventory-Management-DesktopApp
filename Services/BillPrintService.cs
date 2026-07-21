@@ -63,7 +63,7 @@ public class BillPrintService
 
         var qrBase64 = GenerateQRCodeBase64(qrText);
 
-        var dateStr = invoice.CreatedAt.ToString("yyyy/MM/dd - hh:mm tt");
+        var dateStr = $"{invoice.CreatedAt:yyyy/MM/dd - hh:mm} {(invoice.CreatedAt.Hour < 12 ? "ص" : "م")}";
 
         var itemsRows = new StringBuilder();
         foreach (var item in items)

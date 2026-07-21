@@ -98,7 +98,7 @@ public partial class StockMovementDialog : UserControl
 
             items.Add(new MovementItem
             {
-                DateDisplay = m.CreatedAt.ToString("yyyy/MM/dd hh:mm tt"),
+                DateDisplay = $"{m.CreatedAt:yyyy/MM/dd hh:mm} {(m.CreatedAt.Hour < 12 ? "ص" : "م")}",
                 TypeDisplay = typeDisplay,
                 TypeColor = typeColor,
                 QuantityDisplay = $"{sign} {FormatQuantity(m.Quantity)}",
