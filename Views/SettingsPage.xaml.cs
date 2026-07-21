@@ -357,6 +357,8 @@ public partial class SettingsPage : UserControl
         }
 
         TxtDeletePassword.Password = "";
+        // Clear connection pools so the file can be deleted
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
 
         ConfirmDialog.Show(
             "تأكيد حذف قاعدة البيانات",
