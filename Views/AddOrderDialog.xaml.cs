@@ -584,7 +584,7 @@ namespace ProductApp.Views
                 TxtInvoiceId.Text = _invoice.Id.ToString();
 
                 NotificationManager.ShowSuccess($"تم إضافة {count} منتج للفاتورة #{_invoice.Id} بنجاح.");
-                DialogClosed?.Invoke(this, true);
+                OpenInvoiceDialog(_invoice);
             }
             catch (System.Exception ex)
             {
@@ -668,7 +668,7 @@ namespace ProductApp.Views
                 App.AppBackup?.BackupIfOnOperation();
 
                 NotificationManager.ShowSuccess($"تم تعديل الطلب وتحديث الفاتورة #{_invoice.Id} بنجاح.");
-                DialogClosed?.Invoke(this, true);
+                OpenInvoiceDialog(_invoice!);
             }
             catch (System.Exception ex)
             {
@@ -741,6 +741,18 @@ namespace ProductApp.Views
 
         private static int ParseInt(string? text) =>
             text != null && int.TryParse(text, out int v) ? v : 0;
+
+        private void OpenInvoiceDialog(Invoice invoice)
+        {
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow == null) return;
+            // Close current dialog first
+            DialogClosed?.Invoke(this, true);
+            // Then open invoice dialog
+            var dialog = new InvoiceDetailsDialog(_db, invoice);
+            mainWindow.ShowOverlay(dialog);
+            dialog.DialogClosed += (_, _) => mainWindow.HideOverlay();
+        }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
