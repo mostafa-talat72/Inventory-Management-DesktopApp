@@ -68,21 +68,21 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,4,0">
+                        <StackPanel Grid.Column="0" Margin="0,0,4,0" x:Name="CartonSection">
                             <TextBlock Text="كرتونة" FontSize="10" Foreground="#90A4AE" Margin="0,0,0,2" />
                             <TextBox x:Name="TxtCartonQty" Text="0" TextAlignment="Center"
                                      Padding="6,4" FontSize="14" BorderBrush="#E0E0E0" BorderThickness="1"
                                      PreviewTextInput="NumberOnly_PreviewTextInput"
                                      TextChanged="Qty_TextChanged" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="4,0,4,0">
+                        <StackPanel Grid.Column="1" Margin="4,0,4,0" x:Name="BoxSection">
                             <TextBlock Text="علبة" FontSize="10" Foreground="#90A4AE" Margin="0,0,0,2" />
                             <TextBox x:Name="TxtBoxQty" Text="0" TextAlignment="Center"
                                      Padding="6,4" FontSize="14" BorderBrush="#E0E0E0" BorderThickness="1"
                                      PreviewTextInput="NumberOnly_PreviewTextInput"
                                      TextChanged="Qty_TextChanged" />
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Margin="4,0,0,0">
+                        <StackPanel Grid.Column="2" Margin="4,0,0,0" x:Name="PieceSection">
                             <TextBlock Text="قطعة" FontSize="10" Foreground="#90A4AE" Margin="0,0,0,2" />
                             <TextBox x:Name="TxtPieceQty" Text="0" TextAlignment="Center"
                                      Padding="6,4" FontSize="14" BorderBrush="#E0E0E0" BorderThickness="1"

@@ -101,11 +101,11 @@ public partial class StockMovementDialog : UserControl
                 DateDisplay = m.CreatedAt.ToString("yyyy/MM/dd hh:mm tt"),
                 TypeDisplay = typeDisplay,
                 TypeColor = typeColor,
-                QuantityDisplay = $"{sign}{m.Quantity}",
+                QuantityDisplay = $"{sign} {FormatQuantity(m.Quantity)}",
                 UnitPriceDisplay = m.CostPrice > 0 ? $"{m.CostPrice:0.##}" : "-",
                 TotalDisplay = m.CostPrice > 0 ? $"{(m.Quantity * m.CostPrice):0.##} ج.م" : "-",
                 ReasonDisplay = reason,
-                StockAfterDisplay = runningStock.ToString(),
+                StockAfterDisplay = FormatQuantity(runningStock),
                 MovementId = m.Id,
                 CanDelete = canDelete,
                 Quantity = m.Quantity,
@@ -214,6 +214,66 @@ public partial class StockMovementDialog : UserControl
         return batches.FirstOrDefault(b =>
             Math.Abs((b.PurchaseDate - movement.CreatedAt).TotalMinutes) < 5 &&
             b.InitialQuantity == movement.Quantity);
+    }
+
+    private string FormatQuantity(int totalPieces)
+    {
+        var units = _db.ProductUnits.Where(u => u.ProductId == _product.Id).OrderBy(u => u.UnitType).ToList();
+        bool hasCarton = units.Any(u => u.UnitType == UnitType.Carton);
+        bool hasBox = units.Any(u => u.UnitType == UnitType.Box);
+        bool hasPiece = units.Any(u => u.UnitType == UnitType.Piece);
+
+        int ppc = _inv.GetPiecesPerCarton(_product);
+        int ppb = _inv.GetPiecesPerBox(_product);
+        int bpc = _inv.GetBoxesPerCarton(_product);
+
+        var parts = new List<string>();
+
+        if (hasCarton && hasBox && hasPiece)
+        {
+            int cartons = totalPieces / ppc;
+            int afterCartons = totalPieces % ppc;
+            int boxes = afterCartons / ppb;
+            int pieces = afterCartons % ppb;
+            if (cartons > 0) parts.Add($"{cartons} كرتونة");
+            if (boxes > 0) parts.Add($"{boxes} علبة");
+            if (pieces > 0) parts.Add($"{pieces} قطعة");
+        }
+        else if (hasCarton && hasBox && !hasPiece)
+        {
+            int cartons = totalPieces / bpc;
+            int remBoxes = totalPieces % bpc;
+            if (cartons > 0) parts.Add($"{cartons} كرتونة");
+            if (remBoxes > 0) parts.Add($"{remBoxes} علبة");
+        }
+        else if (hasCarton && !hasBox && hasPiece)
+        {
+            int cartons = totalPieces / ppc;
+            int pieces = totalPieces % ppc;
+            if (cartons > 0) parts.Add($"{cartons} كرتونة");
+            if (pieces > 0) parts.Add($"{pieces} قطعة");
+        }
+        else if (hasCarton && !hasBox && !hasPiece)
+        {
+            if (totalPieces > 0) parts.Add($"{totalPieces} كرتونة");
+        }
+        else if (!hasCarton && hasBox && hasPiece)
+        {
+            int boxes = totalPieces / ppb;
+            int pieces = totalPieces % ppb;
+            if (boxes > 0) parts.Add($"{boxes} علبة");
+            if (pieces > 0) parts.Add($"{pieces} قطعة");
+        }
+        else if (!hasCarton && hasBox && !hasPiece)
+        {
+            if (totalPieces > 0) parts.Add($"{totalPieces} علبة");
+        }
+        else
+        {
+            if (totalPieces > 0) parts.Add($"{totalPieces} قطعة");
+        }
+
+        return parts.Count > 0 ? string.Join(", ", parts) : "0";
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)

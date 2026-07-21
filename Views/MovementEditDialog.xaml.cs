@@ -45,6 +45,11 @@ public partial class MovementEditDialog : UserControl
         TxtBoxQty.Text = boxes.ToString();
         TxtPieceQty.Text = pieces.ToString();
 
+        var u = _db.ProductUnits.Where(u => u.ProductId == product.Id).ToList();
+        CartonSection.Visibility = u.Any(x => x.UnitType == UnitType.Carton) ? Visibility.Visible : Visibility.Collapsed;
+        BoxSection.Visibility = u.Any(x => x.UnitType == UnitType.Box) ? Visibility.Visible : Visibility.Collapsed;
+        PieceSection.Visibility = u.Any(x => x.UnitType == UnitType.Piece) ? Visibility.Visible : Visibility.Collapsed;
+
         if (_movement != null)
         {
             decimal totalCost = _movement.Quantity * _movement.CostPrice;

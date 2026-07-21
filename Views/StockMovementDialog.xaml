@@ -203,7 +203,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="الكمية" Binding="{Binding QuantityDisplay}" Width="80" IsReadOnly="True">
+                            <DataGridTextColumn Header="الكمية" Binding="{Binding QuantityDisplay}" Width="170" IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="FontWeight" Value="Bold" />
@@ -240,7 +240,7 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="المخزون بعد" Binding="{Binding StockAfterDisplay}" Width="100" IsReadOnly="True">
+                            <DataGridTextColumn Header="المخزون بعد" Binding="{Binding StockAfterDisplay}" Width="170" IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Center" />
