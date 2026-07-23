@@ -50,6 +50,7 @@
                         <ColumnDefinition Width="180" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="#E8EAF6" Margin="0,0,12,0">
                         <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#3F51B5" Stretch="Uniform"
@@ -106,6 +107,31 @@
                                               VerticalAlignment="Center"
                                               Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12.9,14.5L15.8,10H13.5L11.7,13.2L10,10H7.7L10.6,14.5L7,19H9.3L11.7,15.3L14.1,19H16.4L12.9,14.5Z" />
                                         <TextBlock Text="CSV" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Opacity" Value="0.88" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="BtnPrint" Grid.Column="6" Click="BtnPrint_Click"
+                            Height="38" Padding="14,0" Cursor="Hand" Margin="10,0,0,0"
+                            Background="#00695C" Foreground="White" BorderThickness="0"
+                            FontSize="13" FontWeight="SemiBold"
+                            ToolTip="طباعة تفاصيل المبيعات">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" CornerRadius="10"
+                                        Background="{TemplateBinding Background}"
+                                        Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                              VerticalAlignment="Center"
+                                              Data="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                                        <TextBlock Text="طباعة" Margin="6,0,0,0" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>

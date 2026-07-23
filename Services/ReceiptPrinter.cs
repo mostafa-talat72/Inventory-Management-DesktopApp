@@ -638,6 +638,182 @@ public class ReceiptPrinter
     private static Border MakeDashedSeparator() =>
         new Border { Margin = new Thickness(0, 4, 0, 4), BorderThickness = new Thickness(0, 1, 0, 0), BorderBrush = new SolidColorBrush(Color.FromRgb(153, 153, 153)) };
 
+    public string BuildReportHtml(DateTime from, DateTime to, List<dynamic> reportData,
+        decimal totalSales, decimal totalCost, decimal totalDiscount, decimal totalProfit, int invoiceCount,
+        AppConfig config)
+    {
+        var locationName = config.PrintLocationName ? config.LocationName : "";
+        var now = DateTime.Now;
+
+        var rows = new StringBuilder();
+        int rowNum = 1;
+        foreach (var r in reportData)
+        {
+            string productName = (string)r.ProductName;
+            string cartonDisp  = (string)r.CartonDisplay;
+            string boxDisp     = (string)r.BoxDisplay;
+            string pieceDisp   = (string)r.PieceDisplay;
+            decimal retailRev  = (decimal)r._retailRev;
+            decimal wholeRev   = (decimal)r._wholesaleRev;
+            decimal retailCost = (decimal)r._retailCost;
+            decimal wholeCost  = (decimal)r._wholesaleCost;
+            decimal profit     = (decimal)r._profit;
+            decimal totalRev   = (decimal)r._totalRev;
+            string marginPct   = totalRev > 0 ? (profit / totalRev * 100).ToString("0.#") : "0";
+
+            var qtyParts = new List<string>();
+            if (!string.IsNullOrEmpty(cartonDisp)) qtyParts.Add(cartonDisp);
+            if (!string.IsNullOrEmpty(boxDisp))    qtyParts.Add(boxDisp);
+            if (!string.IsNullOrEmpty(pieceDisp))  qtyParts.Add(pieceDisp);
+            string qtyDisplay = string.Join("<br/>", qtyParts);
+
+            var revParts = new List<string>();
+            if (retailRev > 0) revParts.Add($"قطاعي: {ToArabicNumerals(retailRev.ToString("0.##"))}");
+            if (wholeRev  > 0) revParts.Add($"جملة: {ToArabicNumerals(wholeRev.ToString("0.##"))}");
+
+            var costParts = new List<string>();
+            if (retailCost > 0) costParts.Add($"قطاعي: {ToArabicNumerals(retailCost.ToString("0.##"))}");
+            if (wholeCost  > 0) costParts.Add($"جملة: {ToArabicNumerals(wholeCost.ToString("0.##"))}");
+
+            var rowBg = rowNum % 2 == 0 ? "#f9f9f9" : "#ffffff";
+            rows.Append($@"
+        <tr style=""background:{rowBg};"">
+          <td class=""num"">{rowNum}</td>
+          <td class=""name"">{System.Net.WebUtility.HtmlEncode(productName)}</td>
+          <td class=""qty"">{qtyDisplay}</td>
+          <td class=""rev"">{string.Join("<br/>", revParts)}</td>
+          <td class=""cost"">{string.Join("<br/>", costParts)}</td>
+          <td class=""profit"">{ToArabicNumerals(profit.ToString("0.##"))}</td>
+          <td class=""margin"">{marginPct}%</td>
+        </tr>");
+            rowNum++;
+        }
+
+        var locationInfoHtml = BuildLocationInfoHtml(config);
+
+        string period = $"{from:dd/MM/yyyy} - {to.AddDays(-1):dd/MM/yyyy}";
+
+        return $@"<!DOCTYPE html>
+<html dir=""rtl"" lang=""ar"">
+<head>
+  <meta charset=""UTF-8"">
+  <title>تقرير المبيعات</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+    * {{ font-family: 'Tajawal', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }}
+    body {{ margin: 0; padding: 8px; font-size: 11px; color: #000; direction: rtl; text-align: center; }}
+    .header {{ text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }}
+    .org-name {{ font-size: 1.4em; font-weight: 900; margin-bottom: 4px; }}
+    .sys-name {{ font-size: 1.0em; font-weight: 700; color: #555; margin-bottom: 2px; }}
+    .title {{ font-size: 1.2em; font-weight: 800; margin-bottom: 4px; }}
+    .info {{ font-size: 0.9em; font-weight: 600; color: #444; margin-bottom: 2px; }}
+    .summary {{ display: flex; justify-content: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }}
+    .summary-box {{ border: 1.5px solid #000; border-radius: 4px; padding: 4px 10px; font-weight: 800; font-size: 0.85em; text-align: center; }}
+    .summary-box.primary {{ background: #000; color: #fff; }}
+    .summary-box.danger {{ background: #ffebee; color: #c62828; }}
+    .summary-box.warning {{ background: #fff3e0; color: #e65100; }}
+    .summary-box.success {{ background: #e8f5e9; color: #2e7d32; }}
+    .summary-box.info {{ background: #e0f2f1; color: #00695c; }}
+    .divider {{ border-top: 2px dashed #000; margin: 8px 0; }}
+    .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 0.85em; border: 2px solid #000; }}
+    .items-table thead {{ background: #e0e0e0; font-weight: 900; }}
+    .items-table th {{ padding: 4px 3px; text-align: center; border: 1.5px solid #000; font-size: 0.85em; word-wrap: break-word; }}
+    .items-table td {{ padding: 3px 3px; border: 1px solid #000; font-weight: 600; vertical-align: middle; text-align: center; word-wrap: break-word; }}
+    .num {{ width: 4%; }}
+    .name {{ width: 24%; text-align: center; font-weight: 700; }}
+    .qty {{ width: 14%; }}
+    .rev {{ width: 16%; }}
+    .cost {{ width: 16%; }}
+    .profit {{ width: 14%; font-weight: 700; color: #2e7d32; }}
+    .margin {{ width: 12%; }}
+    .total-row {{ display: flex; justify-content: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }}
+    .total-box {{ border: 1.5px solid #000; border-radius: 4px; padding: 4px 10px; font-weight: 800; font-size: 0.95em; text-align: center; }}
+    .total-box.final {{ background: #000; color: #fff; font-size: 1.1em; }}
+    .location-info {{ background: #f5f5f5; padding: 6px; margin: 4px 0; text-align: center; font-size: 0.9em; color: #555; }}
+    .footer {{ margin-top: 10px; text-align: center; font-size: 1.0em; color: #000; border-top: 2px dashed #000; padding-top: 8px; padding-bottom: 8px; font-weight: 800; }}
+    @media print {{
+      @page {{ size: auto; margin: 0; }}
+      body {{ margin: 0; padding: 4px; }}
+      .no-print {{ display: none !important; }}
+      * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+    }}
+  </style>
+</head>
+<body>
+  <div class=""header"">
+    {(string.IsNullOrWhiteSpace(locationName) ? "" : $"<div class=\"org-name\">{System.Net.WebUtility.HtmlEncode(locationName)}</div>")}
+    <div class=""sys-name"">MTE Stock</div>
+    <div class=""title"">تقرير المبيعات</div>
+    <div class=""info"">الفترة: {period}</div>
+    <div class=""info"">تاريخ الطباعة: {FormatDateArabic(now)}</div>
+  </div>
+
+  <div class=""summary"">
+    <div class=""summary-box primary"">المبيعات: {ToArabicNumerals(totalSales.ToString("0.##"))} ج.م</div>
+    <div class=""summary-box danger"">التكلفة: {ToArabicNumerals(totalCost.ToString("0.##"))} ج.م</div>
+    <div class=""summary-box warning"">الخصم: {ToArabicNumerals(totalDiscount.ToString("0.##"))} ج.م</div>
+    <div class=""summary-box success"">الربح: {ToArabicNumerals(totalProfit.ToString("0.##"))} ج.م</div>
+    <div class=""summary-box info"">الفواتير: {ToArabicNumerals(invoiceCount.ToString())}</div>
+  </div>
+
+  <div class=""divider""></div>
+
+  <table class=""items-table"">
+    <thead>
+      <tr>
+        <th class=""num"">#</th>
+        <th class=""name"">المنتج</th>
+        <th class=""qty"">الكمية</th>
+        <th class=""rev"">الإيراد</th>
+        <th class=""cost"">التكلفة</th>
+        <th class=""profit"">الربح</th>
+        <th class=""margin"">%</th>
+      </tr>
+    </thead>
+    <tbody>{rows}</tbody>
+  </table>
+
+  <div class=""total-row"">
+    <div class=""total-box"">الإجمالي: {ToArabicNumerals(totalSales.ToString("0.##"))} ج.م</div>
+    <div class=""total-box"">التكلفة: {ToArabicNumerals((totalCost + totalDiscount).ToString("0.##"))} ج.م</div>
+    <div class=""total-box final"">صافي الربح: {ToArabicNumerals(totalProfit.ToString("0.##"))} ج.م</div>
+  </div>
+
+  <div class=""divider""></div>
+  {locationInfoHtml}
+  <div class=""footer"">
+    <strong>تم تصميم وتطوير هذا النظام بواسطة المهندس مصطفى طلعت للحلول البرمجيه - 01116626164</strong>
+  </div>
+</body>
+</html>";
+    }
+
+    public void PrintReport(DateTime from, DateTime to, List<dynamic> reportData,
+        decimal totalSales, decimal totalCost, decimal totalDiscount, decimal totalProfit, int invoiceCount)
+    {
+        var config = AppConfig.Load();
+        var html = BuildReportHtml(from, to, reportData, totalSales, totalCost, totalDiscount, totalProfit, invoiceCount, config);
+        Views.PrintPreviewDialog.ShowInventory(html, "تقرير المبيعات");
+    }
+
+    private static string BuildLocationInfoHtml(AppConfig config)
+    {
+        if (!(config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress)) &&
+            !(config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone)) &&
+            !(config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription)))
+            return "";
+
+        var sb = new StringBuilder("<div class=\"location-info\">");
+        if (config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress))
+            sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationAddress)}</div>");
+        if (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone))
+            sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationPhone)}</div>");
+        if (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription))
+            sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationDescription)}</div>");
+        sb.Append("</div>");
+        return sb.ToString();
+    }
+
     public void PrintTestPage(PrintQueue? queue)
     {
         var panel = new StackPanel { Width = 280, Background = Brushes.White, FlowDirection = FlowDirection.RightToLeft };

@@ -813,6 +813,19 @@ public partial class ReportsPage : Page
         }
     }
 
+    private void BtnPrint_Click(object sender, RoutedEventArgs e)
+    {
+        if (_lastReportData == null || _lastReportData.Count == 0)
+        {
+            MessageBox.Show("لا توجد بيانات للطباعة. قم بعرض التقرير أولاً.", "طباعة", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var printer = new ReceiptPrinter(_db);
+        printer.PrintReport(_lastFrom, _lastTo, _lastReportData,
+            _rTotalSales, _rTotalCost, _rTotalDiscount, _rTotalProfit, _rInvoiceCount);
+    }
+
     /// <summary>Gets the hex color string of a DynamicResource brush, falling back to a default.</summary>
     private static string ThemeHex(string resourceKey, string fallback)
     {
