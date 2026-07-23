@@ -194,7 +194,10 @@
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="إجمالي التكلفة" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
-                            <TextBlock x:Name="TxtTotalCost" Text="0.00 ج.م" FontSize="22" FontWeight="Bold" Foreground="#C62828" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtTotalCostBreakdown" Text="" FontSize="10" Foreground="#B0BEC5" Margin="0,4,0,0" />
+                            <TextBlock x:Name="TxtTotalCostBreakdown2" Text="" FontSize="10" Foreground="#C62828" Margin="0,1,0,0" />
+                            <Rectangle Height="1" Fill="{DynamicResource BorderBrushLight}" Margin="0,6,0,6" />
+                            <TextBlock x:Name="TxtTotalCost" Text="0.00 ج.م" FontSize="20" FontWeight="Bold" Foreground="#C62828" />
                         </StackPanel>
                     </Grid>
                 </Border>

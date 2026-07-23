@@ -139,17 +139,17 @@ public partial class DashboardPage : Page
                 _recentInvoices = recentInvoices;
 
                 TxtTodayCount.Text  = $"{todayInvoices} فاتورة";
-                TxtTodayCostCount.Text = $"مبيعات: {todayCost:0.##} ج.م";
+                TxtTodaySalesCost.Text = $"{todayCost:0.##} ج.م";
                 TxtTodayDeductionCost.Text = todayDeductionCost > 0
-                    ? $"خصم مخزون: {todayDeductionCost:0.##} ج.م" : "";
+                    ? $"{todayDeductionCost:0.##} ج.م" : "0 ج.م";
                 TxtTodayProfitMargin.Text = todayProfitMargin >= 0 ? $"هامش ربح {todayProfitMargin:0.0}%" : $"خسارة {Math.Abs(todayProfitMargin):0.0}%";
                 var activeCount = _db.Invoices.Count(i => i.Status != InvoiceStatus.Cancelled);
                 var pendingCount = _db.Invoices.Count(i => i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid);
                 var cancelledCount = _db.Invoices.Count(i => i.Status == InvoiceStatus.Cancelled);
                 TxtTotalInvoices.Text = $"{activeCount} فاتورة";
-                TxtTotalCostCount.Text = $"مبيعات: {totalCost:0.##} ج.م";
+                TxtTotalSalesCost.Text = $"{totalCost:0.##} ج.م";
                 TxtTotalDeductionCost.Text = totalDeductionCost > 0
-                    ? $"خصم مخزون: {totalDeductionCost:0.##} ج.م" : "";
+                    ? $"{totalDeductionCost:0.##} ج.م" : "0 ج.م";
                 TxtProfitMargin.Text  = profitMargin >= 0 ? $"هامش ربح {profitMargin:0.0}%" : $"خسارة {Math.Abs(profitMargin):0.0}%";
                 TxtTotalCustomers.Text = $"{totalCustomers}";
                 TxtNewCustomers.Text  = $"{newCustomers} هذا الشهر";
@@ -175,11 +175,15 @@ public partial class DashboardPage : Page
         bool hidden = AmountsVisibilityService.IsHidden;
 
         TxtTodaySales.Text       = hidden ? mask : $"{_todaySales:0.##} ج.م";
+        TxtTodaySalesCost.Text   = hidden ? mask : (_todayCost - _todayDeductionCost > 0 ? $"{_todayCost - _todayDeductionCost:0.##} ج.م" : "0 ج.م");
         TxtTodayCost.Text        = hidden ? mask : $"{_todayCost:0.##} ج.م";
+        TxtTodayDeductionCost.Text = hidden ? mask : (_todayDeductionCost > 0 ? $"{_todayDeductionCost:0.##} ج.م" : "0 ج.م");
         TxtTodayDiscount.Text    = hidden ? mask : $"{_todayDiscount:0.##} ج.م";
         TxtTodayProfit.Text      = hidden ? mask : $"{_todayProfit:0.##} ج.م";
         TxtTotalSales.Text       = hidden ? mask : $"{_totalRevenue:0.##} ج.م";
+        TxtTotalSalesCost.Text   = hidden ? mask : (_totalCost - _totalDeductionCost > 0 ? $"{_totalCost - _totalDeductionCost:0.##} ج.م" : "0 ج.م");
         TxtTotalCost.Text        = hidden ? mask : $"{_totalCost:0.##} ج.م";
+        TxtTotalDeductionCost.Text = hidden ? mask : (_totalDeductionCost > 0 ? $"{_totalDeductionCost:0.##} ج.م" : "0 ج.م");
         TxtTotalDiscount.Text    = hidden ? mask : $"{_totalDiscount:0.##} ج.م";
         TxtTotalProfit.Text      = hidden ? mask : $"{_totalProfit:0.##} ج.م";
         TxtPendingAmount.Text    = hidden ? mask : $"{_pendingAmount:0.##} ج.م";

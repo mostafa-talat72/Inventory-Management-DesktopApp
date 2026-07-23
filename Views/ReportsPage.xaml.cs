@@ -105,6 +105,9 @@ public partial class ReportsPage : Page
         _rTotalProfit   = totalProfit;
         _rDeductionCost = deductionCost;
         _rInvoiceCount  = invoiceCount;
+
+        TxtTotalCostBreakdown.Text = $"مبيعات: {totalCogs:0.##} ج.م";
+        TxtTotalCostBreakdown2.Text = deductionCost > 0 ? $"خصم مخزون: {deductionCost:0.##} ج.م" : "";
         // ApplySummaryMask called at the very end after all data is loaded
 
         UpdateProfitMargin(totalSales, totalProfit);
@@ -215,10 +218,12 @@ public partial class ReportsPage : Page
         bool h = AmountsVisibilityService.IsHidden;
 
         // ── 1. Summary cards ──
-        TxtTotalSales.Text    = h ? mask : $"{_rTotalSales:0.##} ج.م";
-        TxtTotalCost.Text     = h ? mask : $"{_rTotalCost:0.##} ج.م";
-        TxtTotalDiscount.Text = h ? mask : $"{_rTotalDiscount:0.##} ج.م";
-        TxtTotalProfit.Text   = h ? mask : $"{_rTotalProfit:0.##} ج.م";
+        TxtTotalSales.Text       = h ? mask : $"{_rTotalSales:0.##} ج.م";
+        TxtTotalCostBreakdown.Text = h ? mask : $"مبيعات: {(_rTotalCost - _rDeductionCost):0.##} ج.م";
+        TxtTotalCostBreakdown2.Text = h ? mask : (_rDeductionCost > 0 ? $"خصم مخزون: {_rDeductionCost:0.##} ج.م" : "");
+        TxtTotalCost.Text        = h ? mask : $"{_rTotalCost:0.##} ج.م";
+        TxtTotalDiscount.Text    = h ? mask : $"{_rTotalDiscount:0.##} ج.م";
+        TxtTotalProfit.Text      = h ? mask : $"{_rTotalProfit:0.##} ج.م";
 
         // ── 2. Period comparison ──
         if (PeriodComparisonCard.Visibility == Visibility.Visible)
