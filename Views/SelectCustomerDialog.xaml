@@ -1,4 +1,4 @@
-<UserControl x:Class="ProductApp.Views.SelectCustomerDialog"
+﻿<UserControl x:Class="ProductApp.Views.SelectCustomerDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              FlowDirection="RightToLeft"
@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Background="White" Padding="28,24,28,0">
+        <Border Grid.Row="0" Background="{DynamicResource CardBackground}" Padding="28,24,28,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -27,8 +27,8 @@
                           Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                    <TextBlock Text="اختيار عميل" FontSize="20" FontWeight="Bold" Foreground="#1A237E" />
-                    <TextBlock Text="اختر العميل لبدء إنشاء فاتورة جديدة" FontSize="11" Foreground="#90A4AE" Margin="0,1,0,0" />
+                    <TextBlock Text="اختيار عميل" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="اختر العميل لبدء إنشاء فاتورة جديدة" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0" />
                 </StackPanel>
                 <Button Grid.Column="2" Click="BtnClose_Click"
                         Background="Transparent" BorderThickness="0"
@@ -44,7 +44,7 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="#F5F5F5" />
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource SurfaceBackground}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -57,8 +57,8 @@
         <Rectangle Grid.Row="0" Height="3" Fill="#1A237E" Margin="28,0,28,0" VerticalAlignment="Bottom" />
 
         <!-- Search -->
-        <Border Grid.Row="1" Background="White" Padding="28,16,28,0">
-            <Border CornerRadius="10" BorderBrush="#E0E0E0" BorderThickness="1" Background="#F5F5F5">
+        <Border Grid.Row="1" Background="{DynamicResource CardBackground}" Padding="28,16,28,0">
+            <Border CornerRadius="10" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource CardBackgroundAlt}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -72,14 +72,14 @@
                              Grid.Column="1"
                              TextChanged="TxtSearch_TextChanged"
                              Padding="12,10" BorderThickness="0"
-                             Background="Transparent" FontSize="13"
+                             Background="Transparent" Foreground="{DynamicResource HeadingTextBrush}" CaretBrush="{DynamicResource HeadingTextBrush}" FontSize="13"
                              VerticalAlignment="Center" />
                 </Grid>
             </Border>
         </Border>
 
         <!-- Cash Option -->
-        <Border Grid.Row="2" Background="White" Padding="28,14,28,0">
+        <Border Grid.Row="2" Background="{DynamicResource CardBackground}" Padding="28,14,28,0">
             <Border x:Name="CashCard" CornerRadius="12" Background="#FFF8E1"
                     BorderBrush="#FFE082" BorderThickness="1" Padding="16,14"
                     Cursor="Hand" MouseLeftButtonDown="CashCard_Click">
@@ -109,14 +109,14 @@
         </Border>
 
         <!-- Customer list -->
-        <Border Grid.Row="3" Background="White" Padding="28,14,28,14">
+        <Border Grid.Row="3" Background="{DynamicResource CardBackground}" Padding="28,14,28,14">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Text="قائمة العملاء" FontSize="12" FontWeight="SemiBold"
-                           Foreground="#78909C" Margin="0,0,0,8" />
+                           Foreground="{DynamicResource SubtleTextBrush}" Margin="0,0,0,8" />
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <StackPanel x:Name="CustomerListPanel" />
@@ -125,7 +125,7 @@
         </Border>
 
         <!-- Footer -->
-        <Border Grid.Row="4" Background="White" Padding="28,4,28,20">
+        <Border Grid.Row="4" Background="{DynamicResource CardBackground}" Padding="28,4,28,20">
             <Button Click="BtnClose_Click"
                     Height="40" Cursor="Hand" Padding="28,0"
                     Background="#78909C" Foreground="White" BorderThickness="0"

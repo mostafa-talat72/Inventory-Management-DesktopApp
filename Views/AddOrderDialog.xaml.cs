@@ -618,10 +618,35 @@ namespace ProductApp.Views
                     _db.Entry(oldItem).Reference(oi => oi.Product!).Load();
                     int oldPieces = _inv.CalculatePieceEquivalent(oldItem.Product!, oldItem.CartonQuantity, oldItem.BoxQuantity, oldItem.PieceQuantity);
 
+                    // أرجع الكمية للـ batch
                     var batch = _db.InventoryBatches
                         .Where(b => b.ProductId == oldItem.ProductId)
                         .OrderByDescending(b => b.PurchaseDate).FirstOrDefault();
-                    if (batch != null) batch.RemainingQuantity += oldPieces;
+                    if (batch != null)
+                        batch.RemainingQuantity += oldPieces;
+                    else
+                    {
+                        _db.InventoryBatches.Add(new InventoryBatch
+                        {
+                            ProductId = oldItem.ProductId,
+                            CostPricePerPiece = oldPieces > 0 ? oldItem.CostPrice / oldPieces : 0,
+                            InitialQuantity = oldPieces,
+                            RemainingQuantity = oldPieces,
+                            PurchaseDate = DateTime.Now
+                        });
+                    }
+
+                    // سجّل حركة الإرجاع في سجل المخزون
+                    _db.InventoryMovements.Add(new InventoryMovement
+                    {
+                        ProductId    = oldItem.ProductId,
+                        MovementType = MovementType.Return,
+                        Quantity     = oldPieces,
+                        CostPrice    = oldPieces > 0 ? oldItem.CostPrice / oldPieces : 0,
+                        ReferenceType = ReferenceType.Return,
+                        ReferenceId  = _invoice!.Id,
+                        Notes        = $"مرتجع تعديل طلب #{order.Id} - فاتورة #{_invoice!.Id}"
+                    });
 
                     _invoice!.TotalAmount -= oldItem.Total;
                     _db.OrderItems.Remove(oldItem);

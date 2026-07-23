@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Shapes;
 using ProductApp.Services;
 using ProductApp.Views;
 
@@ -19,6 +20,7 @@ public partial class MainWindow : Window
         UpdateLocationName(config.LocationName);
 
         NavigateToPage("Dashboard");
+        UpdateThemeToggleButton();
     }
 
     public void UpdateLocationName(string name)
@@ -68,19 +70,36 @@ public partial class MainWindow : Window
 
     private void UpdateNavButtons()
     {
+        var activeBorder  = System.Windows.Media.Brushes.White;
+        var activeBg      = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFrom("#14FFFFFF")!;
+        var activeFg      = System.Windows.Media.Brushes.White;
+        var inactiveBg    = System.Windows.Media.Brushes.Transparent;
+        var inactiveFg    = (System.Windows.Media.Brush)(Application.Current.TryFindResource("NavTextBrush")
+                             ?? new System.Windows.Media.BrushConverter().ConvertFrom("#90CAF9")!);
+
         foreach (var btn in new[] { BtnDashboard, BtnProducts, BtnCustomers, BtnInvoices, BtnReports, BtnSettings })
         {
             var isActive = btn.Tag?.ToString() == _currentPage;
-            btn.BorderBrush = isActive
-                ? System.Windows.Media.Brushes.White
-                : System.Windows.Media.Brushes.Transparent;
-            btn.Background = isActive
-                ? (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFrom("#14FFFFFF")!
-                : System.Windows.Media.Brushes.Transparent;
-            btn.Foreground = isActive
-                ? System.Windows.Media.Brushes.White
-                : (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFrom("#90CAF9")!;
+            btn.BorderBrush = isActive ? activeBorder : System.Windows.Media.Brushes.Transparent;
+            btn.Background  = isActive ? activeBg      : inactiveBg;
+            btn.Foreground  = isActive ? activeFg      : inactiveFg;
         }
+    }
+
+    private void BtnThemeToggle_Click(object sender, RoutedEventArgs e)
+    {
+        ThemeService.Toggle();
+        UpdateThemeToggleButton();
+        UpdateNavButtons(); // refresh nav brush after theme change
+    }
+
+    private void UpdateThemeToggleButton()
+    {
+        bool isDark = ThemeService.IsDarkMode;
+        // Show sun icon in dark mode (click → go light), moon in light mode (click → go dark)
+        IconMoon.Visibility = isDark ? Visibility.Collapsed : Visibility.Visible;
+        IconSun.Visibility  = isDark ? Visibility.Visible   : Visibility.Collapsed;
+        TxtThemeLabel.Text  = isDark ? "الوضع النهاري" : "الوضع الليلي";
     }
 
     public void ShowOverlay(UserControl content)

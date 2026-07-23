@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
 using ProductApp.Data;
 using ProductApp.Models;
@@ -54,15 +55,15 @@ public partial class StockMovementDialog : UserControl
 
         foreach (var m in allMovements)
         {
-            var (typeDisplay, typeColor, sign, delta) = m.MovementType switch
+            var (typeDisplay, typeColor, typeBgHex, sign, delta) = m.MovementType switch
             {
-                MovementType.StockIn => ("وارد", "#2E7D32", "+", m.Quantity),
-                MovementType.StockOut => ("صادر", "#C62828", "-", -m.Quantity),
-                MovementType.Adjustment => ("تعديل", "#F57F17", "±", m.Quantity),
-                MovementType.Return => ("مرتجع", "#1565C0", "+", m.Quantity),
-                MovementType.ReturnToSupplier => ("مرتجع للمورد", "#E65100", "-", -m.Quantity),
-                MovementType.Shortage => ("عجز", "#C62828", "-", -m.Quantity),
-                _ => ("", "#78909C", "", 0)
+                MovementType.StockIn          => ("وارد",           "#2E7D32", "#E8F5E9", "+",  m.Quantity),
+                MovementType.StockOut         => ("صادر",           "#C62828", "#FFEBEE", "-", -m.Quantity),
+                MovementType.Adjustment       => ("تعديل",          "#F57F17", "#FFF8E1", "±",  m.Quantity),
+                MovementType.Return           => ("مرتجع",          "#1565C0", "#E3F2FD", "+",  m.Quantity),
+                MovementType.ReturnToSupplier => ("مرتجع للمورد",   "#E65100", "#FFF3E0", "-", -m.Quantity),
+                MovementType.Shortage         => ("عجز",            "#C62828", "#FFEBEE", "-", -m.Quantity),
+                _                             => ("",               "#78909C", "#ECEFF1", "",   0)
             };
 
             runningStock += delta;
@@ -96,22 +97,43 @@ public partial class StockMovementDialog : UserControl
                 }
             }
 
+            // Parse colors — dot/fg come from typeColor, bg from typeBgHex
+            Color ParseHex(string hex)
+            {
+                hex = hex.TrimStart('#');
+                return Color.FromRgb(
+                    Convert.ToByte(hex[0..2], 16),
+                    Convert.ToByte(hex[2..4], 16),
+                    Convert.ToByte(hex[4..6], 16));
+            }
+
+            // Badge bg: semi-transparent version of main color
+            Color dotColor = ParseHex(typeColor);
+            Color fgColor  = dotColor;
+            // Light bg: use typeBgHex in light mode; in dark mode the SurfaceBackground handles it
+            // We store as Color so XAML can bind to SolidColorBrush.Color
+            Color bgColor  = ParseHex(typeBgHex);
+
             items.Add(new MovementItem
             {
-                DateDisplay = $"{m.CreatedAt:yyyy/MM/dd hh:mm} {(m.CreatedAt.Hour < 12 ? "ص" : "م")}",
-                TypeDisplay = typeDisplay,
-                TypeColor = typeColor,
-                QuantityDisplay = $"{sign} {FormatQuantity(m.Quantity)}",
-                UnitPriceDisplay = m.CostPrice > 0 ? $"{m.CostPrice:0.##}" : "-",
-                TotalDisplay = m.CostPrice > 0 ? $"{(m.Quantity * m.CostPrice):0.##} ج.م" : "-",
-                ReasonDisplay = reason,
+                DateDisplay       = $"{m.CreatedAt:yyyy/MM/dd hh:mm} {(m.CreatedAt.Hour < 12 ? "ص" : "م")}",
+                TypeDisplay       = typeDisplay,
+                TypeColor         = typeColor,          // kept for backward compat
+                TypeDotColor      = dotColor,
+                TypeFgColor       = fgColor,
+                TypeBgColor       = bgColor,
+                QuantityDisplay   = $"{sign} {FormatQuantity(m.Quantity)}",
+                QuantityForeground = new SolidColorBrush(dotColor),
+                UnitPriceDisplay  = m.CostPrice > 0 ? $"{m.CostPrice:0.##}" : "-",
+                TotalDisplay      = m.CostPrice > 0 ? $"{(m.Quantity * m.CostPrice):0.##} ج.م" : "-",
+                ReasonDisplay     = reason,
                 StockAfterDisplay = FormatQuantity(runningStock),
-                MovementId = m.Id,
-                CanDelete = canDelete,
-                Quantity = m.Quantity,
-                CostPrice = m.CostPrice,
-                Notes = m.Notes ?? "",
-                MovementType = m.MovementType
+                MovementId        = m.Id,
+                CanDelete         = canDelete,
+                Quantity          = m.Quantity,
+                CostPrice         = m.CostPrice,
+                Notes             = m.Notes ?? "",
+                MovementType      = m.MovementType
             });
         }
 
@@ -284,18 +306,22 @@ public partial class StockMovementDialog : UserControl
 
 public class MovementItem
 {
-    public required string DateDisplay { get; set; }
-    public required string TypeDisplay { get; set; }
-    public required string TypeColor { get; set; }
-    public required string QuantityDisplay { get; set; }
-    public required string UnitPriceDisplay { get; set; }
-    public required string TotalDisplay { get; set; }
-    public required string ReasonDisplay { get; set; }
+    public required string DateDisplay       { get; set; }
+    public required string TypeDisplay       { get; set; }
+    public required string TypeColor         { get; set; }   // hex — kept for legacy
+    public Color           TypeDotColor      { get; set; }
+    public Color           TypeFgColor       { get; set; }
+    public Color           TypeBgColor       { get; set; }
+    public required string QuantityDisplay   { get; set; }
+    public Brush?          QuantityForeground { get; set; }
+    public required string UnitPriceDisplay  { get; set; }
+    public required string TotalDisplay      { get; set; }
+    public required string ReasonDisplay     { get; set; }
     public required string StockAfterDisplay { get; set; }
-    public int MovementId { get; set; }
-    public bool CanDelete { get; set; } = true;
-    public int Quantity { get; set; }
-    public decimal CostPrice { get; set; }
-    public string Notes { get; set; } = "";
-    public MovementType MovementType { get; set; }
+    public int             MovementId        { get; set; }
+    public bool            CanDelete         { get; set; } = true;
+    public int             Quantity          { get; set; }
+    public decimal         CostPrice         { get; set; }
+    public string          Notes             { get; set; } = "";
+    public MovementType    MovementType      { get; set; }
 }

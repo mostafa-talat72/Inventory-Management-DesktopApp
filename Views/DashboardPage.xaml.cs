@@ -123,66 +123,117 @@ public partial class DashboardPage : Page
             InvoiceStatus.Cancelled => "ملغي",
             _ => ""
         };
-        var remaining = inv.Remaining;
+
+        // Pull colors from the current theme (works for both light & dark)
+        var headingBrush  = Application.Current.TryFindResource("HeadingTextBrush")  as Brush
+                             ?? new SolidColorBrush(Color.FromRgb(38, 50, 56));
+        var primaryBrush  = Application.Current.TryFindResource("PrimaryTextBrush")  as Brush
+                             ?? new SolidColorBrush(Color.FromRgb(26, 35, 126));
+        var subtleBrush   = Application.Current.TryFindResource("MutedTextBrush")    as Brush
+                             ?? new SolidColorBrush(Color.FromRgb(144, 164, 174));
+        var dividerBrush  = Application.Current.TryFindResource("DividerBrush")      as Brush
+                             ?? new SolidColorBrush(Color.FromRgb(238, 238, 238));
 
         var border = new Border
         {
-            Margin = new Thickness(0, 0, 0, 8),
-            Padding = new Thickness(0, 10, 0, 10),
+            Margin = new Thickness(0, 0, 0, 0),
+            Padding = new Thickness(12, 10, 12, 10),
             Cursor = Cursors.Hand,
-            Tag = inv.Id
+            Tag = inv.Id,
+            BorderBrush = dividerBrush,
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            CornerRadius = new CornerRadius(0)
         };
         border.MouseLeftButtonDown += (_, _) => OpenInvoice(inv.Id);
 
-        var row = new Grid();
-        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        // Hover effect
+        border.MouseEnter += (_, _) =>
+        {
+            var hoverBg = Application.Current.TryFindResource("SurfaceBackground") as Brush
+                          ?? new SolidColorBrush(Color.FromArgb(30, 0, 0, 0));
+            border.Background = hoverBg;
+        };
+        border.MouseLeave += (_, _) => border.Background = null;
 
+        var row = new Grid();
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });   // badge
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // info
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });   // amount
+
+        // Status badge
         var statusBadge = new Border
         {
-            CornerRadius = new CornerRadius(4),
+            CornerRadius = new CornerRadius(5),
             Background = (Brush)new BrushConverter().ConvertFrom(brush)!,
-            Padding = new Thickness(6, 2, 6, 2),
+            Padding = new Thickness(7, 3, 7, 3),
             VerticalAlignment = VerticalAlignment.Center,
+            MinWidth = 70,
             Child = new TextBlock
             {
                 Text = statusText,
                 FontSize = 10,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = Brushes.White
+                Foreground = Brushes.White,
+                TextAlignment = TextAlignment.Center
             }
         };
         row.Children.Add(statusBadge);
 
-        var infoStack = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
+        // Invoice info
+        var infoStack = new StackPanel
+        {
+            Margin = new Thickness(0, 0, 12, 0),
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetColumn(infoStack, 1);
+
         infoStack.Children.Add(new TextBlock
         {
-            Text = $"فاتورة #{inv.Id} - {(inv.CustomerName ?? "عميل نقدي")}",
+            Text = $"فاتورة #{inv.Id}  •  {(inv.CustomerName ?? "عميل نقدي")}",
             FontSize = 12,
             FontWeight = FontWeights.SemiBold,
-            Foreground = (Brush)new BrushConverter().ConvertFrom("#263238")!
+            Foreground = headingBrush,
+            TextTrimming = TextTrimming.CharacterEllipsis
         });
         infoStack.Children.Add(new TextBlock
         {
-            Text = $"{inv.CreatedAt:yyyy/MM/dd - hh:mm} {(inv.CreatedAt.Hour < 12 ? "ص" : "م")}",
+            Text = $"{inv.CreatedAt:yyyy/MM/dd  hh:mm} {(inv.CreatedAt.Hour < 12 ? "ص" : "م")}",
             FontSize = 10,
-            Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
-            Margin = new Thickness(0, 2, 0, 0)
+            Foreground = subtleBrush,
+            Margin = new Thickness(0, 3, 0, 0)
         });
-        Grid.SetColumn(infoStack, 1);
         row.Children.Add(infoStack);
 
-        var amountBlock = new TextBlock
+        // Amount + remaining
+        var amountStack = new StackPanel
+        {
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Left
+        };
+        Grid.SetColumn(amountStack, 2);
+
+        amountStack.Children.Add(new TextBlock
         {
             Text = $"{inv.NetAmount:0.##} ج.م",
             FontSize = 13,
             FontWeight = FontWeights.Bold,
-            Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        Grid.SetColumn(amountBlock, 2);
-        row.Children.Add(amountBlock);
+            Foreground = primaryBrush,
+            TextAlignment = TextAlignment.Left
+        });
+
+        if (inv.Remaining > 0 && inv.Status != InvoiceStatus.Cancelled)
+        {
+            amountStack.Children.Add(new TextBlock
+            {
+                Text = $"متبقي {inv.Remaining:0.##}",
+                FontSize = 10,
+                Foreground = (Brush)new BrushConverter().ConvertFrom("#F57F17")!,
+                Margin = new Thickness(0, 2, 0, 0),
+                TextAlignment = TextAlignment.Left
+            });
+        }
+
+        row.Children.Add(amountStack);
 
         border.Child = row;
         return border;

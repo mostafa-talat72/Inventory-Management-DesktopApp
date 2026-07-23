@@ -1,4 +1,4 @@
-<UserControl x:Class="ProductApp.Views.SelectInvoiceDialog"
+﻿<UserControl x:Class="ProductApp.Views.SelectInvoiceDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              FlowDirection="RightToLeft"
@@ -13,7 +13,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Background="White" Padding="28,24,28,0">
+        <Border Grid.Row="0" Background="{DynamicResource CardBackground}" Padding="28,24,28,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -26,8 +26,8 @@
                           Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                    <TextBlock x:Name="TxtTitle" Text="فواتير غير مدفوعة" FontSize="20" FontWeight="Bold" Foreground="#1A237E" />
-                    <TextBlock x:Name="TxtSubtitle" Text="" FontSize="11" Foreground="#90A4AE" Margin="0,1,0,0" />
+                    <TextBlock x:Name="TxtTitle" Text="فواتير غير مدفوعة" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock x:Name="TxtSubtitle" Text="" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0" />
                 </StackPanel>
                 <Button Grid.Column="2" Click="BtnClose_Click"
                         Background="Transparent" BorderThickness="0"
@@ -43,7 +43,7 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="#F5F5F5" />
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource SurfaceBackground}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -56,13 +56,13 @@
         <Rectangle Grid.Row="0" Height="3" Fill="#F57F17" Margin="28,0,28,0" VerticalAlignment="Bottom" />
 
         <!-- Info label -->
-        <Border Grid.Row="1" Background="White" Padding="28,16,28,0">
+        <Border Grid.Row="1" Background="{DynamicResource CardBackground}" Padding="28,16,28,0">
             <TextBlock x:Name="TxtInfo" Text=""
-                       FontSize="13" Foreground="#546E7A" TextWrapping="Wrap" />
+                       FontSize="13" Foreground="{DynamicResource BodyTextBrush}" TextWrapping="Wrap" />
         </Border>
 
         <!-- Invoice list + New invoice option -->
-        <Border Grid.Row="2" Background="White" Padding="28,14,28,14">
+        <Border Grid.Row="2" Background="{DynamicResource CardBackground}" Padding="28,14,28,14">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -70,7 +70,7 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Text="اختر فاتورة للإضافة إليها" FontSize="12" FontWeight="SemiBold"
-                           Foreground="#78909C" Margin="0,0,0,8" />
+                           Foreground="{DynamicResource SubtleTextBrush}" Margin="0,0,0,8" />
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <StackPanel x:Name="InvoiceListPanel" />
@@ -104,7 +104,7 @@
         </Border>
 
         <!-- Footer -->
-        <Border Grid.Row="3" Background="White" Padding="28,4,28,20">
+        <Border Grid.Row="3" Background="{DynamicResource CardBackground}" Padding="28,4,28,20">
             <Button Click="BtnClose_Click"
                     Height="40" Cursor="Hand" Padding="28,0"
                     Background="#78909C" Foreground="White" BorderThickness="0"

@@ -93,6 +93,9 @@ public partial class App : Application
         var config = AppConfig.Load();
         AppConfiguration = config;
 
+        // Apply saved theme before any window is shown
+        ThemeService.Initialize(config.IsDarkMode);
+
         // Initialize database
         try
         {

@@ -1,15 +1,15 @@
-<Page x:Class="ProductApp.Views.ReportsPage"
+﻿<Page x:Class="ProductApp.Views.ReportsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="التقارير"
       FlowDirection="RightToLeft"
-      Background="#F0F2F5">
+      Background="{DynamicResource AppBackground}">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="28,24,28,24">
 
             <!-- Header -->
-            <Border CornerRadius="16" Background="White" Padding="28,20" Margin="0,0,0,20">
+            <Border CornerRadius="16" Background="{DynamicResource CardBackground}" Padding="28,20" Margin="0,0,0,20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                 </Border.Effect>
@@ -31,14 +31,14 @@
                               Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
-                        <TextBlock Text="التقارير" FontSize="24" FontWeight="Bold" Foreground="#1A237E" />
-                        <TextBlock Text="تحليل المبيعات والأرباح وإجمالي الإيرادات" FontSize="11" Foreground="#90A4AE" Margin="0,2,0,0" />
+                        <TextBlock Text="التقارير" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        <TextBlock Text="تحليل المبيعات والأرباح وإجمالي الإيرادات" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0" />
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Date Filter -->
-            <Border CornerRadius="14" Background="White" Padding="24,18" Margin="0,0,0,20">
+            <Border CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="24,18" Margin="0,0,0,20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                 </Border.Effect>
@@ -56,14 +56,14 @@
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
                     </Border>
-                    <TextBlock Grid.Column="1" Text="من:" VerticalAlignment="Center" FontSize="12" Foreground="#78909C" Margin="0,0,8,0" />
+                    <TextBlock Grid.Column="1" Text="من:" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" Margin="0,0,8,0" />
                     <DatePicker x:Name="DateFrom" Grid.Column="1" Margin="30,0,0,0"
-                                BorderBrush="#E0E0E0" BorderThickness="1" Height="38"
-                                Background="White" FontSize="13" />
-                    <TextBlock Grid.Column="2" Text="إلى:" VerticalAlignment="Center" FontSize="12" Foreground="#78909C" Margin="16,0,8,0" />
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Height="38"
+                                Background="{DynamicResource CardBackground}" FontSize="13" />
+                    <TextBlock Grid.Column="2" Text="إلى:" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" Margin="16,0,8,0" />
                     <DatePicker x:Name="DateTo" Grid.Column="3" Margin="22,0,0,0"
-                                BorderBrush="#E0E0E0" BorderThickness="1" Height="38"
-                                Background="White" FontSize="13" />
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Height="38"
+                                Background="{DynamicResource CardBackground}" FontSize="13" />
                     <Button Grid.Column="4" Click="ShowReport_Click"
                             Height="38" Padding="20,0" Cursor="Hand" Margin="16,0,0,0"
                             Background="#1A237E" Foreground="White" BorderThickness="0"
@@ -130,7 +130,7 @@
                     <ColumnDefinition Width="12" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" CornerRadius="14" Background="White" Padding="20,16">
+                <Border Grid.Column="0" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                     </Border.Effect>
@@ -145,12 +145,12 @@
                                   Data="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="إجمالي المبيعات" FontSize="10" Foreground="#90A4AE" />
-                            <TextBlock x:Name="TxtTotalSales" Text="0.00 ج.م" FontSize="22" FontWeight="Bold" Foreground="#1A237E" Margin="0,2,0,0" />
+                            <TextBlock Text="إجمالي المبيعات" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                            <TextBlock x:Name="TxtTotalSales" Text="0.00 ج.م" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,2,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>
-                <Border Grid.Column="2" CornerRadius="14" Background="White" Padding="20,16">
+                <Border Grid.Column="2" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                     </Border.Effect>
@@ -165,12 +165,12 @@
                                   Data="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="إجمالي التكلفة" FontSize="10" Foreground="#90A4AE" />
+                            <TextBlock Text="إجمالي التكلفة" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                             <TextBlock x:Name="TxtTotalCost" Text="0.00 ج.م" FontSize="22" FontWeight="Bold" Foreground="#C62828" Margin="0,2,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>
-                <Border Grid.Column="4" CornerRadius="14" Background="White" Padding="20,16">
+                <Border Grid.Column="4" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                     </Border.Effect>
@@ -185,12 +185,12 @@
                                   Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="إجمالي الربح" FontSize="10" Foreground="#90A4AE" />
+                            <TextBlock Text="إجمالي الربح" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                             <TextBlock x:Name="TxtTotalProfit" Text="0.00 ج.م" FontSize="22" FontWeight="Bold" Foreground="#2E7D32" Margin="0,2,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>
-                <Border Grid.Column="6" CornerRadius="14" Background="White" Padding="20,16">
+                <Border Grid.Column="6" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                     </Border.Effect>
@@ -205,7 +205,7 @@
                                   Data="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="عدد الفواتير" FontSize="10" Foreground="#90A4AE" />
+                            <TextBlock Text="عدد الفواتير" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                             <TextBlock x:Name="TxtInvoiceCount" Text="0" FontSize="22" FontWeight="Bold" Foreground="#00695C" Margin="0,2,0,0" />
                         </StackPanel>
                     </Grid>
@@ -213,7 +213,7 @@
             </Grid>
 
             <!-- Profit Margin -->
-            <Border x:Name="ProfitMarginCard" CornerRadius="14" Background="White" Padding="24,18" Margin="0,0,0,20"
+            <Border x:Name="ProfitMarginCard" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="24,18" Margin="0,0,0,20"
                     Visibility="Collapsed">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
@@ -229,7 +229,7 @@
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="هامش الربح" FontSize="11" Foreground="#90A4AE" />
+                        <TextBlock Text="هامش الربح" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" />
                         <TextBlock x:Name="TxtProfitMargin" Text="0%" FontSize="20" FontWeight="Bold" Foreground="#E65100" Margin="0,1,0,0" />
                     </StackPanel>
                     <Border x:Name="ProfitIndicator" Grid.Column="2" MinWidth="90" Padding="14,6" CornerRadius="8"
@@ -241,7 +241,7 @@
             </Border>
 
             <!-- Period Comparison -->
-            <Border x:Name="PeriodComparisonCard" CornerRadius="14" Background="White" Padding="24,20" Margin="0,0,0,20"
+            <Border x:Name="PeriodComparisonCard" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="24,20" Margin="0,0,0,20"
                     Visibility="Collapsed">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
@@ -258,8 +258,8 @@
                                   Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="مقارنة بالفترة السابقة" FontSize="14" FontWeight="Bold" Foreground="#37474F" />
-                            <TextBlock x:Name="TxtComparisonPeriod" Text="" FontSize="11" Foreground="#90A4AE" Margin="0,1,0,0" />
+                            <TextBlock Text="مقارنة بالفترة السابقة" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource HeadingTextBrush}" />
+                            <TextBlock x:Name="TxtComparisonPeriod" Text="" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0" />
                         </StackPanel>
                     </Grid>
                     <Grid>
@@ -272,11 +272,11 @@
                             <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Padding="14,12" CornerRadius="10" Background="#F5F5FF">
+                        <Border Grid.Column="0" Padding="14,12" CornerRadius="10" Background="{DynamicResource SurfaceBackground}">
                             <StackPanel>
-                                <TextBlock Text="المبيعات" FontSize="10" Foreground="#90A4AE" />
+                                <TextBlock Text="المبيعات" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                    <TextBlock x:Name="TxtPrevSales" Text="0" FontSize="15" FontWeight="Bold" Foreground="#1A237E" />
+                                    <TextBlock x:Name="TxtPrevSales" Text="0" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                                     <Border x:Name="SalesChangeBadge" Margin="8,0,0,0" Padding="6,2" CornerRadius="4" Background="#E8F5E9">
                                         <StackPanel Orientation="Horizontal">
                                             <Path FlowDirection="LeftToRight" x:Name="SalesArrow" Width="10" Height="10" Fill="#2E7D32" Stretch="Uniform"
@@ -290,13 +290,13 @@
                         </Border>
                         <Border Grid.Column="2" Padding="14,12" CornerRadius="10" Background="#FFF5F5">
                             <StackPanel>
-                                <TextBlock Text="التكلفة" FontSize="10" Foreground="#90A4AE" />
+                                <TextBlock Text="التكلفة" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                                 <TextBlock x:Name="TxtPrevCost" Text="0" FontSize="15" FontWeight="Bold" Foreground="#C62828" Margin="0,4,0,0" />
                             </StackPanel>
                         </Border>
                         <Border Grid.Column="4" Padding="14,12" CornerRadius="10" Background="#F1F8E9">
                             <StackPanel>
-                                <TextBlock Text="الربح" FontSize="10" Foreground="#90A4AE" />
+                                <TextBlock Text="الربح" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                     <TextBlock x:Name="TxtPrevProfit" Text="0" FontSize="15" FontWeight="Bold" Foreground="#2E7D32" />
                                     <Border x:Name="ProfitChangeBadge" Margin="8,0,0,0" Padding="6,2" CornerRadius="4" Background="#E8F5E9">
@@ -312,7 +312,7 @@
                         </Border>
                         <Border Grid.Column="6" Padding="14,12" CornerRadius="10" Background="#E0F2F1">
                             <StackPanel>
-                                <TextBlock Text="الفواتير" FontSize="10" Foreground="#90A4AE" />
+                                <TextBlock Text="الفواتير" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                     <TextBlock x:Name="TxtPrevCount" Text="0" FontSize="15" FontWeight="Bold" Foreground="#00695C" />
                                     <Border x:Name="CountChangeBadge" Margin="8,0,0,0" Padding="6,2" CornerRadius="4" Background="#E8F5E9">
@@ -331,7 +331,7 @@
             </Border>
 
             <!-- Invoice Status Distribution -->
-            <Border CornerRadius="14" Background="White" Padding="24,20" Margin="0,0,0,20">
+            <Border CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="24,20" Margin="0,0,0,20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                 </Border.Effect>
@@ -346,7 +346,7 @@
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                         </Border>
-                        <TextBlock Grid.Column="1" Text="توزيع حالة الفواتير" FontSize="14" FontWeight="Bold" Foreground="#37474F" Margin="12,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="توزيع حالة الفواتير" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource HeadingTextBrush}" Margin="12,0,0,0" VerticalAlignment="Center" />
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -387,7 +387,7 @@
             </Border>
 
             <!-- Top Products + Customer Analysis -->
-            <Border CornerRadius="14" Background="White" Padding="0" Margin="0,0,0,20">
+            <Border CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="0" Margin="0,0,0,20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                 </Border.Effect>
@@ -410,7 +410,7 @@
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                             </Border>
-                            <TextBlock Grid.Column="1" Text="المنتجات الأكثر مبيعاً" FontSize="13" FontWeight="Bold" Foreground="#37474F" Margin="10,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="المنتجات الأكثر مبيعاً" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource HeadingTextBrush}" Margin="10,0,0,0" VerticalAlignment="Center" />
                         </Grid>
                         <ItemsControl x:Name="TopProductsList" Focusable="False">
                             <ItemsControl.ItemTemplate>
@@ -428,7 +428,7 @@
                                                            Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                             <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="#37474F"
+                                                <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}"
                                                            TextTrimming="CharacterEllipsis" />
                                                 <Border Height="4" CornerRadius="2" Background="#E0E0E0" Margin="0,4,0,0">
                                                     <Border Height="4" CornerRadius="2" Background="{Binding BarColor}"
@@ -437,13 +437,13 @@
                                                 </Border>
                                             </StackPanel>
                                             <TextBlock Grid.Column="2" Text="{Binding SalesDisplay}" FontSize="12" FontWeight="Bold"
-                                                       Foreground="#1A237E" VerticalAlignment="Center" />
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center" />
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <Border x:Name="EmptyTopProducts" Visibility="Visible" Padding="20,16" Background="#FAFAFA" CornerRadius="8">
+                        <Border x:Name="EmptyTopProducts" Visibility="Visible" Padding="20,16" Background="{DynamicResource CardBackgroundAlt}" CornerRadius="8">
                             <TextBlock Text="لا توجد مبيعات كافية" FontSize="11" Foreground="#B0BEC5" HorizontalAlignment="Center" />
                         </Border>
                     </StackPanel>
@@ -463,7 +463,7 @@
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                             </Border>
-                            <TextBlock Grid.Column="1" Text="أفضل العملاء" FontSize="13" FontWeight="Bold" Foreground="#37474F" Margin="10,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="أفضل العملاء" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource HeadingTextBrush}" Margin="10,0,0,0" VerticalAlignment="Center" />
                         </Grid>
                         <ItemsControl x:Name="TopCustomersList" Focusable="False">
                             <ItemsControl.ItemTemplate>
@@ -481,19 +481,19 @@
                                                            Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                             <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="#37474F"
+                                                <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}"
                                                            TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Text="{Binding InvoiceCount}" FontSize="10" Foreground="#90A4AE" Margin="0,1,0,0" />
+                                                <TextBlock Text="{Binding InvoiceCount}" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                                <TextBlock Text="{Binding SalesDisplay}" FontSize="12" FontWeight="Bold" Foreground="#1A237E" />
+                                                <TextBlock Text="{Binding SalesDisplay}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <Border x:Name="EmptyTopCustomers" Visibility="Visible" Padding="20,16" Background="#FAFAFA" CornerRadius="8">
+                        <Border x:Name="EmptyTopCustomers" Visibility="Visible" Padding="20,16" Background="{DynamicResource CardBackgroundAlt}" CornerRadius="8">
                             <TextBlock Text="لا توجد مبيعات كافية" FontSize="11" Foreground="#B0BEC5" HorizontalAlignment="Center" />
                         </Border>
                     </StackPanel>
@@ -501,7 +501,7 @@
             </Border>
 
             <!-- Daily Sales Trend -->
-            <Border x:Name="DailyTrendCard" CornerRadius="14" Background="White" Padding="0" Margin="0,0,0,20"
+            <Border x:Name="DailyTrendCard" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="0" Margin="0,0,0,20"
                     Visibility="Collapsed">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
@@ -533,15 +533,15 @@
                                           Data="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z" />
                                 </Border>
                                 <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="المبيعات اليومية" FontSize="16" FontWeight="Bold" Foreground="#1A237E" />
-                                    <TextBlock x:Name="TxtTrendSubtitle" Text="" FontSize="11" Foreground="#90A4AE" Margin="0,1,0,0" />
+                                    <TextBlock Text="المبيعات اليومية" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                                    <TextBlock x:Name="TxtTrendSubtitle" Text="" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2" Padding="12,6" CornerRadius="8" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                <Border Grid.Column="2" Padding="12,6" CornerRadius="8" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                                     <StackPanel Orientation="Horizontal">
                                         <Border Width="10" Height="10" CornerRadius="3" Background="#3F51B5" VerticalAlignment="Center" />
-                                        <TextBlock Text="الإيراد" FontSize="10" Foreground="#546E7A" Margin="5,0,12,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="الإيراد" FontSize="10" Foreground="{DynamicResource BodyTextBrush}" Margin="5,0,12,0" VerticalAlignment="Center" />
                                         <Border Width="10" Height="10" CornerRadius="3" Background="#E53935" VerticalAlignment="Center" />
-                                        <TextBlock Text="التكلفة" FontSize="10" Foreground="#546E7A" Margin="5,0,0,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="التكلفة" FontSize="10" Foreground="{DynamicResource BodyTextBrush}" Margin="5,0,0,0" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -552,10 +552,10 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Margin="0,0,4,0" Padding="10,8" CornerRadius="8" Background="#F5F5FF">
+                                <Border Grid.Column="0" Margin="0,0,4,0" Padding="10,8" CornerRadius="8" Background="{DynamicResource SurfaceBackground}">
                                     <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock x:Name="TxtTrendTotal" Text="0" FontSize="16" FontWeight="Bold" Foreground="#1A237E" HorizontalAlignment="Center" />
-                                        <TextBlock Text="إجمالي الإيرادات" FontSize="9" Foreground="#90A4AE" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                        <TextBlock x:Name="TxtTrendTotal" Text="0" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+                                        <TextBlock Text="إجمالي الإيرادات" FontSize="9" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                                     </StackPanel>
                                 </Border>
                                 <Border Grid.Column="1" Margin="4,0,4,0" Padding="10,8" CornerRadius="8" Background="#FFF8E1">
@@ -585,7 +585,7 @@
                                 <ColumnDefinition Width="48" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Background="#FAFAFA" CornerRadius="6" BorderBrush="#F0F0F0" BorderThickness="0,0,1,0">
+                            <Border Grid.Column="0" Background="{DynamicResource CardBackgroundAlt}" CornerRadius="6" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="0,0,1,0">
                                 <Canvas x:Name="AxisCanvas" />
                             </Border>
                             <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
@@ -597,7 +597,7 @@
             </Border>
 
             <!-- Detailed Report -->
-            <Border CornerRadius="14" Background="White" Padding="0" Margin="0,0,0,4">
+            <Border CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="0" Margin="0,0,0,4">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000" />
                 </Border.Effect>
@@ -622,8 +622,8 @@
                                       Data="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
                             </Border>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="تفاصيل المبيعات" FontSize="16" FontWeight="Bold" Foreground="#1A237E" />
-                                <TextBlock Text="تقرير تفصيلي حسب المنتج" FontSize="11" Foreground="#90A4AE" Margin="0,1,0,0" />
+                                <TextBlock Text="تفاصيل المبيعات" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                                <TextBlock Text="تقرير تفصيلي حسب المنتج" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0" />
                             </StackPanel>
                             <Border x:Name="ReportCountBadge" Grid.Column="2" Padding="12,5" CornerRadius="12"
                                     Background="#E8EAF6" VerticalAlignment="Center" Visibility="Collapsed">
@@ -667,7 +667,7 @@
                                              </Style.Triggers>
                                          </Style>
                                      </DataTemplate.Resources>
-                                     <Border Padding="0,6" Background="White" BorderBrush="#F0F0F0" BorderThickness="0,0,0,1">
+                                     <Border Padding="0,6" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="0,0,0,1">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Style.Triggers>
@@ -690,12 +690,12 @@
                                                        FontSize="13" FontWeight="SemiBold" Foreground="#263238"
                                                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding CartonDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" Foreground="#546E7A" HorizontalAlignment="Center" />
-                                                <TextBlock Text="{Binding BoxDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" Foreground="#546E7A" HorizontalAlignment="Center" Margin="0,1,0,0" />
-                                                <TextBlock Text="{Binding PieceDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" Foreground="#546E7A" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                                                <TextBlock Text="{Binding CartonDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" Foreground="{DynamicResource BodyTextBrush}" HorizontalAlignment="Center" />
+                                                <TextBlock Text="{Binding BoxDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" Foreground="{DynamicResource BodyTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                                                <TextBlock Text="{Binding PieceDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" Foreground="{DynamicResource BodyTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding RetailRevDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" FontWeight="SemiBold" Foreground="#1A237E" HorizontalAlignment="Center" />
+                                                <TextBlock Text="{Binding RetailRevDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
                                                 <TextBlock Text="{Binding WholesaleRevDisplay}" Style="{StaticResource CollapseWhenEmpty}" FontSize="10" FontWeight="SemiBold" Foreground="#1565C0" HorizontalAlignment="Center" Margin="0,2,0,0" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -713,7 +713,7 @@
                         </ItemsControl>
 
                     <!-- Totals Footer -->
-                    <Border x:Name="ReportFooter" Background="#F5F5FF" Visibility="Collapsed">
+                    <Border x:Name="ReportFooter" Background="{DynamicResource SurfaceBackground}" Visibility="Collapsed">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="3*" />
@@ -724,15 +724,15 @@
                                 <ColumnDefinition Width="0.7*" />
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Padding="16,12" Background="#E8EAF6">
-                                <TextBlock Text="الإجمالي" FontSize="13" FontWeight="Bold" Foreground="#1A237E" />
+                                <TextBlock Text="الإجمالي" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TxtFooterCarton" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="#37474F" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="TxtFooterBox" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="#37474F" HorizontalAlignment="Center" Margin="0,1,0,0" />
-                                <TextBlock x:Name="TxtFooterPiece" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="#37474F" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                                <TextBlock x:Name="TxtFooterCarton" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="TxtFooterBox" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                                <TextBlock x:Name="TxtFooterPiece" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TxtFooterRetailRev" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="#1A237E" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="TxtFooterRetailRev" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
                                 <TextBlock x:Name="TxtFooterWholesaleRev" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="#1565C0" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -740,14 +740,14 @@
                                 <TextBlock x:Name="TxtFooterWholesaleCost" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="#E53935" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
                             <TextBlock Grid.Column="4" x:Name="TxtFooterProfit" Text="0" FontSize="12" FontWeight="Bold" Foreground="#2E7D32" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="5" x:Name="TxtFooterMargin" Text="0" FontSize="12" Foreground="#37474F" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="5" x:Name="TxtFooterMargin" Text="0" FontSize="12" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Grid>
                     </Border>
 
                     <!-- Empty state -->
                     <Border x:Name="EmptyState" Visibility="Visible" Padding="50,50" Background="Transparent">
                         <StackPanel HorizontalAlignment="Center">
-                            <Border Width="64" Height="64" CornerRadius="16" Background="#F5F5F5" Margin="0,0,0,0">
+                            <Border Width="64" Height="64" CornerRadius="16" Background="{DynamicResource CardBackgroundAlt}" Margin="0,0,0,0">
                                 <Path FlowDirection="LeftToRight" Width="28" Height="28" Fill="#D0D0D0" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />

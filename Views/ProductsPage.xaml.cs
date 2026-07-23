@@ -30,6 +30,16 @@ public partial class ProductsPage : Page
         InitializeComponent();
         PageSizeCombo.SelectionChanged += PageSize_Changed;
         PageJumpCombo.SelectionChanged += PageJump_Changed;
+
+        // Wire up search timer — debounce 300ms
+        _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
+        _searchTimer.Tick += (_, _) =>
+        {
+            _searchTimer.Stop();
+            _currentPage = 1;
+            LoadProducts();
+        };
+
         _loaded = true;
         LoadProducts();
     }
@@ -113,11 +123,13 @@ public partial class ProductsPage : Page
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (!_loaded) return;
         var text = SearchBox.Text;
+        // Ignore watermark text
         if (text == WatermarkBehavior.GetWatermark(SearchBox))
             return;
-        _currentSearch = string.IsNullOrWhiteSpace(text) ? null : text;
-        _currentPage = 1;
+        _currentSearch = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+        // Restart debounce timer
         _searchTimer.Stop();
         _searchTimer.Start();
     }
