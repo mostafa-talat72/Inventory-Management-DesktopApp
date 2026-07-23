@@ -129,6 +129,8 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="12" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
                     <Border.Effect>
@@ -180,6 +182,26 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="{DynamicResource SurfaceBackground}">
+                            <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#E65100" Stretch="Uniform"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Data="M11,15H13V17H11V15M11,7H13V13H11V7M12,2C6.47,2 2,6.5 2,12C2,17.53 6.5,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.5,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20Z" />
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="الخصومات" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                            <TextBlock x:Name="TxtTotalDiscount" Text="0.00 ج.م" FontSize="22" FontWeight="Bold" Foreground="#E65100" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Grid.Column="6" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="{DynamicResource SurfaceBackground}">
                             <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#2E7D32" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
@@ -190,7 +212,7 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-                <Border Grid.Column="6" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
+                <Border Grid.Column="8" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
                     </Border.Effect>
@@ -265,11 +287,13 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Padding="14,12" CornerRadius="10" Background="{DynamicResource SurfaceBackground}">
@@ -296,6 +320,12 @@
                         </Border>
                         <Border Grid.Column="4" Padding="14,12" CornerRadius="10" Background="{DynamicResource SurfaceBackground}">
                             <StackPanel>
+                                <TextBlock Text="الخصومات" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                                <TextBlock x:Name="TxtPrevDiscount" Text="0" FontSize="15" FontWeight="Bold" Foreground="#E65100" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="6" Padding="14,12" CornerRadius="10" Background="{DynamicResource SurfaceBackground}">
+                            <StackPanel>
                                 <TextBlock Text="الربح" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                     <TextBlock x:Name="TxtPrevProfit" Text="0" FontSize="15" FontWeight="Bold" Foreground="#2E7D32" />
@@ -310,7 +340,7 @@
                                 </StackPanel>
                             </StackPanel>
                         </Border>
-                        <Border Grid.Column="6" Padding="14,12" CornerRadius="10" Background="{DynamicResource SurfaceBackground}">
+                        <Border Grid.Column="8" Padding="14,12" CornerRadius="10" Background="{DynamicResource SurfaceBackground}">
                             <StackPanel>
                                 <TextBlock Text="الفواتير" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
@@ -709,34 +739,51 @@
 
                     <!-- Totals Footer -->
                     <Border x:Name="ReportFooter" Background="{DynamicResource SurfaceBackground}" Visibility="Collapsed">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="3*" />
-                                <ColumnDefinition Width="1.5*" />
-                                <ColumnDefinition Width="1.5*" />
-                                <ColumnDefinition Width="1.5*" />
-                                <ColumnDefinition Width="1*" />
-                                <ColumnDefinition Width="0.7*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Padding="16,12" Background="{DynamicResource SurfaceBackground}">
-                                <TextBlock Text="الإجمالي" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        <StackPanel>
+                            <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrushLight}" Padding="16,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3*" />
+                                        <ColumnDefinition Width="1.5*" />
+                                        <ColumnDefinition Width="1.5*" />
+                                        <ColumnDefinition Width="1.5*" />
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="0.7*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="الخصومات" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource BodyTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" x:Name="TxtFooterDiscount" Text="0" FontSize="12" FontWeight="Bold" Foreground="#E65100" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
                             </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TxtFooterCarton" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="TxtFooterBox" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
-                                <TextBlock x:Name="TxtFooterPiece" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TxtFooterRetailRev" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="TxtFooterWholesaleRev" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TxtFooterRetailCost" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="TxtFooterWholesaleCost" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
-                            </StackPanel>
-                            <TextBlock Grid.Column="4" x:Name="TxtFooterProfit" Text="0" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="5" x:Name="TxtFooterMargin" Text="0" FontSize="12" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*" />
+                                    <ColumnDefinition Width="1.5*" />
+                                    <ColumnDefinition Width="1.5*" />
+                                    <ColumnDefinition Width="1.5*" />
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="0.7*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Padding="16,12" Background="{DynamicResource SurfaceBackground}">
+                                    <TextBlock Text="الإجمالي" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="TxtFooterCarton" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock x:Name="TxtFooterBox" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                                    <TextBlock x:Name="TxtFooterPiece" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="TxtFooterRetailRev" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock x:Name="TxtFooterWholesaleRev" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="TxtFooterRetailCost" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock x:Name="TxtFooterWholesaleCost" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                    <TextBlock x:Name="TxtFooterNetCost" Text="0" FontSize="10" FontWeight="SemiBold" Foreground="#E65100" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="4" x:Name="TxtFooterProfit" Text="0" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="5" x:Name="TxtFooterMargin" Text="0" FontSize="12" Foreground="{DynamicResource HeadingTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
                     </Border>
 
                     <!-- Empty state -->

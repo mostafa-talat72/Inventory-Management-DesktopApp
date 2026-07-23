@@ -26,7 +26,7 @@ public partial class InvoicesPage : Page
     private int _totalFiltered;
 
     // Cached summary values for masking
-    private decimal _cTotal, _cPaid, _cRemaining;
+    private decimal _cTotal, _cPaid, _cDiscount, _cRemaining;
 
     public InvoicesPage()
     {
@@ -49,6 +49,7 @@ public partial class InvoicesPage : Page
         bool hidden = AmountsVisibilityService.IsHidden;
         TxtTotalAmount.Text     = hidden ? mask : $"{_cTotal:0.##} ج.م";
         TxtPaidAmount.Text      = hidden ? mask : $"{_cPaid:0.##} ج.م";
+        TxtDiscountAmount.Text  = hidden ? mask : $"{_cDiscount:0.##} ج.م";
         TxtRemainingAmount.Text = hidden ? mask : $"{_cRemaining:0.##} ج.م";
     }
 
@@ -92,6 +93,7 @@ public partial class InvoicesPage : Page
         TxtInvoiceCount.Text = _totalFiltered.ToString();
         _cTotal     = invoices.Sum(i => i.TotalAmount);
         _cPaid      = invoices.Sum(i => i.TotalPaid);
+        _cDiscount  = invoices.Sum(i => i.Discount);
         _cRemaining = invoices.Sum(i => i.Remaining);
         ApplySummaryMask();
 

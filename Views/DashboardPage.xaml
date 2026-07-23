@@ -31,6 +31,8 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -77,7 +79,26 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Today discount -->
                 <Border Grid.Column="4" Grid.Row="0" CornerRadius="16" Background="{DynamicResource CardBackground}" Padding="20">
+                    <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="خصومات اليوم" FontSize="13" Foreground="{DynamicResource SubtleTextBrush}" />
+                                <TextBlock x:Name="TxtTodayDiscount" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#E65100" Margin="0,6,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#FFF8E1" VerticalAlignment="Top">
+                                <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#F57F17" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M11,15H13V17H11V15M11,7H13V13H11V7M12,2C6.47,2 2,6.5 2,12C2,17.53 6.5,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.5,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20Z" />
+                            </Border>
+                        </Grid>
+                        <TextBlock Text="خصم على فواتير اليوم" FontSize="11" Foreground="#B0BEC5" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="6" Grid.Row="0" CornerRadius="16" Background="{DynamicResource CardBackground}" Padding="20">
                     <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
                     <StackPanel>
                         <Grid>
@@ -132,7 +153,26 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Total discount -->
                 <Border Grid.Column="4" Grid.Row="2" CornerRadius="16" Background="{DynamicResource CardBackground}" Padding="20">
+                    <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="إجمالي الخصومات" FontSize="13" Foreground="{DynamicResource SubtleTextBrush}" />
+                                <TextBlock x:Name="TxtTotalDiscount" Text="0 ج.م" FontSize="26" FontWeight="Bold" Foreground="#E65100" Margin="0,6,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="12" Background="#FFF3E0" VerticalAlignment="Top">
+                                <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#E65100" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M11,15H13V17H11V15M11,7H13V13H11V7M12,2C6.47,2 2,6.5 2,12C2,17.53 6.5,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.5,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20Z" />
+                            </Border>
+                        </Grid>
+                        <TextBlock Text="إجمالي الخصومات على كل الفواتير" FontSize="11" Foreground="#B0BEC5" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="6" Grid.Row="2" CornerRadius="16" Background="{DynamicResource CardBackground}" Padding="20">
                     <Border.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.08" Color="#000" /></Border.Effect>
                     <StackPanel>
                         <Grid>

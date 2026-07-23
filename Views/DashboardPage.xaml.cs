@@ -16,8 +16,8 @@ public partial class DashboardPage : Page
     private readonly AppDbContext _db = new();
 
     // Raw values — stored so we can mask/unmask without re-querying DB
-    private decimal _todaySales, _todayCost, _todayProfit, _todayProfitMargin;
-    private decimal _totalRevenue, _totalCost, _totalProfit, _profitMargin;
+    private decimal _todaySales, _todayCost, _todayDiscount, _todayProfit, _todayProfitMargin;
+    private decimal _totalRevenue, _totalCost, _totalDiscount, _totalProfit, _profitMargin;
     private decimal _pendingAmount, _cancelledAmount;
     private List<Invoice> _recentInvoices = new();
 
@@ -71,13 +71,17 @@ public partial class DashboardPage : Page
             var todayItems = allOrderItems.Where(oi => todayOrderIds.Contains(oi.OrderId)).ToList();
             var todaySales = todayItems.Sum(oi => oi.Total);
             var todayCost = todayItems.Sum(oi => oi.CostPrice);
-            var todayProfit = todaySales - todayCost;
-            var todayProfitMargin = todaySales > 0 ? todayProfit / todaySales * 100 : 0;
             var todayInvoices = allInvoices.Count(i => i.CreatedAt >= todayStart && i.CreatedAt < todayEnd && i.Status != InvoiceStatus.Cancelled);
+            var todayDiscount = allInvoices
+                .Where(i => i.CreatedAt >= todayStart && i.CreatedAt < todayEnd && i.Status != InvoiceStatus.Cancelled)
+                .Sum(i => i.Discount);
+            var todayProfit = todaySales - todayCost - todayDiscount;
+            var todayProfitMargin = todaySales > 0 ? todayProfit / todaySales * 100 : 0;
 
             var totalRevenue = allOrderItems.Sum(oi => oi.Total);
             var totalCost = allOrderItems.Sum(oi => oi.CostPrice);
-            var totalProfit = totalRevenue - totalCost;
+            var totalDiscount = allInvoices.Where(i => i.Status != InvoiceStatus.Cancelled).Sum(i => i.Discount);
+            var totalProfit = totalRevenue - totalCost - totalDiscount;
             var profitMargin = totalRevenue > 0 ? totalProfit / totalRevenue * 100 : 0;
 
             var activeInvoices = allInvoices.Where(i => i.Status != InvoiceStatus.Cancelled).ToList();
@@ -95,10 +99,12 @@ public partial class DashboardPage : Page
             {
                 _todaySales       = todaySales;
                 _todayCost        = todayCost;
+                _todayDiscount    = todayDiscount;
                 _todayProfit      = todayProfit;
                 _todayProfitMargin= todayProfitMargin;
                 _totalRevenue     = totalRevenue;
                 _totalCost        = totalCost;
+                _totalDiscount    = totalDiscount;
                 _totalProfit      = totalProfit;
                 _profitMargin     = profitMargin;
                 _pendingAmount    = pendingAmount;
@@ -138,9 +144,11 @@ public partial class DashboardPage : Page
 
         TxtTodaySales.Text       = hidden ? mask : $"{_todaySales:0.##} ج.م";
         TxtTodayCost.Text        = hidden ? mask : $"{_todayCost:0.##} ج.م";
+        TxtTodayDiscount.Text    = hidden ? mask : $"{_todayDiscount:0.##} ج.م";
         TxtTodayProfit.Text      = hidden ? mask : $"{_todayProfit:0.##} ج.م";
         TxtTotalSales.Text       = hidden ? mask : $"{_totalRevenue:0.##} ج.م";
         TxtTotalCost.Text        = hidden ? mask : $"{_totalCost:0.##} ج.م";
+        TxtTotalDiscount.Text    = hidden ? mask : $"{_totalDiscount:0.##} ج.م";
         TxtTotalProfit.Text      = hidden ? mask : $"{_totalProfit:0.##} ج.م";
         TxtPendingAmount.Text    = hidden ? mask : $"{_pendingAmount:0.##} ج.م";
         TxtCancelledAmount.Text  = hidden ? mask : $"{_cancelledAmount:0.##} ج.م";

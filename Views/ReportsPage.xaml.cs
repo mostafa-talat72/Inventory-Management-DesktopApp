@@ -17,18 +17,18 @@ public partial class ReportsPage : Page
     private DateTime _lastTo;
 
     // Raw summary values for masking
-    private decimal _rTotalSales, _rTotalCost, _rTotalProfit;
+    private decimal _rTotalSales, _rTotalCost, _rTotalDiscount, _rTotalProfit;
     private int _rInvoiceCount;
 
     // Raw period comparison values
-    private decimal _rPrevSales, _rPrevCost, _rPrevProfit;
+    private decimal _rPrevSales, _rPrevCost, _rPrevDiscount, _rPrevProfit;
     private int _rPrevCount;
 
     // Raw trend values
     private decimal _rTrendTotal, _rTrendAvg, _rTrendMax, _rTrendMin;
 
     // Raw footer values
-    private decimal _rFooterRetailRev, _rFooterWholesaleRev, _rFooterRetailCost, _rFooterWholesaleCost, _rFooterProfit;
+    private decimal _rFooterRetailRev, _rFooterWholesaleRev, _rFooterRetailCost, _rFooterWholesaleCost, _rFooterProfit, _rFooterDiscount;
 
     // Raw report grid data (for re-binding with masked values)
     private List<dynamic>? _rawGridData;
@@ -79,21 +79,24 @@ public partial class ReportsPage : Page
         var invoiceCount = invoiceIds.Count;
         var totalSales = items.Sum(i => i.Total);
         var totalCost = items.Sum(i => i.CostPrice);
-        var totalProfit = totalSales - totalCost;
+        var totalDiscount = invoices.Where(i => i.Status != InvoiceStatus.Cancelled).Sum(i => i.Discount);
+        var totalProfit = totalSales - totalCost - totalDiscount;
 
         TxtTotalSales.Text = totalSales.ToString("0.##") + " ج.م";
         TxtTotalCost.Text = totalCost.ToString("0.##") + " ج.م";
+        TxtTotalDiscount.Text = totalDiscount.ToString("0.##") + " ج.م";
         TxtTotalProfit.Text = totalProfit.ToString("0.##") + " ج.م";
         TxtInvoiceCount.Text = invoiceCount.ToString();
 
         _rTotalSales   = totalSales;
         _rTotalCost    = totalCost;
+        _rTotalDiscount = totalDiscount;
         _rTotalProfit  = totalProfit;
         _rInvoiceCount = invoiceCount;
         // ApplySummaryMask called at the very end after all data is loaded
 
         UpdateProfitMargin(totalSales, totalProfit);
-        LoadPeriodComparison(from, to, totalSales, totalProfit, invoiceCount);
+        LoadPeriodComparison(from, to, totalSales, totalDiscount, totalProfit, invoiceCount);
         LoadInvoiceStatus(invoices);
         LoadTopProducts(items);
         LoadCustomerAnalysis(from, to);
@@ -164,6 +167,10 @@ public partial class ReportsPage : Page
         _rFooterRetailCost     = footerRetailCost;
         _rFooterWholesaleCost  = footerWholesaleCost;
         _rFooterProfit         = reportData.Sum(r => (decimal)r._profit);
+        _rFooterDiscount       = totalDiscount;
+
+        var netCost = (footerRetailCost + footerWholesaleCost) + totalDiscount;
+        var netProfit = totalProfit;
 
         TxtFooterCarton.Text = footerCarton > 0 ? "كرتونة: " + footerCarton.ToString("0") : "";
         TxtFooterCarton.Visibility = footerCarton > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -179,8 +186,10 @@ public partial class ReportsPage : Page
         TxtFooterRetailCost.Visibility = footerRetailCost > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtFooterWholesaleCost.Text = footerWholesaleCost > 0 ? "جملة: " + footerWholesaleCost.ToString("0.##") + " ج.م" : "";
         TxtFooterWholesaleCost.Visibility = footerWholesaleCost > 0 ? Visibility.Visible : Visibility.Collapsed;
-        TxtFooterProfit.Text = reportData.Sum(r => (decimal)r._profit).ToString("0.##") + " ج.م";
-        TxtFooterMargin.Text = totalSales > 0 ? (totalProfit / totalSales * 100).ToString("0.#") + "%" : "0%";
+        TxtFooterNetCost.Text = "شامل الخصم: " + netCost.ToString("0.##") + " ج.م";
+        TxtFooterProfit.Text = netProfit.ToString("0.##") + " ج.م";
+        TxtFooterMargin.Text = totalSales > 0 ? (netProfit / totalSales * 100).ToString("0.#") + "%" : "0%";
+        TxtFooterDiscount.Text = totalDiscount.ToString("0.##") + " ج.م";
 
         // Apply mask LAST — after all raw data is populated
         ApplySummaryMask();
@@ -192,16 +201,18 @@ public partial class ReportsPage : Page
         bool h = AmountsVisibilityService.IsHidden;
 
         // ── 1. Summary cards ──
-        TxtTotalSales.Text  = h ? mask : $"{_rTotalSales:0.##} ج.م";
-        TxtTotalCost.Text   = h ? mask : $"{_rTotalCost:0.##} ج.م";
-        TxtTotalProfit.Text = h ? mask : $"{_rTotalProfit:0.##} ج.م";
+        TxtTotalSales.Text    = h ? mask : $"{_rTotalSales:0.##} ج.م";
+        TxtTotalCost.Text     = h ? mask : $"{_rTotalCost:0.##} ج.م";
+        TxtTotalDiscount.Text = h ? mask : $"{_rTotalDiscount:0.##} ج.م";
+        TxtTotalProfit.Text   = h ? mask : $"{_rTotalProfit:0.##} ج.م";
 
         // ── 2. Period comparison ──
         if (PeriodComparisonCard.Visibility == Visibility.Visible)
         {
-            TxtPrevSales.Text  = h ? mask : $"{_rPrevSales:0.##} ج.م";
-            TxtPrevCost.Text   = h ? mask : $"{_rPrevCost:0.##} ج.م";
-            TxtPrevProfit.Text = h ? mask : $"{_rPrevProfit:0.##} ج.م";
+            TxtPrevSales.Text    = h ? mask : $"{_rPrevSales:0.##} ج.م";
+            TxtPrevCost.Text     = h ? mask : $"{_rPrevCost:0.##} ج.م";
+            TxtPrevDiscount.Text = h ? mask : $"{_rPrevDiscount:0.##} ج.م";
+            TxtPrevProfit.Text   = h ? mask : $"{_rPrevProfit:0.##} ج.م";
             // TxtPrevCount stays visible always (it's a count, not money)
         }
 
@@ -271,7 +282,9 @@ public partial class ReportsPage : Page
             TxtFooterWholesaleRev.Text   = h ? mask : (_rFooterWholesaleRev > 0 ? "جملة: "  + _rFooterWholesaleRev.ToString("0.##") + " ج.م" : "");
             TxtFooterRetailCost.Text     = h ? mask : (_rFooterRetailCost > 0   ? "قطاعي: " + _rFooterRetailCost.ToString("0.##")   + " ج.م" : "");
             TxtFooterWholesaleCost.Text  = h ? mask : (_rFooterWholesaleCost > 0? "جملة: "  + _rFooterWholesaleCost.ToString("0.##")+ " ج.م" : "");
-            TxtFooterProfit.Text         = h ? mask : _rFooterProfit.ToString("0.##") + " ج.م";
+            TxtFooterNetCost.Text        = h ? mask : "شامل الخصم: " + (_rFooterRetailCost + _rFooterWholesaleCost + _rFooterDiscount).ToString("0.##") + " ج.م";
+            TxtFooterProfit.Text         = h ? mask : (_rFooterProfit - _rFooterDiscount).ToString("0.##") + " ج.م";
+            TxtFooterDiscount.Text       = h ? mask : _rFooterDiscount.ToString("0.##") + " ج.م";
         }
     }
 
@@ -313,7 +326,7 @@ public partial class ReportsPage : Page
         }
     }
 
-    private void LoadPeriodComparison(DateTime from, DateTime to, decimal currentSales, decimal currentProfit, int currentCount)
+    private void LoadPeriodComparison(DateTime from, DateTime to, decimal currentSales, decimal currentDiscount, decimal currentProfit, int currentCount)
     {
         var days = (to - from).TotalDays;
         if (days <= 0) { PeriodComparisonCard.Visibility = Visibility.Collapsed; return; }
@@ -329,22 +342,29 @@ public partial class ReportsPage : Page
             .Where(oi => oi.Order != null && prevInvoiceIds.Contains(oi.Order.InvoiceId))
             .ToList();
 
+        var prevInvoices = _db.Invoices
+            .Where(i => i.InvoiceDate >= prevFrom && i.InvoiceDate < prevTo)
+            .ToList();
+
         var prevSales = prevItems.Sum(i => i.Total);
         var prevCost = prevItems.Sum(i => i.CostPrice);
-        var prevProfit = prevSales - prevCost;
+        var prevDiscount = prevInvoices.Where(i => i.Status != InvoiceStatus.Cancelled).Sum(i => i.Discount);
+        var prevProfit = prevSales - prevCost - prevDiscount;
         var prevCount = prevInvoiceIds.Count;
 
         TxtComparisonPeriod.Text = $"مقارنة {prevFrom:dd/MM/yyyy} -> {from.AddDays(-1):dd/MM/yyyy}";
 
-        _rPrevSales  = prevSales;
-        _rPrevCost   = prevCost;
-        _rPrevProfit = prevProfit;
-        _rPrevCount  = prevCount;
+        _rPrevSales    = prevSales;
+        _rPrevCost     = prevCost;
+        _rPrevDiscount = prevDiscount;
+        _rPrevProfit   = prevProfit;
+        _rPrevCount    = prevCount;
 
-        TxtPrevSales.Text  = prevSales.ToString("0.##") + " ج.م";
-        TxtPrevCost.Text   = prevCost.ToString("0.##") + " ج.م";
-        TxtPrevProfit.Text = prevProfit.ToString("0.##") + " ج.م";
-        TxtPrevCount.Text  = prevCount.ToString();
+        TxtPrevSales.Text    = prevSales.ToString("0.##") + " ج.م";
+        TxtPrevCost.Text     = prevCost.ToString("0.##") + " ج.م";
+        TxtPrevDiscount.Text = prevDiscount.ToString("0.##") + " ج.م";
+        TxtPrevProfit.Text   = prevProfit.ToString("0.##") + " ج.م";
+        TxtPrevCount.Text    = prevCount.ToString();
 
         SetChangeIndicator(SalesChangeBadge, SalesArrow, TxtSalesChange, prevSales, currentSales);
         SetChangeIndicator(ProfitChangeBadge, ProfitArrow, TxtProfitChange, prevProfit, currentProfit);

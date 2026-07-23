@@ -68,6 +68,8 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="6" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="6" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" CornerRadius="10" Background="{DynamicResource SurfaceBackground}" Padding="14,10">
                     <StackPanel>
@@ -88,6 +90,12 @@
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="6" CornerRadius="10" Background="{DynamicResource SurfaceBackground}" Padding="14,10">
+                    <StackPanel>
+                        <TextBlock Text="الخصومات" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                        <TextBlock x:Name="TxtDiscountAmount" Text="0 ج.م" FontSize="20" FontWeight="Bold" Foreground="#E65100" Margin="0,2,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="8" CornerRadius="10" Background="{DynamicResource SurfaceBackground}" Padding="14,10">
                     <StackPanel>
                         <TextBlock Text="المتبقي" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
                         <TextBlock x:Name="TxtRemainingAmount" Text="0 ج.م" FontSize="20" FontWeight="Bold" Foreground="#E65100" Margin="0,2,0,0" />
