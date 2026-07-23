@@ -224,10 +224,11 @@ namespace ProductApp.Views
         {
             if (_entries.ContainsKey(product.Id))
             {
-                // Already added — briefly highlight
+                // Already added — briefly highlight and scroll to it
                 var entry = _entries[product.Id];
                 var orig = entry.Container.Background;
                 entry.Container.Background = new SolidColorBrush(Color.FromRgb(0xFF, 0xF8, 0xE1));
+                entry.Container.BringIntoView();
                 var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
                 timer.Tick += (_, _) => { timer.Stop(); entry.Container.Background = orig; };
                 timer.Start();
@@ -410,6 +411,7 @@ namespace ProductApp.Views
 
             _entries[product.Id] = entry;
             OrderItemsPanel.Children.Add(outer);
+            OrderScrollViewer.ScrollToBottom();
             UpdateSummary();
         }
 

@@ -82,7 +82,7 @@
                         </Border>
 
                         <!-- Order items -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="14,8,14,4" BorderThickness="0">
+                        <ScrollViewer x:Name="OrderScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="14,8,14,4" BorderThickness="0">
                             <ScrollViewer.Resources>
                                 <SolidColorBrush x:Key="{x:Static SystemColors.ScrollBarBrushKey}" Color="#E8EAF6" />
                             </ScrollViewer.Resources>
