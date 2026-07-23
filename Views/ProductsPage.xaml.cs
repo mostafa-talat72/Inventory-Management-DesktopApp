@@ -17,9 +17,6 @@ public partial class ProductsPage : Page
 {
     private readonly AppDbContext _db;
     private readonly DispatcherTimer _searchTimer = new();
-    private int _currentPage = 1;
-    private int _pageSize = 12;
-    private int _totalItems;
     private string? _currentSearch;
     private bool _loaded;
     private bool _isLoading;
@@ -28,15 +25,12 @@ public partial class ProductsPage : Page
     {
         _db = new AppDbContext();
         InitializeComponent();
-        PageSizeCombo.SelectionChanged += PageSize_Changed;
-        PageJumpCombo.SelectionChanged += PageJump_Changed;
 
         // Wire up search timer — debounce 300ms
         _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
         _searchTimer.Tick += (_, _) =>
         {
             _searchTimer.Stop();
-            _currentPage = 1;
             LoadProducts();
         };
 
@@ -51,72 +45,51 @@ public partial class ProductsPage : Page
         try
         {
             var query = _db.Products.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(_currentSearch))
-            query = query.Where(p => p.Name.Contains(_currentSearch));
+            if (!string.IsNullOrWhiteSpace(_currentSearch))
+                query = query.Where(p => p.Name.Contains(_currentSearch));
 
-        _totalItems = query.Count();
-        var totalPages = Math.Max(1, (int)Math.Ceiling((double)_totalItems / _pageSize));
-        _currentPage = Math.Clamp(_currentPage, 1, totalPages);
-        var skip = (_currentPage - 1) * _pageSize;
+            var allProducts = query.OrderBy(p => p.Name).ToList();
 
-        var pageProducts = _pageSize > 0
-            ? query.OrderBy(p => p.Name).Skip(skip).Take(_pageSize).ToList()
-            : query.OrderBy(p => p.Name).ToList();
+            var totalStockPieces = 0;
+            var lowStockCount = 0;
+            var inv = new InventoryService(_db);
 
-        var totalStockPieces = 0;
-        var lowStockCount = 0;
-        var inv = new InventoryService(_db);
-
-        var cards = new List<object>();
-        foreach (var p in pageProducts)
-        {
-            var units = _db.ProductUnits.AsNoTracking().Where(u => u.ProductId == p.Id).OrderBy(u => u.UnitType).ToList();
-            var stockDisplay = inv.GetStockDisplay(p);
-            var stockPieces = inv.GetAvailableStock(p);
-            totalStockPieces += stockPieces;
-
-            var isLowStock = stockPieces <= 0;
-            if (isLowStock) lowStockCount++;
-
-            var (stockBg, stockFg) = isLowStock
-                ? ("#FFEBEE", "#C62828")
-                : ("#E8F5E9", "#2E7D32");
-
-            cards.Add(new
+            var cards = new List<object>();
+            foreach (var p in allProducts)
             {
-                p.Name,
-                UnitsDisplay = string.Join(" → ", units.Select(u => u.Name)),
-                StockDisplay = stockDisplay,
-                StockBgColor = stockBg,
-                StockFgColor = stockFg,
-                RetailDisplay = units.Count > 0 ? units.Min(u => u.RetailPrice).ToString("0.##") : "-",
-                WholesaleDisplay = units.Count > 0 ? units.Min(u => u.WholesalePrice).ToString("0.##") : "-",
-                Product = p,
-                SelectCommand = new RelayCommand(() => OpenUnitLevelsDialog(p)),
-                EditCommand = new RelayCommand(() => OpenEditDialog(p)),
-                DeleteCommand = new RelayCommand(() => DeleteProduct(p))
-            });
-        }
+                var units = _db.ProductUnits.AsNoTracking()
+                    .Where(u => u.ProductId == p.Id).OrderBy(u => u.UnitType).ToList();
+                var stockDisplay = inv.GetStockDisplay(p);
+                var stockPieces  = inv.GetAvailableStock(p);
+                totalStockPieces += stockPieces;
 
-        ProductsList.ItemsSource = cards;
-        TxtTotalProducts.Text = _totalItems.ToString();
-        TxtTotalStock.Text = totalStockPieces.ToString("0");
-        TxtLowStock.Text = lowStockCount.ToString();
+                var isLowStock = stockPieces <= 0;
+                if (isLowStock) lowStockCount++;
 
-        TxtPageInfo.Text = $"{_totalItems} منتج - صفحة {_currentPage} من {totalPages}";
-        BtnPrevPage.Opacity = _currentPage > 1 ? 1.0 : 0.3;
-        BtnNextPage.Opacity = _currentPage < totalPages ? 1.0 : 0.3;
+                var (stockBg, stockFg) = isLowStock
+                    ? ("#FFEBEE", "#C62828")
+                    : ("#E8F5E9", "#2E7D32");
 
-        PageJumpCombo.Items.Clear();
-        for (int i = 1; i <= totalPages; i++)
-            PageJumpCombo.Items.Add($"صفحة {i}");
-        if (totalPages > 0 && _currentPage <= totalPages)
-            PageJumpCombo.SelectedIndex = _currentPage - 1;
+                cards.Add(new
+                {
+                    p.Name,
+                    UnitsDisplay     = string.Join(" → ", units.Select(u => u.Name)),
+                    StockDisplay     = stockDisplay,
+                    StockBgColor     = stockBg,
+                    StockFgColor     = stockFg,
+                    RetailDisplay    = units.Count > 0 ? units.Min(u => u.RetailPrice).ToString("0.##")    : "-",
+                    WholesaleDisplay = units.Count > 0 ? units.Min(u => u.WholesalePrice).ToString("0.##") : "-",
+                    Product          = p,
+                    SelectCommand    = new RelayCommand(() => OpenUnitLevelsDialog(p)),
+                    EditCommand      = new RelayCommand(() => OpenEditDialog(p)),
+                    DeleteCommand    = new RelayCommand(() => DeleteProduct(p))
+                });
+            }
 
-        PageSizeCombo.SelectedIndex = _pageSize switch
-        {
-            12 => 0, 24 => 1, 48 => 2, _ => 3
-        };
+            ProductsList.ItemsSource = cards;
+            TxtTotalProducts.Text = allProducts.Count.ToString();
+            TxtTotalStock.Text    = totalStockPieces.ToString("0");
+            TxtLowStock.Text      = lowStockCount.ToString();
         }
         finally { _isLoading = false; }
     }
@@ -125,40 +98,10 @@ public partial class ProductsPage : Page
     {
         if (!_loaded) return;
         var text = SearchBox.Text;
-        // Ignore watermark text
-        if (text == WatermarkBehavior.GetWatermark(SearchBox))
-            return;
+        if (text == WatermarkBehavior.GetWatermark(SearchBox)) return;
         _currentSearch = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
-        // Restart debounce timer
         _searchTimer.Stop();
         _searchTimer.Start();
-    }
-
-    private void PageSize_Changed(object sender, SelectionChangedEventArgs e)
-    {
-        if (_isLoading) return;
-        _pageSize = PageSizeCombo.SelectedItem is ComboBoxItem item && int.TryParse(item.Content?.ToString(), out var ps) && ps > 0
-            ? ps : int.MaxValue;
-        _currentPage = 1;
-        LoadProducts();
-    }
-
-    private void PrevPage_Click(object sender, MouseButtonEventArgs e)
-    {
-        if (_currentPage > 1) { _currentPage--; LoadProducts(); }
-    }
-
-    private void NextPage_Click(object sender, MouseButtonEventArgs e)
-    {
-        var totalPages = Math.Max(1, (int)Math.Ceiling((double)_totalItems / _pageSize));
-        if (_currentPage < totalPages) { _currentPage++; LoadProducts(); }
-    }
-
-    private void PageJump_Changed(object? sender, SelectionChangedEventArgs e)
-    {
-        if (!_loaded || _isLoading || PageJumpCombo.SelectedIndex < 0) return;
-        _currentPage = PageJumpCombo.SelectedIndex + 1;
-        LoadProducts();
     }
 
     private void OpenUnitLevelsDialog(Product product)
@@ -199,7 +142,8 @@ public partial class ProductsPage : Page
 
     private void DeleteProduct(Product product)
     {
-        ConfirmDialog.Show("تأكيد الحذف", $"هل أنت متأكد من حذف {product.Name}؟", result => {
+        ConfirmDialog.Show("تأكيد الحذف", $"هل أنت متأكد من حذف {product.Name}؟", result =>
+        {
             if (!result) return;
             _db.ProductUnits.RemoveRange(_db.ProductUnits.Where(u => u.ProductId == product.Id));
             _db.InventoryBatches.RemoveRange(_db.InventoryBatches.Where(b => b.ProductId == product.Id));
@@ -226,7 +170,6 @@ public partial class ProductsPage : Page
     private void PrintInventory_Click(object sender, RoutedEventArgs e)
     {
         var inv = new InventoryService(_db);
-
         var allProducts = _db.Products
             .Include(p => p.Units)
             .OrderBy(p => p.Name)
@@ -235,7 +178,7 @@ public partial class ProductsPage : Page
         var printData = allProducts.Select(p => (
             product: p,
             stockDisplay: inv.GetStockDisplay(p),
-            totalPieces: inv.GetAvailableStock(p)
+            totalPieces:  inv.GetAvailableStock(p)
         )).ToList();
 
         var printer = new ReceiptPrinter(_db);

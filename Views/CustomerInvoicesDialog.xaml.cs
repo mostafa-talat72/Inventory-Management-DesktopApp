@@ -42,6 +42,7 @@ public partial class CustomerInvoicesDialog : UserControl
         BtnAddOrder.Visibility = Visibility.Collapsed;
         BtnManageOrders.Visibility = Visibility.Collapsed;
         BtnMerge.Visibility = Visibility.Collapsed;
+        RegisterVisibilityEvents();
         LoadData();
     }
 
@@ -54,6 +55,7 @@ public partial class CustomerInvoicesDialog : UserControl
         TxtTitle.Text = "فواتير نقدي";
         TxtSubtitle.Text = "الفواتير النقدية (بدون عميل)";
         TxtSearch.Focus();
+        RegisterVisibilityEvents();
         LoadData();
     }
 
@@ -65,7 +67,25 @@ public partial class CustomerInvoicesDialog : UserControl
         _isCashMode = false;
         TxtTitle.Text = $"فواتير - {customer.Name}";
         TxtSubtitle.Text = customer.Phone ?? "لا يوجد رقم هاتف";
+        RegisterVisibilityEvents();
         LoadData();
+    }
+
+    private void RegisterVisibilityEvents()
+    {
+        Loaded   += (_, _) => AmountsVisibilityService.VisibilityChanged += OnVisibilityChanged;
+        Unloaded += (_, _) => AmountsVisibilityService.VisibilityChanged -= OnVisibilityChanged;
+    }
+
+    private void OnVisibilityChanged() => ApplySummaryMask();
+
+    private void ApplySummaryMask()
+    {
+        const string mask = "••••••";
+        bool hidden = AmountsVisibilityService.IsHidden;
+        TxtTotalAmount.Text     = hidden ? mask : $"{_cTotal:0.##} ج.م";
+        TxtPaidAmount.Text      = hidden ? mask : $"{_cPaid:0.##} ج.م";
+        TxtRemainingAmount.Text = hidden ? mask : $"{_cRemaining:0.##} ج.م";
     }
 
     private readonly bool _showAllInvoices;
@@ -113,15 +133,20 @@ public partial class CustomerInvoicesDialog : UserControl
         return q.ToList();
     }
 
+    // Cached summary values for masking
+    private decimal _cTotal, _cPaid, _cRemaining;
+
     private void ApplyFilter()
     {
         var filtered = GetFiltered();
         var totalFiltered = filtered.Count;
 
+        _cTotal     = filtered.Sum(i => i.TotalAmount);
+        _cPaid      = filtered.Sum(i => i.TotalPaid);
+        _cRemaining = filtered.Sum(i => i.Remaining);
+
         TxtInvoiceCount.Text = totalFiltered.ToString();
-        TxtTotalAmount.Text = $"{filtered.Sum(i => i.TotalAmount):0.##} ج.م";
-        TxtPaidAmount.Text = $"{filtered.Sum(i => i.TotalPaid):0.##} ج.م";
-        TxtRemainingAmount.Text = $"{filtered.Sum(i => i.Remaining):0.##} ج.م";
+        ApplySummaryMask();
 
         InvoicesPanel.Children.Clear();
 

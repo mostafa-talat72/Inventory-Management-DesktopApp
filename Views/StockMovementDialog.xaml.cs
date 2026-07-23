@@ -58,24 +58,34 @@ public partial class StockMovementDialog : UserControl
             var (typeDisplay, typeColor, typeBgHex, sign, delta) = m.MovementType switch
             {
                 MovementType.StockIn          => ("وارد",           "#2E7D32", "#E8F5E9", "+",  m.Quantity),
-                MovementType.StockOut         => ("صادر",           "#C62828", "#FFEBEE", "-", -m.Quantity),
+                MovementType.StockOut         => ("صادر",           "#C62828", "#FFEBEE", "-",  -m.Quantity),
                 MovementType.Adjustment       => ("تعديل",          "#F57F17", "#FFF8E1", "±",  m.Quantity),
                 MovementType.Return           => ("مرتجع",          "#1565C0", "#E3F2FD", "+",  m.Quantity),
-                MovementType.ReturnToSupplier => ("مرتجع للمورد",   "#E65100", "#FFF3E0", "-", -m.Quantity),
-                MovementType.Shortage         => ("عجز",            "#C62828", "#FFEBEE", "-", -m.Quantity),
-                _                             => ("",               "#78909C", "#ECEFF1", "",   0)
+                MovementType.ReturnToSupplier => ("مرتجع للمورد",   "#E65100", "#FFF3E0", "-",  -m.Quantity),
+                MovementType.Shortage         => ("عجز",            "#C62828", "#FFEBEE", "-",  -m.Quantity),
+                _                             => ("",               "#78909C", "#ECEFF1", "",    0)
             };
 
             runningStock += delta;
+
+            // عرض الكمية بالإشارة الصحيحة — نعرض القيمة المطلقة مع الإشارة
+            string qtyDisplay = delta != 0
+                ? $"{sign} {FormatQuantity(Math.Abs(delta))}"
+                : "0";
 
             string reason = m.Notes ?? "-";
             bool canDelete = true;
 
             if (m.ReferenceId.HasValue)
             {
+                // أي حركة مرتبطة بطلب أو فاتورة (بيع أو مرتجع) لا يمكن تعديلها أو حذفها
+                canDelete = false;
+
                 if (m.ReferenceType == ReferenceType.Sale)
                 {
-                    var order = _db.Orders.Include(o => o.Invoice).ThenInclude(i => i.Customer).FirstOrDefault(o => o.Id == m.ReferenceId);
+                    var order = _db.Orders
+                        .Include(o => o.Invoice).ThenInclude(i => i.Customer)
+                        .FirstOrDefault(o => o.Id == m.ReferenceId);
                     if (order != null)
                     {
                         var invoice = order.Invoice;
@@ -84,15 +94,27 @@ public partial class StockMovementDialog : UserControl
                         {
                             refText += $" - فاتورة #{invoice.Id}";
                             if (invoice.Customer != null)
-                                refText += $" - عميل: {invoice.Customer.Name}";
+                                refText += $" - {invoice.Customer.Name}";
                             else if (!string.IsNullOrWhiteSpace(invoice.CustomerName))
-                                refText += $" - عميل: {invoice.CustomerName}";
+                                refText += $" - {invoice.CustomerName}";
                         }
-                        canDelete = false;
-                        if (reason == "-" || reason == m.Notes)
-                            reason = refText;
-                        else
-                            reason = $"{reason} ({refText})";
+                        reason = string.IsNullOrEmpty(m.Notes) || m.Notes == "-"
+                            ? refText
+                            : $"{m.Notes} ({refText})";
+                    }
+                }
+                else if (m.ReferenceType == ReferenceType.Return)
+                {
+                    // مرتجع من تعديل/حذف طلب أو فاتورة
+                    var invoice = _db.Invoices.FirstOrDefault(i => i.Id == m.ReferenceId);
+                    if (invoice != null)
+                    {
+                        string refText = $"فاتورة #{invoice.Id}";
+                        if (!string.IsNullOrWhiteSpace(invoice.CustomerName))
+                            refText += $" - {invoice.CustomerName}";
+                        reason = string.IsNullOrEmpty(m.Notes) || m.Notes == "-"
+                            ? refText
+                            : $"{m.Notes} ({refText})";
                     }
                 }
             }
@@ -116,24 +138,26 @@ public partial class StockMovementDialog : UserControl
 
             items.Add(new MovementItem
             {
-                DateDisplay       = $"{m.CreatedAt:yyyy/MM/dd hh:mm} {(m.CreatedAt.Hour < 12 ? "ص" : "م")}",
-                TypeDisplay       = typeDisplay,
-                TypeColor         = typeColor,          // kept for backward compat
-                TypeDotColor      = dotColor,
-                TypeFgColor       = fgColor,
-                TypeBgColor       = bgColor,
-                QuantityDisplay   = $"{sign} {FormatQuantity(m.Quantity)}",
+                DateDisplay        = $"{m.CreatedAt:yyyy/MM/dd hh:mm} {(m.CreatedAt.Hour < 12 ? "ص" : "م")}",
+                TypeDisplay        = typeDisplay,
+                TypeColor          = typeColor,
+                TypeDotColor       = dotColor,
+                TypeFgColor        = fgColor,
+                TypeBgColor        = bgColor,
+                QuantityDisplay    = qtyDisplay,
                 QuantityForeground = new SolidColorBrush(dotColor),
-                UnitPriceDisplay  = m.CostPrice > 0 ? $"{m.CostPrice:0.##}" : "-",
-                TotalDisplay      = m.CostPrice > 0 ? $"{(m.Quantity * m.CostPrice):0.##} ج.م" : "-",
-                ReasonDisplay     = reason,
-                StockAfterDisplay = FormatQuantity(runningStock),
-                MovementId        = m.Id,
-                CanDelete         = canDelete,
-                Quantity          = m.Quantity,
-                CostPrice         = m.CostPrice,
-                Notes             = m.Notes ?? "",
-                MovementType      = m.MovementType
+                UnitPriceDisplay   = m.CostPrice > 0 ? $"{m.CostPrice:0.##}" : "-",
+                TotalDisplay       = m.CostPrice > 0 ? $"{(m.Quantity * m.CostPrice):0.##} ج.م" : "-",
+                ReasonDisplay      = reason,
+                StockAfterDisplay  = runningStock >= 0
+                    ? FormatQuantity(runningStock)
+                    : $"-({FormatQuantity(Math.Abs(runningStock))})",
+                MovementId         = m.Id,
+                CanDelete          = canDelete,
+                Quantity           = m.Quantity,
+                CostPrice          = m.CostPrice,
+                Notes              = m.Notes ?? "",
+                MovementType       = m.MovementType
             });
         }
 

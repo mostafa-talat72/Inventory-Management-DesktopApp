@@ -25,13 +25,31 @@ public partial class InvoicesPage : Page
     private bool _showAll;
     private int _totalFiltered;
 
+    // Cached summary values for masking
+    private decimal _cTotal, _cPaid, _cRemaining;
+
     public InvoicesPage()
     {
         _db = new AppDbContext();
         InitializeComponent();
         _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
         _searchTimer.Tick += (_, _) => { _searchTimer.Stop(); ApplyFilter(); };
+
+        Loaded   += (_, _) => AmountsVisibilityService.VisibilityChanged += OnVisibilityChanged;
+        Unloaded += (_, _) => AmountsVisibilityService.VisibilityChanged -= OnVisibilityChanged;
+
         LoadData();
+    }
+
+    private void OnVisibilityChanged() => ApplySummaryMask();
+
+    private void ApplySummaryMask()
+    {
+        const string mask = "••••••";
+        bool hidden = AmountsVisibilityService.IsHidden;
+        TxtTotalAmount.Text     = hidden ? mask : $"{_cTotal:0.##} ج.م";
+        TxtPaidAmount.Text      = hidden ? mask : $"{_cPaid:0.##} ج.م";
+        TxtRemainingAmount.Text = hidden ? mask : $"{_cRemaining:0.##} ج.م";
     }
 
     private void LoadData()
@@ -72,9 +90,10 @@ public partial class InvoicesPage : Page
         var invoices = query.Take(showCount).ToList();
 
         TxtInvoiceCount.Text = _totalFiltered.ToString();
-        TxtTotalAmount.Text = $"{invoices.Sum(i => i.TotalAmount):0.##} ج.م";
-        TxtPaidAmount.Text = $"{invoices.Sum(i => i.TotalPaid):0.##} ج.م";
-        TxtRemainingAmount.Text = $"{invoices.Sum(i => i.Remaining):0.##} ج.م";
+        _cTotal     = invoices.Sum(i => i.TotalAmount);
+        _cPaid      = invoices.Sum(i => i.TotalPaid);
+        _cRemaining = invoices.Sum(i => i.Remaining);
+        ApplySummaryMask();
 
         InvoicesPanel.Children.Clear();
 
