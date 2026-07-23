@@ -49,6 +49,17 @@ public partial class PrintPreviewDialog : UserControl
         mainWindow.ShowOverlay(dialog);
     }
 
+    /// <summary>Shows a print preview for non-invoice documents (e.g. inventory report).</summary>
+    public static void ShowInventory(string html, string title)
+    {
+        var mainWindow = Application.Current.MainWindow as MainWindow;
+        if (mainWindow == null) return;
+
+        var dialog = new PrintPreviewDialog(html, title);
+        dialog.DialogClosed += (_, _) => mainWindow.HideOverlay();
+        mainWindow.ShowOverlay(dialog);
+    }
+
     private void DoPrint()
     {
         var config = _config ?? AppConfig.Load();

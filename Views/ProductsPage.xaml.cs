@@ -223,6 +223,25 @@ public partial class ProductsPage : Page
         };
     }
 
+    private void PrintInventory_Click(object sender, RoutedEventArgs e)
+    {
+        var inv = new InventoryService(_db);
+
+        var allProducts = _db.Products
+            .Include(p => p.Units)
+            .OrderBy(p => p.Name)
+            .ToList();
+
+        var printData = allProducts.Select(p => (
+            product: p,
+            stockDisplay: inv.GetStockDisplay(p),
+            totalPieces: inv.GetAvailableStock(p)
+        )).ToList();
+
+        var printer = new ReceiptPrinter(_db);
+        printer.PrintInventory(printData);
+    }
+
     public class RelayCommand : ICommand
     {
         private readonly Action _execute;
