@@ -5,6 +5,7 @@ using System.Windows.Shapes;
 using Microsoft.EntityFrameworkCore;
 using ProductApp.Data;
 using ProductApp.Models;
+using ProductApp.Services;
 
 namespace ProductApp.Views;
 
@@ -15,6 +16,10 @@ public partial class ReportsPage : Page
     private DateTime _lastFrom;
     private DateTime _lastTo;
 
+    // Raw summary values for masking
+    private decimal _rTotalSales, _rTotalCost, _rTotalProfit;
+    private int _rInvoiceCount;
+
     public ReportsPage()
     {
         InitializeComponent();
@@ -23,8 +28,15 @@ public partial class ReportsPage : Page
         DateFrom.SelectedDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
         DateTo.SelectedDate = DateTime.Now;
 
-        Loaded += (_, _) => ShowReport_Click(null!, null!);
+        Loaded += (_, _) =>
+        {
+            ShowReport_Click(null!, null!);
+            AmountsVisibilityService.VisibilityChanged += OnAmountsVisibilityChanged;
+        };
+        Unloaded += (_, _) => AmountsVisibilityService.VisibilityChanged -= OnAmountsVisibilityChanged;
     }
+
+    private void OnAmountsVisibilityChanged() => ApplySummaryMask();
 
     private void ShowReport_Click(object sender, RoutedEventArgs e)
     {
@@ -56,6 +68,12 @@ public partial class ReportsPage : Page
         TxtTotalCost.Text = totalCost.ToString("0.##") + " ج.م";
         TxtTotalProfit.Text = totalProfit.ToString("0.##") + " ج.م";
         TxtInvoiceCount.Text = invoiceCount.ToString();
+
+        _rTotalSales   = totalSales;
+        _rTotalCost    = totalCost;
+        _rTotalProfit  = totalProfit;
+        _rInvoiceCount = invoiceCount;
+        ApplySummaryMask();
 
         UpdateProfitMargin(totalSales, totalProfit);
         LoadPeriodComparison(from, to, totalSales, totalProfit, invoiceCount);
@@ -139,6 +157,24 @@ public partial class ReportsPage : Page
         TxtFooterWholesaleCost.Visibility = footerWholesaleCost > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtFooterProfit.Text = reportData.Sum(r => (decimal)r._profit).ToString("0.##") + " ج.م";
         TxtFooterMargin.Text = totalSales > 0 ? (totalProfit / totalSales * 100).ToString("0.#") + "%" : "0%";
+    }
+
+    private void ApplySummaryMask()
+    {
+        const string mask = "••••••";
+        bool hidden = AmountsVisibilityService.IsHidden;
+
+        TxtTotalSales.Text  = hidden ? mask : $"{_rTotalSales:0.##} ج.م";
+        TxtTotalCost.Text   = hidden ? mask : $"{_rTotalCost:0.##} ج.م";
+        TxtTotalProfit.Text = hidden ? mask : $"{_rTotalProfit:0.##} ج.م";
+
+        // Mask footer profit total
+        if (TxtFooterProfit != null && ReportFooter.Visibility == Visibility.Visible)
+        {
+            if (hidden)
+                TxtFooterProfit.Text = mask;
+            // When unhiding, ShowReport_Click will re-run and set real values
+        }
     }
 
     private void UpdateProfitMargin(decimal totalSales, decimal totalProfit)

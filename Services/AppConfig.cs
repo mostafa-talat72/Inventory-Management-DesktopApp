@@ -26,6 +26,7 @@ public class AppConfig
     public bool PrintLocationDescription { get; set; }
     public string PrinterName { get; set; } = "";
     public bool IsDarkMode { get; set; } = false;
+    public bool HideAmounts { get; set; } = true;
 
     private static readonly string DefaultPassword = "123456";
 

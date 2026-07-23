@@ -96,6 +96,9 @@ public partial class App : Application
         // Apply saved theme before any window is shown
         ThemeService.Initialize(config.IsDarkMode);
 
+        // Apply saved amounts visibility
+        AmountsVisibilityService.Initialize(config.HideAmounts);
+
         // Initialize database
         try
         {

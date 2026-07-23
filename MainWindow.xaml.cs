@@ -21,6 +21,7 @@ public partial class MainWindow : Window
 
         NavigateToPage("Dashboard");
         UpdateThemeToggleButton();
+        UpdateAmountsToggleButton();
     }
 
     public void UpdateLocationName(string name)
@@ -100,6 +101,22 @@ public partial class MainWindow : Window
         IconMoon.Visibility = isDark ? Visibility.Collapsed : Visibility.Visible;
         IconSun.Visibility  = isDark ? Visibility.Visible   : Visibility.Collapsed;
         TxtThemeLabel.Text  = isDark ? "الوضع النهاري" : "الوضع الليلي";
+    }
+
+    private void BtnAmountsToggle_Click(object sender, RoutedEventArgs e)
+    {
+        AmountsVisibilityService.Toggle();
+        UpdateAmountsToggleButton();
+    }
+
+    private void UpdateAmountsToggleButton()
+    {
+        bool hidden = AmountsVisibilityService.IsHidden;
+        // When hidden: show EyeOff icon + "إظهار الأرقام"
+        // When visible: show Eye icon + "إخفاء الأرقام"
+        IconEyeOff.Visibility = hidden ? Visibility.Visible   : Visibility.Collapsed;
+        IconEye.Visibility    = hidden ? Visibility.Collapsed : Visibility.Visible;
+        TxtAmountsLabel.Text  = hidden ? "إظهار الأرقام" : "إخفاء الأرقام";
     }
 
     public void ShowOverlay(UserControl content)

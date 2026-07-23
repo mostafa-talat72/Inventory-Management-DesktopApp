@@ -20,7 +20,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="14" Background="#FFF8E1">
+                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="14" Background="{DynamicResource SurfaceBackground}">
                     <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="#F57F17" Stretch="Uniform"
                           HorizontalAlignment="Center" VerticalAlignment="Center"
                           Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
@@ -77,8 +77,9 @@
                 </ScrollViewer>
 
                 <!-- New Invoice option -->
-                <Border Grid.Row="2" x:Name="NewInvoiceCard" CornerRadius="10"
-                        Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1"
+                <Border Grid.Row="2" x:Name="NewInvoiceCard" CornerRadius="12"
+                        Background="{DynamicResource SurfaceBackground}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                         Padding="14,12" Margin="0,12,0,0"
                         Cursor="Hand" MouseLeftButtonDown="NewInvoiceCard_Click">
                     <Grid>
@@ -87,17 +88,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="#A5D6A7">
-                            <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#1B5E20" Stretch="Uniform"
+                        <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#2E7D32">
+                            <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="White" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                            <TextBlock Text="إنشاء فاتورة جديدة" FontSize="14" FontWeight="Bold" Foreground="#1B5E20" />
-                            <TextBlock Text="فتح فاتورة جديدة بدون ربط بالفاتورة القديمة" FontSize="11" Foreground="#4CAF50" Margin="0,1,0,0" />
+                            <TextBlock Text="إنشاء فاتورة جديدة" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource HeadingTextBrush}" />
+                            <TextBlock Text="فتح فاتورة جديدة بدون ربط بالفاتورة القديمة" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0" />
                         </StackPanel>
-                        <TextBlock Grid.Column="2" Text="اختيار" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="#1B5E20" VerticalAlignment="Center" Margin="0,0,14,0" />
+                        <Border Grid.Column="2" CornerRadius="6" Background="#2E7D32" Padding="10,4" VerticalAlignment="Center">
+                            <TextBlock Text="اختيار" FontSize="11" FontWeight="SemiBold" Foreground="White" />
+                        </Border>
                     </Grid>
                 </Border>
             </Grid>

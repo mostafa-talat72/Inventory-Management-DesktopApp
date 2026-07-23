@@ -15,10 +15,30 @@ public partial class DashboardPage : Page
 {
     private readonly AppDbContext _db = new();
 
+    // Raw values — stored so we can mask/unmask without re-querying DB
+    private decimal _todaySales, _todayCost, _todayProfit, _todayProfitMargin;
+    private decimal _totalRevenue, _totalCost, _totalProfit, _profitMargin;
+    private decimal _pendingAmount, _cancelledAmount;
+    private List<Invoice> _recentInvoices = new();
+
     public DashboardPage()
     {
         InitializeComponent();
-        Loaded += (_, _) => LoadDashboard();
+        Loaded += (_, _) =>
+        {
+            LoadDashboard();
+            AmountsVisibilityService.VisibilityChanged += OnAmountsVisibilityChanged;
+        };
+        Unloaded += (_, _) => AmountsVisibilityService.VisibilityChanged -= OnAmountsVisibilityChanged;
+    }
+
+    private void OnAmountsVisibilityChanged()
+    {
+        ApplyAmountsMask();
+        // Rebuild recent invoice cards with updated mask state
+        RecentInvoicesPanel.Children.Clear();
+        foreach (var inv in _recentInvoices)
+            RecentInvoicesPanel.Children.Add(CreateRecentInvoiceCard(inv));
     }
 
     private void LoadDashboard()
@@ -73,36 +93,57 @@ public partial class DashboardPage : Page
 
             Application.Current.Dispatcher.Invoke(() =>
             {
-                TxtTodaySales.Text = $"{todaySales:0.##} ج.م";
-                TxtTodayCount.Text = $"{todayInvoices} فاتورة";
-                TxtTodayCost.Text = $"{todayCost:0.##} ج.م";
+                _todaySales       = todaySales;
+                _todayCost        = todayCost;
+                _todayProfit      = todayProfit;
+                _todayProfitMargin= todayProfitMargin;
+                _totalRevenue     = totalRevenue;
+                _totalCost        = totalCost;
+                _totalProfit      = totalProfit;
+                _profitMargin     = profitMargin;
+                _pendingAmount    = pendingAmount;
+                _cancelledAmount  = cancelledAmount;
+
+                // Cache for re-render on toggle
+                _recentInvoices = recentInvoices;
+
+                TxtTodayCount.Text  = $"{todayInvoices} فاتورة";
                 TxtTodayCostCount.Text = $"{todayInvoices} فاتورة";
-                TxtTodayProfit.Text = $"{todayProfit:0.##} ج.م";
                 TxtTodayProfitMargin.Text = todayProfitMargin >= 0 ? $"هامش ربح {todayProfitMargin:0.0}%" : $"خسارة {Math.Abs(todayProfitMargin):0.0}%";
-                TxtTotalSales.Text = $"{totalRevenue:0.##} ج.م";
                 TxtTotalInvoices.Text = $"{activeInvoices.Count} فاتورة";
-                TxtTotalCost.Text = $"{totalCost:0.##} ج.م";
                 TxtTotalCostCount.Text = $"{activeInvoices.Count} فاتورة";
-                TxtTotalProfit.Text = $"{totalProfit:0.##} ج.م";
-                TxtProfitMargin.Text = profitMargin >= 0 ? $"هامش ربح {profitMargin:0.0}%" : $"خسارة {Math.Abs(profitMargin):0.0}%";
+                TxtProfitMargin.Text  = profitMargin >= 0 ? $"هامش ربح {profitMargin:0.0}%" : $"خسارة {Math.Abs(profitMargin):0.0}%";
                 TxtTotalCustomers.Text = $"{totalCustomers}";
-                TxtNewCustomers.Text = $"{newCustomers} هذا الشهر";
+                TxtNewCustomers.Text  = $"{newCustomers} هذا الشهر";
                 TxtPendingInvoices.Text = $"{pendingInvoices.Count}";
-                TxtPendingAmount.Text = $"{pendingAmount:0.##} ج.م";
                 TxtCancelledInvoices.Text = $"{cancelledInvoices.Count}";
-                TxtCancelledAmount.Text = $"{cancelledAmount:0.##} ج.م";
+
+                ApplyAmountsMask();
 
                 RecentInvoicesPanel.Children.Clear();
                 foreach (var inv in recentInvoices)
-                {
                     RecentInvoicesPanel.Children.Add(CreateRecentInvoiceCard(inv));
-                }
             });
         }
         catch (Exception ex)
         {
             MessageBox.Show($"خطأ في تحميل لوحة التحكم: {ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void ApplyAmountsMask()
+    {
+        const string mask = "••••••";
+        bool hidden = AmountsVisibilityService.IsHidden;
+
+        TxtTodaySales.Text       = hidden ? mask : $"{_todaySales:0.##} ج.م";
+        TxtTodayCost.Text        = hidden ? mask : $"{_todayCost:0.##} ج.م";
+        TxtTodayProfit.Text      = hidden ? mask : $"{_todayProfit:0.##} ج.م";
+        TxtTotalSales.Text       = hidden ? mask : $"{_totalRevenue:0.##} ج.م";
+        TxtTotalCost.Text        = hidden ? mask : $"{_totalCost:0.##} ج.م";
+        TxtTotalProfit.Text      = hidden ? mask : $"{_totalProfit:0.##} ج.م";
+        TxtPendingAmount.Text    = hidden ? mask : $"{_pendingAmount:0.##} ج.م";
+        TxtCancelledAmount.Text  = hidden ? mask : $"{_cancelledAmount:0.##} ج.م";
     }
 
     private Border CreateRecentInvoiceCard(Invoice inv)
@@ -214,7 +255,7 @@ public partial class DashboardPage : Page
 
         amountStack.Children.Add(new TextBlock
         {
-            Text = $"{inv.NetAmount:0.##} ج.م",
+            Text = AmountsVisibilityService.IsHidden ? "••••••" : $"{inv.NetAmount:0.##} ج.م",
             FontSize = 13,
             FontWeight = FontWeights.Bold,
             Foreground = primaryBrush,
@@ -225,7 +266,7 @@ public partial class DashboardPage : Page
         {
             amountStack.Children.Add(new TextBlock
             {
-                Text = $"متبقي {inv.Remaining:0.##}",
+                Text = AmountsVisibilityService.IsHidden ? "••••••" : $"متبقي {inv.Remaining:0.##}",
                 FontSize = 10,
                 Foreground = (Brush)new BrushConverter().ConvertFrom("#F57F17")!,
                 Margin = new Thickness(0, 2, 0, 0),
