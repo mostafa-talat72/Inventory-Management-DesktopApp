@@ -89,7 +89,7 @@
             </Border>
 
             <!-- ===== FILTER BAR ===== -->
-            <Border Grid.Row="3" Margin="24,10,24,0" CornerRadius="8" Background="#F0F0F0" Padding="4" Height="34">
+            <Border Grid.Row="3" Margin="24,10,24,0" CornerRadius="8" Background="{DynamicResource DividerBrush}" Padding="4" Height="34">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border x:Name="BtnAll" CornerRadius="6" Background="#7B1FA2" Padding="16,0" Height="26" Cursor="Hand" MouseLeftButtonDown="BtnAll_Click">
@@ -121,7 +121,7 @@
 
             <!-- ===== HINT ===== -->
             <TextBlock x:Name="TxtHint" Grid.Row="4" Text="اختر فاتورتين أو أكثر للدمج"
-                       FontSize="12" Foreground="#B0BEC5" HorizontalAlignment="Center"
+                       FontSize="12" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center"
                        VerticalAlignment="Center" Margin="24,0" />
 
             <!-- ===== FOOTER ===== -->

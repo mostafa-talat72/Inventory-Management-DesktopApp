@@ -61,7 +61,7 @@ public partial class ManageOrdersDialog : UserControl
             {
                 Text = "لا توجد طلبات في هذه الفاتورة",
                 FontSize = 14,
-                Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
+                Foreground = Application.Current.TryFindResource("MutedTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 30, 0, 30)
             });
@@ -78,11 +78,17 @@ public partial class ManageOrdersDialog : UserControl
         decimal orderTotal = order.Items.Sum(i => i.Total);
 
         // ── Outer card ──
+        var cardBg2     = Application.Current.TryFindResource("CardBackground")    as Brush ?? Brushes.White;
+        var cardBorder2 = Application.Current.TryFindResource("BorderBrushLight")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+        var headingFg2  = Application.Current.TryFindResource("HeadingTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#37474F")!;
+        var mutedFg2    = Application.Current.TryFindResource("MutedTextBrush")    as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!;
+        var divider2    = Application.Current.TryFindResource("DividerBrush")      as Brush ?? (Brush)new BrushConverter().ConvertFrom("#F0F0F0")!;
+        var surfaceBg2  = Application.Current.TryFindResource("CardBackgroundAlt") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#F5F5F5")!;
         var card = new Border
         {
             CornerRadius = new CornerRadius(10),
-            Background = Brushes.White,
-            BorderBrush = (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!,
+            Background = cardBg2,
+            BorderBrush = cardBorder2,
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10),
         };
@@ -94,7 +100,7 @@ public partial class ManageOrdersDialog : UserControl
         // ── Order header ──
         var header = new Border
         {
-            Background = (Brush)new BrushConverter().ConvertFrom("#F5F5F5")!,
+            Background = surfaceBg2,
             CornerRadius = new CornerRadius(10, 10, 0, 0),
             Padding = new Thickness(14, 10, 14, 10)
         };
@@ -126,12 +132,12 @@ public partial class ManageOrdersDialog : UserControl
         infoStack.Children.Add(new TextBlock
         {
             Text = $"{order.CreatedAt:yyyy/MM/dd - hh:mm} {(order.CreatedAt.Hour < 12 ? "ص" : "م")}",
-            FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#78909C")!
+            FontSize = 11, Foreground = mutedFg2
         });
         infoStack.Children.Add(new TextBlock
         {
             Text = $"{order.Items.Count} منتج",
-            FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!
+            FontSize = 10, Foreground = mutedFg2
         });
         Grid.SetColumn(infoStack, 1);
         headerGrid.Children.Add(infoStack);
@@ -141,27 +147,55 @@ public partial class ManageOrdersDialog : UserControl
         {
             Text = $"{orderTotal:0.##} ج.م",
             FontSize = 14, FontWeight = FontWeights.Bold,
-            Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
+            Foreground = Application.Current.TryFindResource("PrimaryTextBrush") as Brush
+                         ?? (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
             VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0)
         };
         Grid.SetColumn(totalBlock, 2);
         headerGrid.Children.Add(totalBlock);
 
         // Edit button
-        var editBtn = CreateIconButton("#546E7A",
-            "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z",
-            "تعديل");
-        editBtn.Margin = new Thickness(10, 0, 0, 0);
+        var bodyFg2 = Application.Current.TryFindResource("BodyTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
+        var editBtn = new Button
+        {
+            Width = 30, Height = 30,
+            Background = Brushes.Transparent, BorderThickness = new Thickness(0),
+            Cursor = Cursors.Hand, ToolTip = "تعديل",
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+            Content = new Path
+            {
+                Width = 14, Height = 14,
+                Fill = bodyFg2,
+                Stretch = Stretch.Uniform,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Data = Geometry.Parse("M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z")
+            }
+        };
         var orderRef = order;
         editBtn.Click += (_, _) => EditOrder(orderRef);
         Grid.SetColumn(editBtn, 3);
         headerGrid.Children.Add(editBtn);
 
         // Delete button
-        var deleteBtn = CreateIconButton("#E53935",
-            "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z",
-            "حذف");
-        deleteBtn.Margin = new Thickness(4, 0, 0, 0);
+        var deleteBtn = new Button
+        {
+            Width = 30, Height = 30,
+            Background = Brushes.Transparent, BorderThickness = new Thickness(0),
+            Cursor = Cursors.Hand, ToolTip = "حذف",
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(4, 0, 0, 0),
+            Content = new Path
+            {
+                Width = 14, Height = 14,
+                Fill = (Brush)new BrushConverter().ConvertFrom("#E53935")!,
+                Stretch = Stretch.Uniform,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Data = Geometry.Parse("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z")
+            }
+        };
         deleteBtn.Click += (_, _) => DeleteOrder(orderRef);
         Grid.SetColumn(deleteBtn, 4);
         headerGrid.Children.Add(deleteBtn);
@@ -191,7 +225,7 @@ public partial class ManageOrdersDialog : UserControl
             nameRow.Children.Add(new TextBlock
             {
                 Text = item.Product.Name, FontSize = 13, FontWeight = FontWeights.SemiBold,
-                Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")!
+                Foreground = headingFg2
             });
             nameRow.Children.Add(new Border
             {
@@ -213,7 +247,7 @@ public partial class ManageOrdersDialog : UserControl
             nameStack.Children.Add(new TextBlock
             {
                 Text = qtyDisplay, FontSize = 10,
-                Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
+                Foreground = mutedFg2,
                 Margin = new Thickness(0, 1, 0, 0)
             });
             Grid.SetColumn(nameStack, 0);
@@ -222,7 +256,8 @@ public partial class ManageOrdersDialog : UserControl
             var itemTotal = new TextBlock
             {
                 Text = $"{item.Total:0.##} ج.م", FontSize = 13, FontWeight = FontWeights.Bold,
-                Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
+                Foreground = Application.Current.TryFindResource("PrimaryTextBrush") as Brush
+                             ?? (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
                 VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0)
             };
             Grid.SetColumn(itemTotal, 1);
@@ -235,7 +270,7 @@ public partial class ManageOrdersDialog : UserControl
                 itemsStack.Children.Add(new Border
                 {
                     Height = 1,
-                    Background = (Brush)new BrushConverter().ConvertFrom("#F0F0F0")!,
+                    Background = divider2,
                     Margin = new Thickness(0, 2, 0, 2)
                 });
         }

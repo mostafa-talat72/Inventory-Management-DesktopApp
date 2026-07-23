@@ -244,6 +244,16 @@ namespace ProductApp.Views
             var boxUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Box);
             var pieceUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
 
+            // Theme-aware brushes
+            var cardBg      = Application.Current.TryFindResource("CardBackground")    as Brush ?? Brushes.White;
+            var surfaceBg   = Application.Current.TryFindResource("SurfaceBackground") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#F8F9FA")!;
+            var inputBg     = Application.Current.TryFindResource("InputBackground")   as Brush ?? (Brush)new BrushConverter().ConvertFrom("#FAFAFA")!;
+            var headingFg   = Application.Current.TryFindResource("HeadingTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#37474F")!;
+            var primaryFg   = Application.Current.TryFindResource("PrimaryTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#1A237E")!;
+            var bodyFg      = Application.Current.TryFindResource("BodyTextBrush")     as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
+            var cardBorder  = Application.Current.TryFindResource("BorderBrushLight")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+            var borderBrush = Application.Current.TryFindResource("BorderBrush")       as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+
             var entry = new OrderItemEntry
             {
                 Product = product,
@@ -252,43 +262,55 @@ namespace ProductApp.Views
                 PieceUnit = pieceUnit,
             };
 
-            // Build card
+            // ── Outer card ──
             var outer = new Border
             {
-                CornerRadius = new CornerRadius(8),
-                Background = new SolidColorBrush(Color.FromRgb(0xF8, 0xF9, 0xFA)),
-                Padding = new Thickness(12, 8, 12, 8),
+                CornerRadius = new CornerRadius(10),
+                Background = cardBg,
+                BorderBrush = cardBorder,
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(12, 10, 12, 10),
                 Margin = new Thickness(0, 0, 0, 6)
             };
             var mainGrid = new Grid();
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // name + remove
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // retail
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // wholesale
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // total
 
-            // Row 0: Product name + remove
-            var nameRow = new Grid();
+            // ── Row 0: Product name + remove button ──
+            var nameRow = new Grid { Margin = new Thickness(0, 0, 0, 8) };
             nameRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             nameRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            nameRow.Children.Add(new TextBlock
+
+            var nameBadgeRow = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            nameBadgeRow.Children.Add(new Border
+            {
+                Width = 6, Height = 6, CornerRadius = new CornerRadius(3),
+                Background = primaryFg, VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 8, 0)
+            });
+            nameBadgeRow.Children.Add(new TextBlock
             {
                 Text = product.Name,
                 FontSize = 13,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x37, 0x47, 0x4F)),
+                Foreground = headingFg,
                 VerticalAlignment = VerticalAlignment.Center
             });
+            nameRow.Children.Add(nameBadgeRow);
+
             var removeBtn = new Button
             {
-                Width = 24, Height = 24,
+                Width = 26, Height = 26,
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
                 Cursor = Cursors.Hand,
-                ToolTip = "إزالة",
+                ToolTip = "إزالة المنتج",
                 Content = new Path
                 {
-                    Width = 12, Height = 12,
-                    Fill = new SolidColorBrush(Color.FromRgb(0xE5, 0x39, 0x35)),
+                    Width = 13, Height = 13,
+                    Fill = (Brush)new BrushConverter().ConvertFrom("#E53935")!,
                     Stretch = Stretch.Uniform,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
@@ -302,123 +324,83 @@ namespace ProductApp.Views
             Grid.SetRow(nameRow, 0);
             mainGrid.Children.Add(nameRow);
 
-            // Row 1: Retail
+            // ── Row 1: Retail section ──
             var retailBorder = new Border
             {
-                CornerRadius = new CornerRadius(4),
-                Background = new SolidColorBrush(Color.FromRgb(0xE3, 0xF2, 0xFD)),
-                Padding = new Thickness(8, 5, 8, 5),
-                Margin = new Thickness(0, 4, 0, 0)
+                CornerRadius = new CornerRadius(8),
+                Background = surfaceBg,
+                BorderBrush = borderBrush,
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(10, 6, 10, 6),
+                Margin = new Thickness(0, 0, 0, 4)
             };
             var retailGrid = new Grid();
             retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            for (int i = 0; i < 3; i++)
+                retailGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             int rCol = 0;
             retailGrid.Children.Add(new Border
             {
-                CornerRadius = new CornerRadius(3),
+                CornerRadius = new CornerRadius(4),
                 Background = new SolidColorBrush(Color.FromRgb(0x15, 0x65, 0xC0)),
-                Padding = new Thickness(6, 1, 6, 1),
+                Padding = new Thickness(7, 2, 7, 2),
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 6, 0),
+                Margin = new Thickness(0, 0, 10, 0),
                 Child = new TextBlock { Text = "قطاعي", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = Brushes.White }
             });
             Grid.SetColumn(retailGrid.Children[^1], rCol++);
 
-            if (cartonUnit != null)
-            {
-                var s = MakeQtyField("كرتونة", out var tb);
-                entry.RetailCartonTb = tb;
-                tb.TextChanged += RecalcAll;
-                Grid.SetColumn(s, rCol++);
-                retailGrid.Children.Add(s);
-            }
-            if (boxUnit != null)
-            {
-                var s = MakeQtyField("علبة", out var tb);
-                entry.RetailBoxTb = tb;
-                tb.TextChanged += RecalcAll;
-                Grid.SetColumn(s, rCol++);
-                retailGrid.Children.Add(s);
-            }
-            if (pieceUnit != null)
-            {
-                var s = MakeQtyField("قطعة", out var tb);
-                entry.RetailPieceTb = tb;
-                tb.TextChanged += RecalcAll;
-                Grid.SetColumn(s, rCol++);
-                retailGrid.Children.Add(s);
-            }
+            if (cartonUnit != null) { var s = MakeQtyField("كرتونة", out var tb, inputBg, headingFg, cardBorder); entry.RetailCartonTb = tb; tb.TextChanged += RecalcAll; Grid.SetColumn(s, rCol++); retailGrid.Children.Add(s); }
+            if (boxUnit != null)    { var s = MakeQtyField("علبة",   out var tb, inputBg, headingFg, cardBorder); entry.RetailBoxTb    = tb; tb.TextChanged += RecalcAll; Grid.SetColumn(s, rCol++); retailGrid.Children.Add(s); }
+            if (pieceUnit != null)  { var s = MakeQtyField("قطعة",   out var tb, inputBg, headingFg, cardBorder); entry.RetailPieceTb  = tb; tb.TextChanged += RecalcAll; Grid.SetColumn(s, rCol++); retailGrid.Children.Add(s); }
             retailBorder.Child = retailGrid;
             Grid.SetRow(retailBorder, 1);
             mainGrid.Children.Add(retailBorder);
 
-            // Row 2: Wholesale
+            // ── Row 2: Wholesale section ──
             var wholesaleBorder = new Border
             {
-                CornerRadius = new CornerRadius(4),
-                Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xF5, 0xE9)),
-                Padding = new Thickness(8, 5, 8, 5),
-                Margin = new Thickness(0, 3, 0, 0)
+                CornerRadius = new CornerRadius(8),
+                Background = surfaceBg,
+                BorderBrush = borderBrush,
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(10, 6, 10, 6),
+                Margin = new Thickness(0, 0, 0, 4)
             };
             var wholesaleGrid = new Grid();
             wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            for (int i = 0; i < 3; i++)
+                wholesaleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             int wCol = 0;
             wholesaleGrid.Children.Add(new Border
             {
-                CornerRadius = new CornerRadius(3),
+                CornerRadius = new CornerRadius(4),
                 Background = new SolidColorBrush(Color.FromRgb(0x00, 0x89, 0x7B)),
-                Padding = new Thickness(6, 1, 6, 1),
+                Padding = new Thickness(7, 2, 7, 2),
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 6, 0),
+                Margin = new Thickness(0, 0, 10, 0),
                 Child = new TextBlock { Text = "جملة", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = Brushes.White }
             });
             Grid.SetColumn(wholesaleGrid.Children[^1], wCol++);
 
-            if (cartonUnit != null)
-            {
-                var s = MakeQtyField("كرتونة", out var tb);
-                entry.WholesaleCartonTb = tb;
-                tb.TextChanged += RecalcAll;
-                Grid.SetColumn(s, wCol++);
-                wholesaleGrid.Children.Add(s);
-            }
-            if (boxUnit != null)
-            {
-                var s = MakeQtyField("علبة", out var tb);
-                entry.WholesaleBoxTb = tb;
-                tb.TextChanged += RecalcAll;
-                Grid.SetColumn(s, wCol++);
-                wholesaleGrid.Children.Add(s);
-            }
-            if (pieceUnit != null)
-            {
-                var s = MakeQtyField("قطعة", out var tb);
-                entry.WholesalePieceTb = tb;
-                tb.TextChanged += RecalcAll;
-                Grid.SetColumn(s, wCol++);
-                wholesaleGrid.Children.Add(s);
-            }
+            if (cartonUnit != null) { var s = MakeQtyField("كرتونة", out var tb, inputBg, headingFg, cardBorder); entry.WholesaleCartonTb = tb; tb.TextChanged += RecalcAll; Grid.SetColumn(s, wCol++); wholesaleGrid.Children.Add(s); }
+            if (boxUnit != null)    { var s = MakeQtyField("علبة",   out var tb, inputBg, headingFg, cardBorder); entry.WholesaleBoxTb    = tb; tb.TextChanged += RecalcAll; Grid.SetColumn(s, wCol++); wholesaleGrid.Children.Add(s); }
+            if (pieceUnit != null)  { var s = MakeQtyField("قطعة",   out var tb, inputBg, headingFg, cardBorder); entry.WholesalePieceTb  = tb; tb.TextChanged += RecalcAll; Grid.SetColumn(s, wCol++); wholesaleGrid.Children.Add(s); }
             wholesaleBorder.Child = wholesaleGrid;
             Grid.SetRow(wholesaleBorder, 2);
             mainGrid.Children.Add(wholesaleBorder);
 
-            // Row 3: Total
+            // ── Row 3: Total ──
             entry.TotalTb = new TextBlock
             {
                 Text = "0.00 ج.م",
-                FontSize = 13,
+                FontSize = 14,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x1A, 0x23, 0x7E)),
+                Foreground = primaryFg,
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Margin = new Thickness(0, 3, 0, 0)
+                Margin = new Thickness(4, 4, 0, 0)
             };
             Grid.SetRow(entry.TotalTb, 3);
             mainGrid.Children.Add(entry.TotalTb);
@@ -431,11 +413,39 @@ namespace ProductApp.Views
             UpdateSummary();
         }
 
-        private static StackPanel MakeQtyField(string label, out TextBox tb)
+        private static StackPanel MakeQtyField(string label, out TextBox tb, Brush? bgBrush = null, Brush? fgBrush = null, Brush? borderBrush = null)
         {
-            var sp = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
-            sp.Children.Add(new TextBlock { Text = label, FontSize = 9, Foreground = new SolidColorBrush(Color.FromRgb(0x54, 0x6E, 0x7A)), HorizontalAlignment = HorizontalAlignment.Center });
-            tb = new TextBox { Text = "0", Width = 40, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center, BorderThickness = new Thickness(0, 0, 0, 1), BorderBrush = new SolidColorBrush(Color.FromRgb(0xB0, 0xBE, 0xC5)) };
+            var bg  = bgBrush     ?? Application.Current.TryFindResource("InputBackground")   as Brush ?? (Brush)new BrushConverter().ConvertFrom("#FAFAFA")!;
+            var fg  = fgBrush     ?? Application.Current.TryFindResource("HeadingTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#37474F")!;
+            var brd = borderBrush ?? Application.Current.TryFindResource("BorderBrushLight")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+            var lbl = Application.Current.TryFindResource("BodyTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
+
+            var sp = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
+            sp.Children.Add(new TextBlock
+            {
+                Text = label,
+                FontSize = 9,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = lbl,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 3)
+            });
+            tb = new TextBox
+            {
+                Text = "0",
+                Width = 44,
+                Height = 28,
+                FontSize = 13,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Background = bg,
+                Foreground = fg,
+                CaretBrush = fg,
+                BorderBrush = brd,
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(2, 2, 2, 2)
+            };
             tb.PreviewTextInput += (s, e) => e.Handled = !Regex.IsMatch(e.Text, "^[0-9]$");
             sp.Children.Add(tb);
             return sp;

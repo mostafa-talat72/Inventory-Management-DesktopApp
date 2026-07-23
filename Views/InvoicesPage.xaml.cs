@@ -92,11 +92,16 @@ public partial class InvoicesPage : Page
                 ? "لم يتم العثور على أي فواتير"
                 : $"لم يتم العثور على فواتير {filterLabel}";
 
+            var emptyCardBg = Application.Current.TryFindResource("CardBackground") as Brush ?? Brushes.White;
+            var emptyBorder = Application.Current.TryFindResource("BorderBrushLight") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E8E8E8")!;
+            var emptyIconFg = Application.Current.TryFindResource("MutedTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+            var emptyTitleFg= Application.Current.TryFindResource("BodyTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
+            var emptySubFg  = Application.Current.TryFindResource("MutedTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!;
             InvoicesPanel.Children.Add(new Border
             {
                 CornerRadius = new CornerRadius(12),
-                Background = Brushes.White,
-                BorderBrush = (Brush)new BrushConverter().ConvertFrom("#E8E8E8")!,
+                Background = emptyCardBg,
+                BorderBrush = emptyBorder,
                 BorderThickness = new Thickness(1),
                 Padding = new Thickness(40, 48, 40, 48),
                 Margin = new Thickness(0, 0, 0, 10),
@@ -108,7 +113,7 @@ public partial class InvoicesPage : Page
                         new Path
                         {
                             Width = 64, Height = 64,
-                            Fill = (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!,
+                            Fill = emptyIconFg,
                             Stretch = Stretch.Uniform,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             Data = Geometry.Parse("M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z")
@@ -118,7 +123,7 @@ public partial class InvoicesPage : Page
                             Text = "لا توجد فواتير",
                             FontSize = 18,
                             FontWeight = FontWeights.SemiBold,
-                            Foreground = (Brush)new BrushConverter().ConvertFrom("#546E7A")!,
+                            Foreground = emptyTitleFg,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             Margin = new Thickness(0, 16, 0, 4)
                         },
@@ -126,7 +131,7 @@ public partial class InvoicesPage : Page
                         {
                             Text = subtitle,
                             FontSize = 13,
-                            Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
+                            Foreground = emptySubFg,
                             HorizontalAlignment = HorizontalAlignment.Center
                         }
                     }
@@ -162,11 +167,21 @@ public partial class InvoicesPage : Page
         var customerBadge = invoice.CustomerId == null ? (Brush)new BrushConverter().ConvertFrom("#FFF3E0")! : (Brush)new BrushConverter().ConvertFrom("#E8EAF6")!;
         var customerFg = invoice.CustomerId == null ? (Brush)new BrushConverter().ConvertFrom("#E65100")! : (Brush)new BrushConverter().ConvertFrom("#1A237E")!;
 
+        // Theme-aware brushes
+        var cardBg      = Application.Current.TryFindResource("CardBackground")     as Brush ?? Brushes.White;
+        var cardBorder  = Application.Current.TryFindResource("BorderBrushLight")   as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+        var surfaceBg   = Application.Current.TryFindResource("SurfaceBackground")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#F5F5F5")!;
+        var headingFg   = Application.Current.TryFindResource("HeadingTextBrush")   as Brush ?? (Brush)new BrushConverter().ConvertFrom("#37474F")!;
+        var primaryFg   = Application.Current.TryFindResource("PrimaryTextBrush")   as Brush ?? (Brush)new BrushConverter().ConvertFrom("#1A237E")!;
+        var subtleFg    = Application.Current.TryFindResource("SubtleTextBrush")    as Brush ?? (Brush)new BrushConverter().ConvertFrom("#78909C")!;
+        var mutedFg     = Application.Current.TryFindResource("MutedTextBrush")     as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!;
+        var dividerBrush= Application.Current.TryFindResource("DividerBrush")       as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+
         var card = new Border
         {
             CornerRadius = new CornerRadius(14),
-            Background = isSelected ? (Brush)new BrushConverter().ConvertFrom("#F3E5F5")! : Brushes.White,
-            BorderBrush = isSelected ? (Brush)new BrushConverter().ConvertFrom("#CE93D8")! : (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!,
+            Background = isSelected ? (Brush)new BrushConverter().ConvertFrom("#30CE93D8")! : cardBg,
+            BorderBrush = isSelected ? (Brush)new BrushConverter().ConvertFrom("#CE93D8")! : cardBorder,
             BorderThickness = new Thickness(isSelected ? 1.5 : 1),
             Cursor = Cursors.Hand,
             Margin = new Thickness(0, 0, 0, 10),
@@ -237,7 +252,7 @@ public partial class InvoicesPage : Page
         Grid.SetRowSpan(iconBorder, 2);
 
         var topRight = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 0, 0, 4) };
-        topRight.Children.Add(new TextBlock { Text = $"فاتورة #{invoice.Id}", FontSize = 16, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")! });
+        topRight.Children.Add(new TextBlock { Text = $"فاتورة #{invoice.Id}", FontSize = 16, FontWeight = FontWeights.Bold, Foreground = primaryFg });
         topRight.Children.Add(new Border { CornerRadius = new CornerRadius(5), Background = statusBgBrush, Padding = new Thickness(10, 2, 10, 2), Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = statusText, FontSize = 10, FontWeight = FontWeights.Bold, Foreground = statusFgBrush } });
         topRight.Children.Add(new Border { CornerRadius = new CornerRadius(5), Background = customerBadge, Padding = new Thickness(8, 2, 8, 2), Margin = new Thickness(6, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = customerLabel, FontSize = 10, FontWeight = FontWeights.SemiBold, Foreground = customerFg } });
         mainGrid.Children.Add(topRight);
@@ -266,9 +281,9 @@ public partial class InvoicesPage : Page
 
         var bottomRow = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 0, 0, 0) };
 
-        bottomRow.Children.Add(new TextBlock { Text = invoice.CreatedAt.ToString("yyyy/MM/dd"), FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, VerticalAlignment = VerticalAlignment.Center });
+        bottomRow.Children.Add(new TextBlock { Text = invoice.CreatedAt.ToString("yyyy/MM/dd"), FontSize = 11, Foreground = mutedFg, VerticalAlignment = VerticalAlignment.Center });
 
-        var sep = new Rectangle { Width = 1, Height = 18, Fill = (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!, Margin = new Thickness(10, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center };
+        var sep = new Rectangle { Width = 1, Height = 18, Fill = dividerBrush, Margin = new Thickness(10, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center };
         bottomRow.Children.Add(sep);
 
         var totalBadge = new Border { CornerRadius = new CornerRadius(5), Background = (Brush)new BrushConverter().ConvertFrom("#F0F0FF")!, Padding = new Thickness(8, 3, 8, 3), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0),

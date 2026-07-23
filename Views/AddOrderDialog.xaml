@@ -53,7 +53,7 @@
                 <!-- RIGHT: Current Order (Column 1 in RTL = visually left) -->
                 <!-- Actually RTL: Column 0 = right, Column 1 = left -->
                 <!-- User wants Order on the right → Column 0, Products on left → Column 1 -->
-                <Border Grid.Column="0" Background="{DynamicResource CardBackground}" BorderBrush="#E8EAF6" BorderThickness="0,0,0,0">
+                <Border Grid.Column="0" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="0,0,0,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -90,7 +90,7 @@
                         </ScrollViewer>
 
                         <!-- Footer -->
-                        <Border Grid.Row="2" Background="#FAFBFF" Padding="18,10,18,14" BorderBrush="#E8EAF6" BorderThickness="0,1,0,0">
+                        <Border Grid.Row="2" Background="{DynamicResource SurfaceBackground}" Padding="18,10,18,14" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="0,1,0,0">
                             <StackPanel>
                                 <Grid Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions>
@@ -159,7 +159,7 @@
                 </Border>
 
                 <!-- LEFT: Products (Column 1 in RTL = visually left) -->
-                <Border Grid.Column="1" Background="#FAFBFF" BorderBrush="#E8EAF6" BorderThickness="1,0,0,0">
+                <Border Grid.Column="1" Background="{DynamicResource SurfaceBackground}" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1,0,0,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -199,7 +199,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Width="150" Height="82" Margin="4" CornerRadius="10"
-                                                Background="{DynamicResource CardBackground}" BorderBrush="#EBEEF5" BorderThickness="1"
+                                                Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1"
                                                 Cursor="Hand">
                                             <Border.Style>
                                                 <Style TargetType="Border">

@@ -64,6 +64,11 @@ public partial class MergeInvoicesDialog : UserControl
 
     private Border CreateInvoiceCard(Invoice invoice)
     {
+        var headingFg   = Application.Current.TryFindResource("HeadingTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#37474F")!;
+        var mutedFg     = Application.Current.TryFindResource("MutedTextBrush")    as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!;
+        var cardAlt     = Application.Current.TryFindResource("CardBackgroundAlt") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#F5F5F5")!;
+        var cardBorder  = Application.Current.TryFindResource("BorderBrushLight")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+
         var isSelected = _selectedIds.Contains(invoice.Id);
         var isTarget = _targetInvoiceId == invoice.Id;
 
@@ -89,7 +94,7 @@ public partial class MergeInvoicesDialog : UserControl
             Width = 22, Height = 22,
             CornerRadius = new CornerRadius(4),
             Background = isSelected ? (Brush)new BrushConverter().ConvertFrom("#7B1FA2")! : Brushes.Transparent,
-            BorderBrush = (Brush)new BrushConverter().ConvertFrom("#BDBDBD")!,
+            BorderBrush = cardBorder,
             BorderThickness = new Thickness(1.5),
             VerticalAlignment = VerticalAlignment.Center,
             Cursor = Cursors.Hand
@@ -129,7 +134,7 @@ public partial class MergeInvoicesDialog : UserControl
         // Info
         var infoStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) };
         var row1 = new StackPanel { Orientation = Orientation.Horizontal };
-        row1.Children.Add(new TextBlock { Text = $"#{invoice.Id}", FontSize = 14, FontWeight = FontWeights.Bold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
+        row1.Children.Add(new TextBlock { Text = $"#{invoice.Id}", FontSize = 14, FontWeight = FontWeights.Bold, Foreground = headingFg });
         row1.Children.Add(new Border { CornerRadius = new CornerRadius(4), Background = statusBgBrush, Padding = new Thickness(6, 1, 6, 1), Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = statusText, FontSize = 9, FontWeight = FontWeights.Bold, Foreground = statusFgBrush } });
         if (isTarget)
         {
@@ -138,9 +143,9 @@ public partial class MergeInvoicesDialog : UserControl
         infoStack.Children.Add(row1);
 
         var row2 = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 0) };
-        row2.Children.Add(new TextBlock { Text = invoice.CreatedAt.ToString("yyyy/MM/dd"), FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")! });
+        row2.Children.Add(new TextBlock { Text = invoice.CreatedAt.ToString("yyyy/MM/dd"), FontSize = 11, Foreground = mutedFg });
         row2.Children.Add(new TextBlock { Text = " • ", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#CFD8DC")! });
-        row2.Children.Add(new TextBlock { Text = $"{invoice.TotalAmount:0.##} ج.م", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
+        row2.Children.Add(new TextBlock { Text = $"{invoice.TotalAmount:0.##} ج.م", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = headingFg });
         if (invoice.Discount > 0)
             row2.Children.Add(new TextBlock { Text = $"خصم {invoice.Discount:0.##}", FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFrom("#F57F17")!, Margin = new Thickness(6, 0, 0, 0) });
         infoStack.Children.Add(row2);
@@ -160,7 +165,7 @@ public partial class MergeInvoicesDialog : UserControl
                 Width = 20, Height = 20,
                 CornerRadius = new CornerRadius(10),
                 Background = isTarget ? (Brush)new BrushConverter().ConvertFrom("#7B1FA2")! : Brushes.Transparent,
-                BorderBrush = isTarget ? Brushes.Transparent : (Brush)new BrushConverter().ConvertFrom("#BDBDBD")!,
+                BorderBrush = isTarget ? Brushes.Transparent : cardBorder,
                 BorderThickness = new Thickness(1.5),
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(12, 0, 0, 0),
@@ -194,7 +199,7 @@ public partial class MergeInvoicesDialog : UserControl
         {
             CornerRadius = new CornerRadius(8),
             Background = isTarget ? (Brush)new BrushConverter().ConvertFrom("#F3E5F5")!
-                : isSelected ? (Brush)new BrushConverter().ConvertFrom("#F5F5F5")!
+                : isSelected ? cardAlt
                 : Brushes.Transparent,
             Padding = new Thickness(12, 10, 12, 10),
             Margin = new Thickness(4, 0, 4, 4),
@@ -353,11 +358,12 @@ public partial class MergeInvoicesDialog : UserControl
         _filterMode = mode;
         var activeColor = (Brush)new BrushConverter().ConvertFrom("#7B1FA2")!;
         var inactiveColor = Brushes.Transparent;
+        var bodyFg = Application.Current.TryFindResource("BodyTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
 
         foreach (var btn in new[] { BtnAll, BtnUnpaid, BtnPartiallyPaid, BtnPaid, BtnCancelled })
             btn.Background = inactiveColor;
         foreach (var txt in new[] { TxtAll, TxtUnpaid, TxtPartiallyPaid, TxtPaid, TxtCancelled })
-        { txt.Foreground = (Brush)new BrushConverter().ConvertFrom("#546E7A")!; txt.FontWeight = FontWeights.SemiBold; }
+        { txt.Foreground = bodyFg; txt.FontWeight = FontWeights.SemiBold; }
 
         var (activeBtn, activeTxt) = mode switch
         {

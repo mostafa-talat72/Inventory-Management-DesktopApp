@@ -110,7 +110,7 @@ public partial class InvoiceDetailsDialog : UserControl
             {
                 Text = "لا توجد خصومات",
                 FontSize = 13,
-                Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
+                Foreground = Application.Current.TryFindResource("MutedTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 20, 0, 20)
             });
@@ -123,7 +123,7 @@ public partial class InvoiceDetailsDialog : UserControl
             {
                 Text = "لا توجد مدفوعات بعد",
                 FontSize = 13,
-                Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
+                Foreground = Application.Current.TryFindResource("MutedTextBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 20, 0, 20)
             });
@@ -144,6 +144,12 @@ public partial class InvoiceDetailsDialog : UserControl
         int rCarton, int rBox, int rPiece, decimal rTotal,
         int wCarton, int wBox, int wPiece, decimal wTotal)
     {
+        var cardBg      = Application.Current.TryFindResource("CardBackground")    as Brush ?? Brushes.White;
+        var surfaceBg   = Application.Current.TryFindResource("SurfaceBackground") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#F8F9FA")!;
+        var headingFg   = Application.Current.TryFindResource("HeadingTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#37474F")!;
+        var primaryFg   = Application.Current.TryFindResource("PrimaryTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#1A237E")!;
+        var bodyFg      = Application.Current.TryFindResource("BodyTextBrush")     as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
+
         string RetailQty()
         {
             string s = "";
@@ -197,7 +203,7 @@ public partial class InvoiceDetailsDialog : UserControl
             Text = product.Name,
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
-            Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")!
+            Foreground = headingFg
         });
 
         // Retail row
@@ -205,7 +211,7 @@ public partial class InvoiceDetailsDialog : UserControl
         {
             var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 0) };
             row.Children.Add(new Border { CornerRadius = new CornerRadius(3), Background = (Brush)new BrushConverter().ConvertFrom("#1565C0")!, Padding = new Thickness(5, 1, 5, 1), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = "قطاعي", FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.White } });
-            row.Children.Add(new TextBlock { Text = $" {RetailQty()}", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#546E7A")!, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) });
+            row.Children.Add(new TextBlock { Text = $" {RetailQty()}", FontSize = 11, Foreground = bodyFg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) });
             rightStack.Children.Add(row);
         }
 
@@ -214,7 +220,7 @@ public partial class InvoiceDetailsDialog : UserControl
         {
             var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 0) };
             row.Children.Add(new Border { CornerRadius = new CornerRadius(3), Background = (Brush)new BrushConverter().ConvertFrom("#00897B")!, Padding = new Thickness(5, 1, 5, 1), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = "جملة", FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.White } });
-            row.Children.Add(new TextBlock { Text = $" {WholesaleQty()}", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#546E7A")!, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) });
+            row.Children.Add(new TextBlock { Text = $" {WholesaleQty()}", FontSize = 11, Foreground = bodyFg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) });
             rightStack.Children.Add(row);
         }
 
@@ -225,7 +231,7 @@ public partial class InvoiceDetailsDialog : UserControl
             Text = $"{combined:0.##} ج.م",
             FontSize = 14,
             FontWeight = FontWeights.Bold,
-            Foreground = (Brush)new BrushConverter().ConvertFrom("#1A237E")!,
+            Foreground = primaryFg,
             Margin = new Thickness(0, 3, 0, 0)
         });
 
@@ -235,7 +241,7 @@ public partial class InvoiceDetailsDialog : UserControl
         return new Border
         {
             CornerRadius = new CornerRadius(8),
-            Background = (Brush)new BrushConverter().ConvertFrom("#F8F9FA")!,
+            Background = surfaceBg,
             Margin = new Thickness(16, 0, 16, 8),
             Padding = new Thickness(16, 12, 16, 12),
             Child = grid
@@ -244,6 +250,11 @@ public partial class InvoiceDetailsDialog : UserControl
 
     private Border CreatePaymentCard(Payment p)
     {
+        var surfaceBg  = Application.Current.TryFindResource("SurfaceBackground") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#F8F9FA")!;
+        var headingFg  = Application.Current.TryFindResource("HeadingTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#37474F")!;
+        var mutedFg    = Application.Current.TryFindResource("MutedTextBrush")    as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!;
+        var bodyFg     = Application.Current.TryFindResource("BodyTextBrush")     as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
+
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -273,8 +284,8 @@ public partial class InvoiceDetailsDialog : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(14, 0, 0, 0)
         };
-        infoStack.Children.Add(new TextBlock { Text = $"{p.Amount:0.##} ج.م", FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
-        infoStack.Children.Add(new TextBlock { Text = $"{p.PaymentDate:yyyy/MM/dd HH:mm}  •  {p.PaymentMethod ?? "-"}", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(0, 2, 0, 0) });
+        infoStack.Children.Add(new TextBlock { Text = $"{p.Amount:0.##} ج.م", FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = headingFg });
+        infoStack.Children.Add(new TextBlock { Text = $"{p.PaymentDate:yyyy/MM/dd HH:mm}  •  {p.PaymentMethod ?? "-"}", FontSize = 11, Foreground = mutedFg, Margin = new Thickness(0, 2, 0, 0) });
         grid.Children.Add(infoStack);
         Grid.SetColumn(infoStack, 1);
 
@@ -298,7 +309,7 @@ public partial class InvoiceDetailsDialog : UserControl
             Content = new Path
             {
                 Width = 14, Height = 14,
-                Fill = (Brush)new BrushConverter().ConvertFrom("#546E7A")!,
+                Fill = bodyFg,
                 Stretch = Stretch.Uniform,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -336,7 +347,7 @@ public partial class InvoiceDetailsDialog : UserControl
         return new Border
         {
             CornerRadius = new CornerRadius(8),
-            Background = (Brush)new BrushConverter().ConvertFrom("#F8F9FA")!,
+            Background = surfaceBg,
             Margin = new Thickness(16, 0, 16, 6),
             Padding = new Thickness(16, 10, 16, 10),
             Child = grid
@@ -381,6 +392,10 @@ public partial class InvoiceDetailsDialog : UserControl
 
     private Border CreateDiscountCard()
     {
+        var surfaceBg  = Application.Current.TryFindResource("SurfaceBackground") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#F8F9FA")!;
+        var mutedFg    = Application.Current.TryFindResource("MutedTextBrush")    as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!;
+        var bodyFg     = Application.Current.TryFindResource("BodyTextBrush")     as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
+
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -411,7 +426,7 @@ public partial class InvoiceDetailsDialog : UserControl
             Margin = new Thickness(14, 0, 0, 0)
         };
         infoStack.Children.Add(new TextBlock { Text = $"{_invoice.Discount:0.##} ج.م", FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#E65100")! });
-        infoStack.Children.Add(new TextBlock { Text = "خصم على الفاتورة", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(0, 2, 0, 0) });
+        infoStack.Children.Add(new TextBlock { Text = "خصم على الفاتورة", FontSize = 11, Foreground = mutedFg, Margin = new Thickness(0, 2, 0, 0) });
         grid.Children.Add(infoStack);
         Grid.SetColumn(infoStack, 1);
 
@@ -423,7 +438,7 @@ public partial class InvoiceDetailsDialog : UserControl
             Margin = new Thickness(14, 0, 0, 0)
         };
 
-        var editBtn = new Button
+        var editBtn2 = new Button
         {
             Width = 30, Height = 30,
             Background = Brushes.Transparent,
@@ -433,16 +448,16 @@ public partial class InvoiceDetailsDialog : UserControl
             Content = new Path
             {
                 Width = 14, Height = 14,
-                Fill = (Brush)new BrushConverter().ConvertFrom("#546E7A")!,
+                Fill = bodyFg,
                 Stretch = Stretch.Uniform,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Data = Geometry.Parse("M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z")
             }
         };
-        editBtn.Click += (_, _) => EditDiscount();
+        editBtn2.Click += (_, _) => EditDiscount();
 
-        var deleteBtn = new Button
+        var deleteBtn2 = new Button
         {
             Width = 30, Height = 30,
             Background = Brushes.Transparent,
@@ -460,17 +475,17 @@ public partial class InvoiceDetailsDialog : UserControl
                 Data = Geometry.Parse("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z")
             }
         };
-        deleteBtn.Click += (_, _) => DeleteDiscount();
+        deleteBtn2.Click += (_, _) => DeleteDiscount();
 
-        actionStack.Children.Add(editBtn);
-        actionStack.Children.Add(deleteBtn);
+        actionStack.Children.Add(editBtn2);
+        actionStack.Children.Add(deleteBtn2);
         grid.Children.Add(actionStack);
         Grid.SetColumn(actionStack, 2);
 
         return new Border
         {
             CornerRadius = new CornerRadius(8),
-            Background = (Brush)new BrushConverter().ConvertFrom("#F8F9FA")!,
+            Background = surfaceBg,
             Margin = new Thickness(16, 0, 16, 6),
             Padding = new Thickness(16, 10, 16, 10),
             Child = grid

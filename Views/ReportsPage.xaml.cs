@@ -220,7 +220,7 @@ public partial class ReportsPage : Page
         {
             if (currentVal > 0)
             {
-                badge.Background = (Brush)new BrushConverter().ConvertFromString("#E8F5E9")!;
+                badge.Background = new SolidColorBrush(Color.FromArgb(40, 46, 125, 50));
                 arrow.Fill = (Brush)new BrushConverter().ConvertFromString("#2E7D32")!;
                 arrow.Data = Geometry.Parse("M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z");
                 txt.Text = "جديد";
@@ -238,14 +238,14 @@ public partial class ReportsPage : Page
 
         if (change >= 0)
         {
-            badge.Background = (Brush)new BrushConverter().ConvertFromString("#E8F5E9")!;
+            badge.Background = new SolidColorBrush(Color.FromArgb(40, 46, 125, 50));
             arrow.Fill = (Brush)new BrushConverter().ConvertFromString("#2E7D32")!;
             arrow.Data = Geometry.Parse("M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z");
             txt.Foreground = (Brush)new BrushConverter().ConvertFromString("#2E7D32")!;
         }
         else
         {
-            badge.Background = (Brush)new BrushConverter().ConvertFromString("#FFEBEE")!;
+            badge.Background = new SolidColorBrush(Color.FromArgb(40, 198, 40, 40));
             arrow.Fill = (Brush)new BrushConverter().ConvertFromString("#C62828")!;
             arrow.Data = Geometry.Parse("M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z");
             txt.Foreground = (Brush)new BrushConverter().ConvertFromString("#C62828")!;
@@ -281,15 +281,16 @@ public partial class ReportsPage : Page
         var cardData = top.Select((x, i) =>
         {
             var idx = i < 3 ? i : -1;
+            var surfaceBgHex = ThemeHex("SurfaceBackground", "#F8F9FA");
             return new
             {
                 Rank = (i + 1).ToString(),
                 Name = x.Name,
                 SalesDisplay = x.Sales.ToString("0.##") + " ج.م",
                 BarWidth = (double)(x.Sales / maxSales * 180),
-                BarColor = idx >= 0 ? rankColors[idx] : "#E0E0E0",
-                RankColor = idx >= 0 ? rankColors[idx] : "#BDBDBD",
-                RankBg = idx >= 0 ? rankBg[idx] : "#FAFAFA"
+                BarColor = idx >= 0 ? rankColors[idx] : "#B0BEC5",
+                RankColor = idx >= 0 ? rankColors[idx] : "#B0BEC5",
+                RankBg = idx >= 0 ? rankColors[idx] : surfaceBgHex
             };
         }).ToList();
 
@@ -322,14 +323,15 @@ public partial class ReportsPage : Page
         var cardData = invoiceData.Select((x, i) =>
         {
             var idx = i < 3 ? i : -1;
+            var surfaceBgHex = ThemeHex("SurfaceBackground", "#F8F9FA");
             return new
             {
                 Rank = (i + 1).ToString(),
                 Name = x.Name,
                 SalesDisplay = x.Sales.ToString("0.##") + " ج.م",
                 InvoiceCount = $"فواتير: {x.Count}",
-                RankColor = idx >= 0 ? rankColors[idx] : "#BDBDBD",
-                RankBg = idx >= 0 ? rankBg[idx] : "#FAFAFA"
+                RankColor = idx >= 0 ? rankColors[idx] : "#B0BEC5",
+                RankBg = idx >= 0 ? rankColors[idx] : surfaceBgHex
             };
         }).ToList();
 
@@ -420,7 +422,10 @@ public partial class ReportsPage : Page
         {
             var item = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(legX > 0 ? 16 : 0, 0, 0, 0) };
             item.Children.Add(new Border { Width = 12, Height = 3, CornerRadius = new CornerRadius(2), Background = (Brush)new BrushConverter().ConvertFromString(color)!, VerticalAlignment = VerticalAlignment.Center });
-            item.Children.Add(new TextBlock { Text = text, FontSize = 10, Foreground = (Brush)new BrushConverter().ConvertFromString("#78909C")!, Margin = new Thickness(5, 0, 0, 0) });
+            item.Children.Add(new TextBlock { Text = text, FontSize = 10,
+            Foreground = Application.Current.TryFindResource("BodyTextBrush") as Brush
+                         ?? (Brush)new BrushConverter().ConvertFromString("#78909C")!,
+            Margin = new Thickness(5, 0, 0, 0) });
             Canvas.SetLeft(item, legX);
             Canvas.SetTop(item, 4);
             ChartCanvas.Children.Add(item);
@@ -428,8 +433,10 @@ public partial class ReportsPage : Page
         }
 
         // — Grid lines & axis labels —
-        var gridColor = (Brush)new BrushConverter().ConvertFromString("#E8EAF6")!;
-        var labelColor = (Brush)new BrushConverter().ConvertFromString("#90A4AE")!;
+        var gridBrush  = Application.Current.TryFindResource("BorderBrushLight") as Brush
+                         ?? (Brush)new BrushConverter().ConvertFromString("#E8EAF6")!;
+        var labelColor = Application.Current.TryFindResource("MutedTextBrush") as Brush
+                         ?? (Brush)new BrushConverter().ConvertFromString("#90A4AE")!;
 
         for (int i = 0; i <= 4; i++)
         {
@@ -440,7 +447,7 @@ public partial class ReportsPage : Page
             var line = new Line
             {
                 X1 = 0, Y1 = y, X2 = chartW, Y2 = y,
-                Stroke = gridColor,
+                Stroke = gridBrush,
                 StrokeThickness = 0.5,
                 StrokeDashArray = new DoubleCollection(new[] { 3.0, 3.0 })
             };
@@ -461,7 +468,8 @@ public partial class ReportsPage : Page
         var baseLine = new Line
         {
             X1 = 0, Y1 = topMargin + plotH, X2 = chartW, Y2 = topMargin + plotH,
-            Stroke = (Brush)new BrushConverter().ConvertFromString("#B0BEC5")!,
+            Stroke = Application.Current.TryFindResource("BorderBrushLight") as Brush
+                     ?? (Brush)new BrushConverter().ConvertFromString("#B0BEC5")!,
             StrokeThickness = 1
         };
         ChartCanvas.Children.Add(baseLine);
@@ -554,8 +562,10 @@ public partial class ReportsPage : Page
                 Text = date.ToString("dd/MM"),
                 FontSize = 8,
                 FontWeight = isWeekend ? FontWeights.Bold : FontWeights.Normal,
-                Foreground = isWeekend ? (Brush)new BrushConverter().ConvertFromString("#EF5350")!
-                            : (Brush)new BrushConverter().ConvertFromString("#90A4AE")!
+                Foreground = isWeekend
+                    ? (Brush)new BrushConverter().ConvertFromString("#EF5350")!
+                    : Application.Current.TryFindResource("MutedTextBrush") as Brush
+                      ?? (Brush)new BrushConverter().ConvertFromString("#90A4AE")!
             };
             Canvas.SetLeft(dateLbl, x - 14);
             Canvas.SetTop(dateLbl, topMargin + plotH + 6);
@@ -611,6 +621,17 @@ public partial class ReportsPage : Page
         {
             MessageBox.Show($"خطأ في التصدير: {ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    /// <summary>Gets the hex color string of a DynamicResource brush, falling back to a default.</summary>
+    private static string ThemeHex(string resourceKey, string fallback)
+    {
+        if (Application.Current.TryFindResource(resourceKey) is SolidColorBrush b)
+        {
+            var c = b.Color;
+            return $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+        }
+        return fallback;
     }
 
     private int GetBoxPieces(int productId)

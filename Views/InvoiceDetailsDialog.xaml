@@ -21,7 +21,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Width="56" Height="56" CornerRadius="16" Background="#E8F5E9">
+                    <Border Grid.Column="0" Width="56" Height="56" CornerRadius="16" Background="{DynamicResource SurfaceBackground}">
                         <Path FlowDirection="LeftToRight" Width="28" Height="28" Fill="#2E7D32" Stretch="Uniform"
                               HorizontalAlignment="Center" VerticalAlignment="Center"
                               Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
@@ -30,14 +30,14 @@
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock x:Name="TxtTitle" Text="فاتورة #0" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
-                            <Border x:Name="StatusBadge" CornerRadius="6" Padding="14,5" Margin="14,0,0,0" VerticalAlignment="Center" Background="#E8F5E9">
+                            <Border x:Name="StatusBadge" CornerRadius="6" Padding="14,5" Margin="14,0,0,0" VerticalAlignment="Center" Background="{DynamicResource SurfaceBackground}">
                                 <TextBlock x:Name="TxtStatus" Text="مدفوعة" FontSize="11" FontWeight="Bold" Foreground="#2E7D32" />
                             </Border>
                             <Button x:Name="BtnAddOrder" Click="BtnAddOrder_Click"
                                     Background="Transparent" BorderThickness="0" Cursor="Hand"
                                     Padding="8,4" Margin="8,0,0,0" VerticalAlignment="Center"
                                     ToolTip="إضافة طلب للفاتورة">
-                                <Border CornerRadius="6" Padding="8,4" Background="#E8F5E9">
+                                <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource SurfaceBackground}">
                                     <StackPanel Orientation="Horizontal">
                                         <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#2E7D32" Stretch="Uniform" VerticalAlignment="Center"
                                               Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
@@ -49,7 +49,7 @@
                                     Background="Transparent" BorderThickness="0" Cursor="Hand"
                                     Padding="8,4" Margin="8,0,0,0" VerticalAlignment="Center"
                                     ToolTip="عرض كل طلبات الفاتورة">
-                                <Border CornerRadius="6" Padding="8,4" Background="#E8EAF6">
+                                <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource SurfaceBackground}">
                                     <StackPanel Orientation="Horizontal">
                                         <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#1A237E" Stretch="Uniform" VerticalAlignment="Center"
                                               Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
@@ -61,21 +61,21 @@
                                     Background="Transparent" BorderThickness="0" Cursor="Hand"
                                     Padding="8,4" Margin="8,0,0,0" VerticalAlignment="Center"
                                     ToolTip="نقل الفاتورة إلى عميل آخر أو نقدي">
-                                <Border CornerRadius="6" Padding="8,4" Background="#E3F2FD">
+                                <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource SurfaceBackground}">
                                     <StackPanel Orientation="Horizontal">
                                         <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#1976D2" Stretch="Uniform" VerticalAlignment="Center"
                                               Data="M15 20a1 1 0 0 0 1-1V5l4 4a1 1 0 0 0 1.42-1.42l-6-6a1 1 0 0 0-1.42 0l-6 6A1 1 0 0 0 9.58 9.58L14 5v14a1 1 0 0 0 1 1z" />
-                                        <TextBlock Text="نقل" FontSize="11" FontWeight="Bold" Foreground="#1976D2" Margin="4,0,0,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="نقل" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="4,0,0,0" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Border>
                             </Button>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#546E7A" Stretch="Uniform" VerticalAlignment="Center"
+                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="{DynamicResource BodyTextBrush}" Stretch="Uniform" VerticalAlignment="Center"
                                   Data="M12 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-10c4.2 0 8 3.22 8 8.2 0 3.32-2.67 7.25-8 11.8-5.33-4.55-8-8.48-8-11.8C4 5.22 7.8 2 12 2z" />
                             <TextBlock x:Name="TxtCustomerName" Text="" FontSize="13" Foreground="{DynamicResource BodyTextBrush}" Margin="6,0,0,0" />
-                            <TextBlock Text="•" FontSize="16" Foreground="#CFD8DC" Margin="12,0,12,0" />
-                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#90A4AE" Stretch="Uniform" VerticalAlignment="Center"
+                            <TextBlock Text="•" FontSize="16" Foreground="{DynamicResource DividerBrush}" Margin="12,0,12,0" />
+                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="{DynamicResource MutedTextBrush}" Stretch="Uniform" VerticalAlignment="Center"
                                   Data="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
                             <TextBlock x:Name="TxtInvoiceDate" Text="" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" Margin="6,0,0,0" />
                         </StackPanel>
@@ -120,7 +120,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" CornerRadius="14" Background="#EEEEFF" Padding="20,16" Margin="0,0,0,0">
+                    <Border Grid.Column="0" CornerRadius="14" Background="{DynamicResource SurfaceBackground}" Padding="20,16" Margin="0,0,0,0">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="32" Height="32" CornerRadius="8" Background="#5C6BC0" Opacity="0.15">
@@ -128,13 +128,13 @@
                                           HorizontalAlignment="Center" VerticalAlignment="Center"
                                           Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                                 </Border>
-                                <TextBlock Text="الإجمالي" FontSize="11" Foreground="#5C6BC0" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="الإجمالي" FontSize="11" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
-                            <TextBlock x:Name="TxtTotal" Text="0 ج.م" FontSize="22" FontWeight="Bold" Foreground="#283593" Margin="0,8,0,0" />
+                            <TextBlock x:Name="TxtTotal" Text="0 ج.م" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,8,0,0" />
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="2" CornerRadius="14" Background="#FFF8E1" Padding="20,16">
+                    <Border Grid.Column="2" CornerRadius="14" Background="{DynamicResource SurfaceBackground}" Padding="20,16">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="32" Height="32" CornerRadius="8" Background="#F9A825" Opacity="0.15">
@@ -148,7 +148,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="4" CornerRadius="14" Background="#E8F5E9" Padding="20,16">
+                    <Border Grid.Column="4" CornerRadius="14" Background="{DynamicResource SurfaceBackground}" Padding="20,16">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="32" Height="32" CornerRadius="8" Background="#43A047" Opacity="0.15">
@@ -162,7 +162,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="6" CornerRadius="14" Background="#FFEBEE" Padding="20,16">
+                    <Border Grid.Column="6" CornerRadius="14" Background="{DynamicResource SurfaceBackground}" Padding="20,16">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="32" Height="32" CornerRadius="8" Background="#E53935" Opacity="0.15">
@@ -201,7 +201,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6" Background="#E8EAF6">
+                            <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6" Background="{DynamicResource SurfaceBackground}">
                                 <Path FlowDirection="LeftToRight" Width="12" Height="12" Fill="#3F51B5" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
@@ -228,7 +228,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6" Background="#FFF8E1">
+                            <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6" Background="{DynamicResource SurfaceBackground}">
                                 <Path FlowDirection="LeftToRight" Width="12" Height="12" Fill="#F57F17" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
@@ -255,7 +255,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6" Background="#E8F5E9">
+                            <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6" Background="{DynamicResource SurfaceBackground}">
                                 <Path FlowDirection="LeftToRight" Width="12" Height="12" Fill="#2E7D32" Stretch="Uniform"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       Data="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />

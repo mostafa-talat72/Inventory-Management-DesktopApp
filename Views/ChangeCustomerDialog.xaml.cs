@@ -52,8 +52,7 @@ public partial class ChangeCustomerDialog : UserControl
         CustomerCard.Background = (Brush)new BrushConverter().ConvertFrom("#E3F2FD")!;
         CustomerCard.BorderBrush = (Brush)new BrushConverter().ConvertFrom("#1976D2")!;
         CustomerArea.Visibility = Visibility.Visible;
-        TxtSelectHint.Visibility = Visibility.Visible;
-    }
+        TxtSelectHint.Visibility = Visibility.Visible;    }
 
     private void RenderCustomers(List<Customer> customers)
     {
@@ -70,6 +69,9 @@ public partial class ChangeCustomerDialog : UserControl
 
     private Border CreateCustomerCard(Customer customer)
     {
+        var headingFg  = Application.Current.TryFindResource("HeadingTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#37474F")!;
+        var mutedFg    = Application.Current.TryFindResource("MutedTextBrush")    as Brush ?? (Brush)new BrushConverter().ConvertFrom("#90A4AE")!;
+
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -101,8 +103,8 @@ public partial class ChangeCustomerDialog : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(14, 0, 0, 0)
         };
-        infoStack.Children.Add(new TextBlock { Text = customer.Name, FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = (Brush)new BrushConverter().ConvertFrom("#37474F")! });
-        infoStack.Children.Add(new TextBlock { Text = $"{invoiceCount} فاتورة", FontSize = 11, Foreground = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!, Margin = new Thickness(0, 2, 0, 0) });
+        infoStack.Children.Add(new TextBlock { Text = customer.Name, FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = headingFg });
+        infoStack.Children.Add(new TextBlock { Text = $"{invoiceCount} فاتورة", FontSize = 11, Foreground = mutedFg, Margin = new Thickness(0, 2, 0, 0) });
         grid.Children.Add(infoStack);
         Grid.SetColumn(infoStack, 1);
 
@@ -157,7 +159,7 @@ public partial class ChangeCustomerDialog : UserControl
         CashCard.Background = (Brush)new BrushConverter().ConvertFrom("#FFF8E1")!;
         CashCard.BorderBrush = (Brush)new BrushConverter().ConvertFrom("#FFB300")!;
         CustomerCard.Background = Brushes.Transparent;
-        CustomerCard.BorderBrush = (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+        CustomerCard.BorderBrush = Application.Current.TryFindResource("BorderBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
 
         CashConfirmArea.Visibility = Visibility.Visible;
         CustomerArea.Visibility = Visibility.Collapsed;
@@ -172,7 +174,7 @@ public partial class ChangeCustomerDialog : UserControl
         CustomerCard.Background = (Brush)new BrushConverter().ConvertFrom("#E3F2FD")!;
         CustomerCard.BorderBrush = (Brush)new BrushConverter().ConvertFrom("#1976D2")!;
         CashCard.Background = Brushes.Transparent;
-        CashCard.BorderBrush = (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
+        CashCard.BorderBrush = Application.Current.TryFindResource("BorderBrush") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E0E0E0")!;
 
         CashConfirmArea.Visibility = Visibility.Collapsed;
         CustomerArea.Visibility = Visibility.Visible;

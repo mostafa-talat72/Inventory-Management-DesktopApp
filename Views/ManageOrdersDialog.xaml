@@ -63,10 +63,10 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="TxtInfo" Grid.Column="0" Text="" FontSize="13" Foreground="{DynamicResource BodyTextBrush}" VerticalAlignment="Center" />
-                    <Border Grid.Column="1" CornerRadius="8" Background="#E0F2F1" Padding="14,8" VerticalAlignment="Center">
+                    <Border Grid.Column="1" CornerRadius="8" Background="{DynamicResource SurfaceBackground}" Padding="14,8" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="إجمالي الفاتورة: " FontSize="12" Foreground="#00695C" VerticalAlignment="Center" />
-                            <TextBlock x:Name="TxtTotal" Text="0 ج.م" FontSize="14" FontWeight="Bold" Foreground="#004D40" VerticalAlignment="Center" />
+                            <TextBlock Text="إجمالي الفاتورة: " FontSize="12" Foreground="{DynamicResource BodyTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock x:Name="TxtTotal" Text="0 ج.م" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource HeadingTextBrush}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Border>
                 </Grid>
