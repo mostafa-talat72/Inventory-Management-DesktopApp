@@ -20,6 +20,23 @@ public partial class ReportsPage : Page
     private decimal _rTotalSales, _rTotalCost, _rTotalProfit;
     private int _rInvoiceCount;
 
+    // Raw period comparison values
+    private decimal _rPrevSales, _rPrevCost, _rPrevProfit;
+    private int _rPrevCount;
+
+    // Raw trend values
+    private decimal _rTrendTotal, _rTrendAvg, _rTrendMax, _rTrendMin;
+
+    // Raw footer values
+    private decimal _rFooterRetailRev, _rFooterWholesaleRev, _rFooterRetailCost, _rFooterWholesaleCost, _rFooterProfit;
+
+    // Raw report grid data (for re-binding with masked values)
+    private List<dynamic>? _rawGridData;
+
+    // Raw ranked lists
+    private List<(string name, decimal sales, double barWidth, string barColor, string rankColor, string rankBg)> _rawTopProducts = new();
+    private List<(string name, decimal sales, int count, string rankColor, string rankBg)> _rawTopCustomers = new();
+
     public ReportsPage()
     {
         InitializeComponent();
@@ -73,7 +90,7 @@ public partial class ReportsPage : Page
         _rTotalCost    = totalCost;
         _rTotalProfit  = totalProfit;
         _rInvoiceCount = invoiceCount;
-        ApplySummaryMask();
+        // ApplySummaryMask called at the very end after all data is loaded
 
         UpdateProfitMargin(totalSales, totalProfit);
         LoadPeriodComparison(from, to, totalSales, totalProfit, invoiceCount);
@@ -127,7 +144,8 @@ public partial class ReportsPage : Page
             };
         }).ToList();
 
-        _lastReportData = reportData.Cast<dynamic>().ToList();
+        _rawGridData   = reportData.Cast<dynamic>().ToList();
+        _lastReportData = _rawGridData;
         ReportGrid.ItemsSource = reportData;
         EmptyState.Visibility = reportData.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
         ReportFooter.Visibility = reportData.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -141,6 +159,12 @@ public partial class ReportsPage : Page
         var footerWholesaleRev = reportData.Sum(r => (decimal)r._wholesaleRev);
         var footerRetailCost = reportData.Sum(r => (decimal)r._retailCost);
         var footerWholesaleCost = reportData.Sum(r => (decimal)r._wholesaleCost);
+        _rFooterRetailRev      = footerRetailRev;
+        _rFooterWholesaleRev   = footerWholesaleRev;
+        _rFooterRetailCost     = footerRetailCost;
+        _rFooterWholesaleCost  = footerWholesaleCost;
+        _rFooterProfit         = reportData.Sum(r => (decimal)r._profit);
+
         TxtFooterCarton.Text = footerCarton > 0 ? "كرتونة: " + footerCarton.ToString("0") : "";
         TxtFooterCarton.Visibility = footerCarton > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtFooterBox.Text = footerBox > 0 ? "علبة: " + footerBox.ToString("0") : "";
@@ -157,23 +181,97 @@ public partial class ReportsPage : Page
         TxtFooterWholesaleCost.Visibility = footerWholesaleCost > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtFooterProfit.Text = reportData.Sum(r => (decimal)r._profit).ToString("0.##") + " ج.م";
         TxtFooterMargin.Text = totalSales > 0 ? (totalProfit / totalSales * 100).ToString("0.#") + "%" : "0%";
+
+        // Apply mask LAST — after all raw data is populated
+        ApplySummaryMask();
     }
 
     private void ApplySummaryMask()
     {
         const string mask = "••••••";
-        bool hidden = AmountsVisibilityService.IsHidden;
+        bool h = AmountsVisibilityService.IsHidden;
 
-        TxtTotalSales.Text  = hidden ? mask : $"{_rTotalSales:0.##} ج.م";
-        TxtTotalCost.Text   = hidden ? mask : $"{_rTotalCost:0.##} ج.م";
-        TxtTotalProfit.Text = hidden ? mask : $"{_rTotalProfit:0.##} ج.م";
+        // ── 1. Summary cards ──
+        TxtTotalSales.Text  = h ? mask : $"{_rTotalSales:0.##} ج.م";
+        TxtTotalCost.Text   = h ? mask : $"{_rTotalCost:0.##} ج.م";
+        TxtTotalProfit.Text = h ? mask : $"{_rTotalProfit:0.##} ج.م";
 
-        // Mask footer profit total
-        if (TxtFooterProfit != null && ReportFooter.Visibility == Visibility.Visible)
+        // ── 2. Period comparison ──
+        if (PeriodComparisonCard.Visibility == Visibility.Visible)
         {
-            if (hidden)
-                TxtFooterProfit.Text = mask;
-            // When unhiding, ShowReport_Click will re-run and set real values
+            TxtPrevSales.Text  = h ? mask : $"{_rPrevSales:0.##} ج.م";
+            TxtPrevCost.Text   = h ? mask : $"{_rPrevCost:0.##} ج.م";
+            TxtPrevProfit.Text = h ? mask : $"{_rPrevProfit:0.##} ج.م";
+            // TxtPrevCount stays visible always (it's a count, not money)
+        }
+
+        // ── 3. Trend stats ──
+        if (DailyTrendCard.Visibility == Visibility.Visible)
+        {
+            TxtTrendTotal.Text = h ? mask : $"{_rTrendTotal:0.##} ج.م";
+            TxtTrendAvg.Text   = h ? mask : $"{_rTrendAvg:0.##} ج.م";
+            TxtTrendMax.Text   = h ? mask : $"{_rTrendMax:0.##} ج.م";
+            TxtTrendMin.Text   = h ? mask : $"{_rTrendMin:0.##} ج.م";
+        }
+
+        // ── 4. Top products & customers — mask SalesDisplay ──
+        if (TopProductsList.ItemsSource != null)
+        {
+            var products = _rawTopProducts
+                .Select((x, i) => new
+                {
+                    Rank         = (i + 1).ToString(),
+                    Name         = x.name,
+                    SalesDisplay = h ? mask : x.sales.ToString("0.##") + " ج.م",
+                    BarWidth     = x.barWidth,
+                    BarColor     = x.barColor,
+                    RankColor    = x.rankColor,
+                    RankBg       = x.rankBg
+                }).ToList<object>();
+            TopProductsList.ItemsSource = products;
+        }
+
+        if (TopCustomersList.ItemsSource != null)
+        {
+            var customers = _rawTopCustomers
+                .Select((x, i) => new
+                {
+                    Rank         = (i + 1).ToString(),
+                    Name         = x.name,
+                    SalesDisplay = h ? mask : x.sales.ToString("0.##") + " ج.م",
+                    InvoiceCount = $"فواتير: {x.count}",
+                    RankColor    = x.rankColor,
+                    RankBg       = x.rankBg
+                }).ToList<object>();
+            TopCustomersList.ItemsSource = customers;
+        }
+
+        // ── 5. Detail grid & footer ──
+        if (_rawGridData != null && ReportGrid.ItemsSource != null)
+        {
+            var masked = _rawGridData.Select(r => new
+            {
+                ProductName          = (string)r.ProductName,
+                CartonDisplay        = (string)r.CartonDisplay,
+                BoxDisplay           = (string)r.BoxDisplay,
+                PieceDisplay         = (string)r.PieceDisplay,
+                RetailRevDisplay     = h ? mask : (string)r.RetailRevDisplay,
+                WholesaleRevDisplay  = h ? mask : (string)r.WholesaleRevDisplay,
+                RetailCostDisplay    = h ? mask : (string)r.RetailCostDisplay,
+                WholesaleCostDisplay = h ? mask : (string)r.WholesaleCostDisplay,
+                ProfitDisplay        = h ? mask : (string)r.ProfitDisplay,
+                ProfitPercentDisplay = (string)r.ProfitPercentDisplay
+            }).ToList();
+            ReportGrid.ItemsSource = masked;
+        }
+
+        if (ReportFooter.Visibility == Visibility.Visible)
+        {
+            TxtFooterRetailRev.Text      = h ? mask : (_rFooterRetailRev > 0    ? "قطاعي: " + _rFooterRetailRev.ToString("0.##")    + " ج.م" : "");
+            TxtFooterWholesaleRev.Text   = h ? mask : (_rFooterWholesaleRev > 0 ? "جملة: "  + _rFooterWholesaleRev.ToString("0.##") + " ج.م" : "");
+            TxtFooterRetailCost.Text     = h ? mask : (_rFooterRetailCost > 0   ? "قطاعي: " + _rFooterRetailCost.ToString("0.##")   + " ج.م" : "");
+            TxtFooterWholesaleCost.Text  = h ? mask : (_rFooterWholesaleCost > 0? "جملة: "  + _rFooterWholesaleCost.ToString("0.##")+ " ج.م" : "");
+            TxtFooterProfit.Text         = h ? mask : _rFooterProfit.ToString("0.##") + " ج.م";
         }
     }
 
@@ -238,10 +336,15 @@ public partial class ReportsPage : Page
 
         TxtComparisonPeriod.Text = $"مقارنة {prevFrom:dd/MM/yyyy} -> {from.AddDays(-1):dd/MM/yyyy}";
 
-        TxtPrevSales.Text = prevSales.ToString("0.##") + " ج.م";
-        TxtPrevCost.Text = prevCost.ToString("0.##") + " ج.م";
+        _rPrevSales  = prevSales;
+        _rPrevCost   = prevCost;
+        _rPrevProfit = prevProfit;
+        _rPrevCount  = prevCount;
+
+        TxtPrevSales.Text  = prevSales.ToString("0.##") + " ج.م";
+        TxtPrevCost.Text   = prevCost.ToString("0.##") + " ج.م";
         TxtPrevProfit.Text = prevProfit.ToString("0.##") + " ج.م";
-        TxtPrevCount.Text = prevCount.ToString();
+        TxtPrevCount.Text  = prevCount.ToString();
 
         SetChangeIndicator(SalesChangeBadge, SalesArrow, TxtSalesChange, prevSales, currentSales);
         SetChangeIndicator(ProfitChangeBadge, ProfitArrow, TxtProfitChange, prevProfit, currentProfit);
@@ -322,12 +425,26 @@ public partial class ReportsPage : Page
             {
                 Rank = (i + 1).ToString(),
                 Name = x.Name,
-                SalesDisplay = x.Sales.ToString("0.##") + " ج.م",
+                SalesDisplay = AmountsVisibilityService.IsHidden ? "••••••" : x.Sales.ToString("0.##") + " ج.م",
                 BarWidth = (double)(x.Sales / maxSales * 180),
                 BarColor = idx >= 0 ? rankColors[idx] : "#B0BEC5",
                 RankColor = idx >= 0 ? rankColors[idx] : "#B0BEC5",
                 RankBg = idx >= 0 ? rankColors[idx] : surfaceBgHex
             };
+        }).ToList();
+
+        _rawTopProducts = top.Select((x, i) =>
+        {
+            var idx = i < 3 ? i : -1;
+            var surfaceBgHex = ThemeHex("SurfaceBackground", "#F8F9FA");
+            return (
+                name: x.Name,
+                sales: x.Sales,
+                barWidth: (double)(x.Sales / maxSales * 180),
+                barColor: idx >= 0 ? rankColors[idx] : "#B0BEC5",
+                rankColor: idx >= 0 ? rankColors[idx] : "#B0BEC5",
+                rankBg: idx >= 0 ? rankColors[idx] : surfaceBgHex
+            );
         }).ToList();
 
         TopProductsList.ItemsSource = cardData;
@@ -364,11 +481,24 @@ public partial class ReportsPage : Page
             {
                 Rank = (i + 1).ToString(),
                 Name = x.Name,
-                SalesDisplay = x.Sales.ToString("0.##") + " ج.م",
+                SalesDisplay = AmountsVisibilityService.IsHidden ? "••••••" : x.Sales.ToString("0.##") + " ج.م",
                 InvoiceCount = $"فواتير: {x.Count}",
                 RankColor = idx >= 0 ? rankColors[idx] : "#B0BEC5",
                 RankBg = idx >= 0 ? rankColors[idx] : surfaceBgHex
             };
+        }).ToList();
+
+        _rawTopCustomers = invoiceData.Select((x, i) =>
+        {
+            var idx = i < 3 ? i : -1;
+            var surfaceBgHex = ThemeHex("SurfaceBackground", "#F8F9FA");
+            return (
+                name: x.Name,
+                sales: (decimal)x.Sales,
+                count: x.Count,
+                rankColor: idx >= 0 ? rankColors[idx] : "#B0BEC5",
+                rankBg: idx >= 0 ? rankColors[idx] : surfaceBgHex
+            );
         }).ToList();
 
         TopCustomersList.ItemsSource = cardData;
@@ -410,10 +540,14 @@ public partial class ReportsPage : Page
         var minDay = dailySales.MinBy(x => x.Sales)!;
 
         TxtTrendSubtitle.Text = $"آخر {dailySales.Count} يوم • من {dailySales.First().Date:dd/MM} إلى {dailySales.Last().Date:dd/MM}";
+        _rTrendTotal = totalSales;
+        _rTrendAvg   = avgDaily;
+        _rTrendMax   = maxDay.Sales;
+        _rTrendMin   = minDay.Sales;
         TxtTrendTotal.Text = totalSales.ToString("0.##") + " ج.م";
-        TxtTrendAvg.Text = avgDaily.ToString("0.##") + " ج.م";
-        TxtTrendMax.Text = maxDay.Sales.ToString("0.##") + " ج.م";
-        TxtTrendMin.Text = minDay.Sales.ToString("0.##") + " ج.م";
+        TxtTrendAvg.Text   = avgDaily.ToString("0.##") + " ج.م";
+        TxtTrendMax.Text   = maxDay.Sales.ToString("0.##") + " ج.م";
+        TxtTrendMin.Text   = minDay.Sales.ToString("0.##") + " ج.م";
 
         // — Calculate data series —
         var revData = dailySales.Select(d => (double)d.Sales).ToArray();
