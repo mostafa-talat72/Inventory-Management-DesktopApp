@@ -53,19 +53,23 @@ public partial class ProductsPage : Page
 
             var stockData = _db.InventoryBatches
                 .GroupBy(b => b.ProductId)
-                .Select(g => new { ProductId = g.Key, Total = g.Sum(b => b.RemainingQuantity) })
-                .ToDictionary(x => x.ProductId, x => x.Total);
+                .Select(g => new { ProductId = g.Key, Total = g.Sum(b => b.RemainingQuantity), Value = g.Sum(b => (decimal)b.RemainingQuantity * b.CostPricePerPiece) })
+                .ToDictionary(x => x.ProductId, x => (Total: x.Total, Value: x.Value));
 
             var inv = new InventoryService(_db);
             var totalStockPieces = 0;
             var lowStockCount = 0;
+            var totalStockValue = 0m;
 
             var cards = new List<object>();
             foreach (var p in allProducts)
             {
                 var units = p.Units.OrderBy(u => u.UnitType).ToList();
-                stockData.TryGetValue(p.Id, out var stockPieces);
+                var data = stockData.GetValueOrDefault(p.Id);
+                var stockPieces = data.Total;
+                var stockValue  = data.Value;
                 totalStockPieces += stockPieces;
+                totalStockValue  += stockValue;
                 var stockDisplay = inv.GetStockDisplay(p);
 
                 var isLowStock = stockPieces <= 0;
@@ -82,6 +86,7 @@ public partial class ProductsPage : Page
                     StockDisplay     = stockDisplay,
                     StockBgColor     = stockBg,
                     StockFgColor     = stockFg,
+                    StockValueDisplay = $"{stockValue:0.##} ج.م",
                     RetailDisplay    = units.Count > 0 ? units.Min(u => u.RetailPrice).ToString("0.##")    : "-",
                     WholesaleDisplay = units.Count > 0 ? units.Min(u => u.WholesalePrice).ToString("0.##") : "-",
                     Product          = p,
@@ -95,6 +100,7 @@ public partial class ProductsPage : Page
             TxtTotalProducts.Text = allProducts.Count.ToString();
             TxtTotalStock.Text    = totalStockPieces.ToString("0");
             TxtLowStock.Text      = lowStockCount.ToString();
+            TxtStockValue.Text    = $"{totalStockValue:0.##} ج.م";
         }
         finally { _isLoading = false; }
     }
@@ -180,10 +186,16 @@ public partial class ProductsPage : Page
             .OrderBy(p => p.Name)
             .ToList();
 
+        var batchValues = _db.InventoryBatches
+            .GroupBy(b => b.ProductId)
+            .Select(g => new { ProductId = g.Key, Value = g.Sum(b => (decimal)b.RemainingQuantity * b.CostPricePerPiece) })
+            .ToDictionary(x => x.ProductId, x => x.Value);
+
         var printData = allProducts.Select(p => (
             product: p,
             stockDisplay: inv.GetStockDisplay(p),
-            totalPieces:  inv.GetAvailableStock(p)
+            totalPieces:  inv.GetAvailableStock(p),
+            stockValue:   batchValues.GetValueOrDefault(p.Id, 0)
         )).ToList();
 
         var printer = new ReceiptPrinter(_db);

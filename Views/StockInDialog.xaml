@@ -169,18 +169,19 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="#000" />
             </Border.Effect>
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                    <Border Width="28" Height="28" CornerRadius="14" Background="#00897B">
-                        <TextBlock Text="2" FontSize="12" FontWeight="Bold" Foreground="White"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <TextBlock Text="الكميات والتكلفة" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" VerticalAlignment="Center" Margin="10,0,0,0" />
-                    <TextBlock x:Name="TxtSelectedCount" Text="(لا توجد منتجات محددة)" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
-                </StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                        <Border Width="28" Height="28" CornerRadius="14" Background="#00897B">
+                            <TextBlock Text="2" FontSize="12" FontWeight="Bold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="الكميات والتكلفة" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource HeadingTextBrush}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                        <TextBlock x:Name="TxtSelectedCount" Text="(لا توجد منتجات محددة)" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                    </StackPanel>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="320">
-                    <ItemsControl x:Name="SelectedItemsList" Margin="0,0,0,8">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="320">
+                        <ItemsControl x:Name="SelectedItemsList" Margin="0,0,0,8">
                         <ItemsControl.Resources>
                             <BooleanToVisibilityConverter x:Key="B2V" />
                         </ItemsControl.Resources>
@@ -321,7 +322,8 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-            </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
 
         <!-- Actions -->

@@ -223,15 +223,22 @@ public class ReceiptPrinter : IDisposable
     //  INVENTORY REPORT PRINTING
     // ═══════════════════════════════════════════
 
-    public string BuildInventoryHtml(List<(Product product, string stockDisplay, int totalPieces)> products, AppConfig config)
+    public string BuildInventoryHtml(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products, AppConfig config)
     {
         var locationName = config.PrintLocationName ? config.LocationName : "";
         var now = DateTime.Now;
 
         var rows = new StringBuilder();
         int rowNum = 1;
-        foreach (var (product, stockDisplay, totalPieces) in products.OrderBy(p => p.product.Name))
+        decimal totalValue = 0;
+        foreach (var item in products.OrderBy(p => p.product.Name))
         {
+            var product = item.product;
+            var stockDisplay = item.stockDisplay;
+            var totalPieces = item.totalPieces;
+            var stockValue = item.stockValue;
+            totalValue += stockValue;
+
             var units = product.Units.OrderBy(u => u.UnitType).ToList();
 
             // Build per-unit price lines
@@ -264,6 +271,7 @@ public class ReceiptPrinter : IDisposable
           <td class=""stock"">
             <span class=""{(totalPieces <= 0 ? "zero" : "has-stock")}"">{System.Net.WebUtility.HtmlEncode(stockDisplay)}</span>
           </td>
+          <td class=""value"">{ToArabicNumerals(stockValue.ToString("0.##"))}</td>
           <td class=""price"">{System.Net.WebUtility.HtmlEncode(retailText).Replace("&#xA;", "<br/>").Replace("\n", "<br/>")}</td>
           <td class=""price"">{System.Net.WebUtility.HtmlEncode(wholesaleText).Replace("&#xA;", "<br/>").Replace("\n", "<br/>")}</td>
         </tr>");
@@ -295,15 +303,17 @@ public class ReceiptPrinter : IDisposable
     .summary-box.total {{ background: #000; color: #fff; }}
     .summary-box.instock {{ background: #e8f5e9; }}
     .summary-box.outstock {{ background: #ffebee; color: #c62828; }}
+    .summary-box.value {{ background: #f3e5f5; color: #7b1fa2; }}
     .divider {{ border-top: 2px dashed #000; margin: 8px 0; }}
-    .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 0.88em; border: 2px solid #000; table-layout: fixed; }}
+    .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 0.85em; border: 2px solid #000; table-layout: fixed; }}
     .items-table thead {{ background: #e0e0e0; font-weight: 900; }}
     .items-table th {{ padding: 5px 4px; text-align: center; border: 1.5px solid #000; font-size: 0.9em; }}
     .items-table td {{ padding: 4px 4px; border: 1px solid #000; font-weight: 600; vertical-align: middle; }}
-    .num {{ width: 5%; text-align: center; font-weight: 700; }}
-    .name {{ width: 38%; text-align: center; padding: 0 4px; }}
-    .stock {{ width: 22%; text-align: center; font-weight: 700; }}
-    .price {{ width: 17%; text-align: center; font-size: 0.82em; white-space: pre-line; }}
+    .num {{ width: 4%; text-align: center; font-weight: 700; }}
+    .name {{ width: 30%; text-align: center; padding: 0 4px; }}
+    .stock {{ width: 16%; text-align: center; font-weight: 700; }}
+    .value {{ width: 12%; text-align: center; font-weight: 800; color: #7b1fa2; }}
+    .price {{ width: 19%; text-align: center; font-size: 0.82em; white-space: pre-line; }}
     .prod-name {{ font-weight: 800; font-size: 1em; text-align: center; }}
     .unit-path {{ font-size: 0.78em; color: #666; font-weight: 500; margin-top: 2px; }}
     .has-stock {{ color: #1b5e20; font-weight: 800; }}
@@ -330,6 +340,7 @@ public class ReceiptPrinter : IDisposable
     <div class=""summary-box total"">إجمالي المنتجات: {totalProducts}</div>
     <div class=""summary-box instock"">متوفر: {inStock}</div>
     <div class=""summary-box outstock"">نفذ: {outOfStock}</div>
+    <div class=""summary-box value"">قيمة المخزون: {ToArabicNumerals(totalValue.ToString("0.##"))} ج.م</div>
   </div>
 
   <table class=""items-table"">
@@ -338,6 +349,7 @@ public class ReceiptPrinter : IDisposable
         <th class=""num"">#</th>
         <th class=""name"">المنتج</th>
         <th class=""stock"">المخزون</th>
+        <th class=""value"">القيمة</th>
         <th class=""price"">قطاعي</th>
         <th class=""price"">جملة</th>
       </tr>
@@ -354,7 +366,7 @@ public class ReceiptPrinter : IDisposable
 </html>";
     }
 
-    public void PrintInventory(List<(Product product, string stockDisplay, int totalPieces)> products)
+    public void PrintInventory(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products)
     {
         var config = AppConfig.Load();
         var html = BuildInventoryHtml(products, config);
