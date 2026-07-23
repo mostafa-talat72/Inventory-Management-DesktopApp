@@ -310,9 +310,7 @@
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.3" Color="#000000" />
                     </Border.Effect>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" MaxHeight="680">
-                        <ContentControl x:Name="OverlayContent" HorizontalContentAlignment="Center" />
-                    </ScrollViewer>
+                    <ContentControl x:Name="OverlayContent" HorizontalContentAlignment="Center" MaxHeight="680" />
                 </Border>
             </Grid>
         </Border>
