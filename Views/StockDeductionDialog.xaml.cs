@@ -42,6 +42,14 @@ public partial class StockDeductionDialog : UserControl
         TxtAfterStock.Text  = _inv.GetStockDisplay(product);
 
         CmbReason.ItemsSource = Reasons;
+        CmbReason.SelectionChanged += (_, _) =>
+        {
+            var reason = CmbReason.SelectedItem as DeductionReason;
+            RecoveredBorder.Visibility = reason?.MovementType == MovementType.ReturnToSupplier
+                ? Visibility.Visible : Visibility.Collapsed;
+            if (reason?.MovementType != MovementType.ReturnToSupplier)
+                ChkCostRecovered.IsChecked = false;
+        };
 
         // Determine which unit levels exist and hide unused cards
         var units = db.ProductUnits.AsNoTracking()
@@ -197,11 +205,12 @@ public partial class StockDeductionDialog : UserControl
 
         _db.InventoryMovements.Add(new InventoryMovement
         {
-            ProductId    = _product.Id,
-            MovementType = reason.MovementType,
-            Quantity     = totalPieces,
-            CostPrice    = totalPieces > 0 ? fifoCost / totalPieces : 0,
-            Notes        = $"{reason.Name} — {qtyDesc}"
+            ProductId      = _product.Id,
+            MovementType   = reason.MovementType,
+            Quantity       = totalPieces,
+            CostPrice      = totalPieces > 0 ? fifoCost / totalPieces : 0,
+            IsCostRecovered = ChkCostRecovered.IsChecked == true,
+            Notes          = $"{reason.Name} — {qtyDesc}"
         });
 
         foreach (var batch in consumed)

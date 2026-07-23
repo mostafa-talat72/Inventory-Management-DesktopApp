@@ -19,6 +19,7 @@ public partial class DashboardPage : Page
     private decimal _todaySales, _todayCost, _todayDiscount, _todayProfit, _todayProfitMargin;
     private decimal _totalRevenue, _totalCost, _totalDiscount, _totalProfit, _profitMargin;
     private decimal _pendingAmount, _cancelledAmount;
+    private decimal _todayDeductionCost, _totalDeductionCost;
     private List<Invoice> _recentInvoices = new();
 
     public DashboardPage()
@@ -70,7 +71,15 @@ public partial class DashboardPage : Page
             var todayDiscount = _db.Invoices
                 .Where(i => todayInvoiceIds.Contains(i.Id) && i.Status != InvoiceStatus.Cancelled)
                 .Sum(i => i.Discount);
-            var todayProfit = todaySales - todayCost - todayDiscount;
+            // Deduction costs (Adjustment, Shortage, ReturnToSupplier with unrecovered cost)
+            var todayDeductionCost = _db.InventoryMovements
+                .Where(m => m.CreatedAt >= todayStart && m.CreatedAt < todayEnd
+                    && (m.MovementType == MovementType.Adjustment
+                        || m.MovementType == MovementType.Shortage
+                        || (m.MovementType == MovementType.ReturnToSupplier && !m.IsCostRecovered)))
+                .Sum(m => (decimal?)m.Quantity * m.CostPrice) ?? 0;
+            var todayTotalCost = todayCost + todayDeductionCost;
+            var todayProfit = todaySales - todayTotalCost - todayDiscount;
             var todayProfitMargin = todaySales > 0 ? todayProfit / todaySales * 100 : 0;
 
             // All-time totals (from database)
@@ -81,8 +90,14 @@ public partial class DashboardPage : Page
             var allOrderItems = _db.OrderItems.Where(oi => activeOrderIds.Contains(oi.OrderId)).ToList();
             var totalRevenue = allOrderItems.Sum(oi => oi.Total);
             var totalCost = allOrderItems.Sum(oi => oi.CostPrice);
+            var totalDeductionCost = _db.InventoryMovements
+                .Where(m => (m.MovementType == MovementType.Adjustment
+                        || m.MovementType == MovementType.Shortage
+                        || (m.MovementType == MovementType.ReturnToSupplier && !m.IsCostRecovered)))
+                .Sum(m => (decimal?)m.Quantity * m.CostPrice) ?? 0;
             var totalDiscount = _db.Invoices.Where(i => i.Status != InvoiceStatus.Cancelled).Sum(i => i.Discount);
-            var totalProfit = totalRevenue - totalCost - totalDiscount;
+            var totalTotalCost = totalCost + totalDeductionCost;
+            var totalProfit = totalRevenue - totalTotalCost - totalDiscount;
             var profitMargin = totalRevenue > 0 ? totalProfit / totalRevenue * 100 : 0;
 
             var pendingAmount = _db.Invoices
@@ -105,30 +120,36 @@ public partial class DashboardPage : Page
 
             Application.Current.Dispatcher.Invoke(() =>
             {
-                _todaySales       = todaySales;
-                _todayCost        = todayCost;
-                _todayDiscount    = todayDiscount;
-                _todayProfit      = todayProfit;
-                _todayProfitMargin= todayProfitMargin;
-                _totalRevenue     = totalRevenue;
-                _totalCost        = totalCost;
-                _totalDiscount    = totalDiscount;
-                _totalProfit      = totalProfit;
-                _profitMargin     = profitMargin;
-                _pendingAmount    = pendingAmount;
-                _cancelledAmount  = cancelledAmount;
+                _todaySales         = todaySales;
+                _todayCost          = todayTotalCost;
+                _todayDiscount      = todayDiscount;
+                _todayDeductionCost = todayDeductionCost;
+                _todayProfit        = todayProfit;
+                _todayProfitMargin  = todayProfitMargin;
+                _totalRevenue       = totalRevenue;
+                _totalCost          = totalTotalCost;
+                _totalDiscount      = totalDiscount;
+                _totalDeductionCost = totalDeductionCost;
+                _totalProfit        = totalProfit;
+                _profitMargin       = profitMargin;
+                _pendingAmount      = pendingAmount;
+                _cancelledAmount    = cancelledAmount;
 
                 // Cache for re-render on toggle
                 _recentInvoices = recentInvoices;
 
                 TxtTodayCount.Text  = $"{todayInvoices} فاتورة";
-                TxtTodayCostCount.Text = $"{todayInvoices} فاتورة";
+                TxtTodayCostCount.Text = $"مبيعات: {todayCost:0.##} ج.م";
+                TxtTodayDeductionCost.Text = todayDeductionCost > 0
+                    ? $"خصم مخزون: {todayDeductionCost:0.##} ج.م" : "";
                 TxtTodayProfitMargin.Text = todayProfitMargin >= 0 ? $"هامش ربح {todayProfitMargin:0.0}%" : $"خسارة {Math.Abs(todayProfitMargin):0.0}%";
                 var activeCount = _db.Invoices.Count(i => i.Status != InvoiceStatus.Cancelled);
                 var pendingCount = _db.Invoices.Count(i => i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid);
                 var cancelledCount = _db.Invoices.Count(i => i.Status == InvoiceStatus.Cancelled);
                 TxtTotalInvoices.Text = $"{activeCount} فاتورة";
-                TxtTotalCostCount.Text = $"{activeCount} فاتورة";
+                TxtTotalCostCount.Text = $"مبيعات: {totalCost:0.##} ج.م";
+                TxtTotalDeductionCost.Text = totalDeductionCost > 0
+                    ? $"خصم مخزون: {totalDeductionCost:0.##} ج.م" : "";
                 TxtProfitMargin.Text  = profitMargin >= 0 ? $"هامش ربح {profitMargin:0.0}%" : $"خسارة {Math.Abs(profitMargin):0.0}%";
                 TxtTotalCustomers.Text = $"{totalCustomers}";
                 TxtNewCustomers.Text  = $"{newCustomers} هذا الشهر";

@@ -42,6 +42,8 @@ public partial class App : Application
 
         // Arabic UI for resource localization
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ar-SA");
+
+        AppDbContext.MigrateIfNeeded();
         Thread.CurrentThread.CurrentUICulture = new CultureInfo("ar-SA");
 
         // Fix all icons direction (RTL reverses Path geometry)

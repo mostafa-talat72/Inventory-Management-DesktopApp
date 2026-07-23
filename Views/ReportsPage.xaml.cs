@@ -17,7 +17,7 @@ public partial class ReportsPage : Page
     private DateTime _lastTo;
 
     // Raw summary values for masking
-    private decimal _rTotalSales, _rTotalCost, _rTotalDiscount, _rTotalProfit;
+    private decimal _rTotalSales, _rTotalCost, _rTotalDiscount, _rTotalProfit, _rDeductionCost;
     private int _rInvoiceCount;
 
     // Raw period comparison values
@@ -82,7 +82,14 @@ public partial class ReportsPage : Page
 
         var invoiceCount = invoiceIds.Count;
         var totalSales = items.Sum(i => i.Total);
-        var totalCost = items.Sum(i => i.CostPrice);
+        var totalCogs = items.Sum(i => i.CostPrice);
+        var deductionCost = _db.InventoryMovements
+            .Where(m => m.CreatedAt >= from && m.CreatedAt <= to
+                && (m.MovementType == MovementType.Adjustment
+                    || m.MovementType == MovementType.Shortage
+                    || (m.MovementType == MovementType.ReturnToSupplier && !m.IsCostRecovered)))
+            .Sum(m => (decimal?)m.Quantity * m.CostPrice) ?? 0;
+        var totalCost = totalCogs + deductionCost;
         var totalDiscount = invoices.Where(i => i.Status != InvoiceStatus.Cancelled).Sum(i => i.Discount);
         var totalProfit = totalSales - totalCost - totalDiscount;
 
@@ -92,11 +99,12 @@ public partial class ReportsPage : Page
         TxtTotalProfit.Text = totalProfit.ToString("0.##") + " ج.م";
         TxtInvoiceCount.Text = invoiceCount.ToString();
 
-        _rTotalSales   = totalSales;
-        _rTotalCost    = totalCost;
+        _rTotalSales    = totalSales;
+        _rTotalCost     = totalCost;
         _rTotalDiscount = totalDiscount;
-        _rTotalProfit  = totalProfit;
-        _rInvoiceCount = invoiceCount;
+        _rTotalProfit   = totalProfit;
+        _rDeductionCost = deductionCost;
+        _rInvoiceCount  = invoiceCount;
         // ApplySummaryMask called at the very end after all data is loaded
 
         UpdateProfitMargin(totalSales, totalProfit);
@@ -173,7 +181,7 @@ public partial class ReportsPage : Page
         _rFooterProfit         = reportData.Sum(r => (decimal)r._profit);
         _rFooterDiscount       = totalDiscount;
 
-        var netCost = (footerRetailCost + footerWholesaleCost) + totalDiscount;
+        var netCost = (footerRetailCost + footerWholesaleCost) + totalDiscount + deductionCost;
         var netProfit = totalProfit;
 
         TxtFooterCarton.Text = footerCarton > 0 ? "كرتونة: " + footerCarton.ToString("0") : "";
@@ -190,6 +198,8 @@ public partial class ReportsPage : Page
         TxtFooterRetailCost.Visibility = footerRetailCost > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtFooterWholesaleCost.Text = footerWholesaleCost > 0 ? "جملة: " + footerWholesaleCost.ToString("0.##") + " ج.م" : "";
         TxtFooterWholesaleCost.Visibility = footerWholesaleCost > 0 ? Visibility.Visible : Visibility.Collapsed;
+        TxtFooterDeductionCostFooter.Text = deductionCost > 0 ? "خصم مخزون: " + deductionCost.ToString("0.##") + " ج.م" : "";
+        TxtFooterDeductionCostFooter.Visibility = deductionCost > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtFooterNetCost.Text = "شامل الخصم: " + netCost.ToString("0.##") + " ج.م";
         TxtFooterProfit.Text = netProfit.ToString("0.##") + " ج.م";
         TxtFooterMargin.Text = totalSales > 0 ? (netProfit / totalSales * 100).ToString("0.#") + "%" : "0%";
@@ -286,9 +296,12 @@ public partial class ReportsPage : Page
             TxtFooterWholesaleRev.Text   = h ? mask : (_rFooterWholesaleRev > 0 ? "جملة: "  + _rFooterWholesaleRev.ToString("0.##") + " ج.م" : "");
             TxtFooterRetailCost.Text     = h ? mask : (_rFooterRetailCost > 0   ? "قطاعي: " + _rFooterRetailCost.ToString("0.##")   + " ج.م" : "");
             TxtFooterWholesaleCost.Text  = h ? mask : (_rFooterWholesaleCost > 0? "جملة: "  + _rFooterWholesaleCost.ToString("0.##")+ " ج.م" : "");
-            TxtFooterNetCost.Text        = h ? mask : "شامل الخصم: " + (_rFooterRetailCost + _rFooterWholesaleCost + _rFooterDiscount).ToString("0.##") + " ج.م";
+            TxtFooterNetCost.Text        = h ? mask : "شامل الخصم: " + (_rFooterRetailCost + _rFooterWholesaleCost + _rFooterDiscount + _rDeductionCost).ToString("0.##") + " ج.م";
             TxtFooterProfit.Text         = h ? mask : (_rFooterProfit - _rFooterDiscount).ToString("0.##") + " ج.م";
             TxtFooterDiscount.Text       = h ? mask : _rFooterDiscount.ToString("0.##") + " ج.م";
+            TxtFooterDeductionCostFooter.Text = h ? mask : "";
+            if (!h && _rDeductionCost > 0)
+                TxtFooterDeductionCostFooter.Text = "خصم مخزون: " + _rDeductionCost.ToString("0.##") + " ج.م";
         }
     }
 

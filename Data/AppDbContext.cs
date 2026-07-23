@@ -27,6 +27,27 @@ public class AppDbContext : DbContext
         options.UseSqlite($"Data Source={dbPath}");
     }
 
+    public static void MigrateIfNeeded()
+    {
+        using var db = new AppDbContext();
+        db.Database.EnsureCreated();
+        using var cmd = db.Database.GetDbConnection().CreateCommand();
+        cmd.CommandText = "PRAGMA table_info(InventoryMovements)";
+        if (cmd.Connection!.State != System.Data.ConnectionState.Open)
+            cmd.Connection.Open();
+        using var reader = cmd.ExecuteReader();
+        var hasCol = false;
+        while (reader.Read())
+            if ((string)reader["name"] == "IsCostRecovered") { hasCol = true; break; }
+        reader.Close();
+        if (!hasCol)
+        {
+            using var alter = db.Database.GetDbConnection().CreateCommand();
+            alter.CommandText = "ALTER TABLE InventoryMovements ADD COLUMN IsCostRecovered INTEGER NOT NULL DEFAULT 0";
+            alter.ExecuteNonQuery();
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder model)
     {
         model.Entity<ProductUnit>()

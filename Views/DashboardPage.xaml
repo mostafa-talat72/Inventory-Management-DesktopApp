@@ -76,6 +76,7 @@
                             </Border>
                         </Grid>
                         <TextBlock x:Name="TxtTodayCostCount" Text="0 فاتورة" FontSize="11" Foreground="#B0BEC5" Margin="0,8,0,0" />
+                        <TextBlock x:Name="TxtTodayDeductionCost" Text="" FontSize="11" Foreground="#B0BEC5" Margin="0,2,0,0" />
                     </StackPanel>
                 </Border>
 
@@ -150,6 +151,7 @@
                             </Border>
                         </Grid>
                         <TextBlock x:Name="TxtTotalCostCount" Text="0 فاتورة" FontSize="11" Foreground="#B0BEC5" Margin="0,8,0,0" />
+                        <TextBlock x:Name="TxtTotalDeductionCost" Text="" FontSize="11" Foreground="#B0BEC5" Margin="0,2,0,0" />
                     </StackPanel>
                 </Border>
 

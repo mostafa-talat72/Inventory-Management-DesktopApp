@@ -30,5 +30,7 @@ public class InventoryMovement
     [MaxLength(500)]
     public string? Notes { get; set; }
 
+    public bool IsCostRecovered { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 }

@@ -158,6 +158,17 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                     </Border>
+                    <!-- Cost recovery checkbox (visible only for ReturnToSupplier) -->
+                    <Border x:Name="RecoveredBorder" CornerRadius="10" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" Background="{DynamicResource CardBackgroundAlt}"
+                            Padding="14,10" Margin="0,14,0,0" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox x:Name="ChkCostRecovered" VerticalAlignment="Center"
+                                      Foreground="{DynamicResource HeadingTextBrush}" FontSize="13" FontWeight="SemiBold">
+                                تم استرداد الثمن من المورد
+                            </CheckBox>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- Quantity -->
