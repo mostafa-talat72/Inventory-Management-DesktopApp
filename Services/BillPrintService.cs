@@ -8,7 +8,7 @@ using QRCoder;
 
 namespace ProductApp.Services;
 
-public class BillPrintService
+public class BillPrintService : IDisposable
 {
     private readonly AppDbContext _db;
     private readonly InventoryService _inv;
@@ -185,4 +185,6 @@ public class BillPrintService
 
         return Task.FromResult(html);
     }
+
+    public void Dispose() => _db.Dispose();
 }

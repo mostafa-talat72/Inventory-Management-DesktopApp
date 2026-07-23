@@ -36,7 +36,11 @@ public partial class InvoicesPage : Page
         _searchTimer.Tick += (_, _) => { _searchTimer.Stop(); ApplyFilter(); };
 
         Loaded   += (_, _) => AmountsVisibilityService.VisibilityChanged += OnVisibilityChanged;
-        Unloaded += (_, _) => AmountsVisibilityService.VisibilityChanged -= OnVisibilityChanged;
+        Unloaded += (_, _) =>
+        {
+            AmountsVisibilityService.VisibilityChanged -= OnVisibilityChanged;
+            _db.Dispose();
+        };
 
         LoadData();
     }

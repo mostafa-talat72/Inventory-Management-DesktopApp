@@ -6,7 +6,7 @@ public static class DbSeeder
 {
     public static void Seed(AppDbContext db)
     {
-        if (db.Customers.Any()) return;
+        if (db.Products.Any()) return;
 
         db.Customers.AddRange(
             new Customer { Name = "أحمد محمد", Phone = "01012345678", Address = "القاهرة" },

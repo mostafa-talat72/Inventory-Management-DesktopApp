@@ -36,6 +36,7 @@ public partial class ProductsPage : Page
 
         _loaded = true;
         LoadProducts();
+        Unloaded += (_, _) => _db.Dispose();
     }
 
     private void LoadProducts()
@@ -48,20 +49,24 @@ public partial class ProductsPage : Page
             if (!string.IsNullOrWhiteSpace(_currentSearch))
                 query = query.Where(p => p.Name.Contains(_currentSearch));
 
-            var allProducts = query.OrderBy(p => p.Name).ToList();
+            var allProducts = query.Include(p => p.Units).OrderBy(p => p.Name).ToList();
 
+            var stockData = _db.InventoryBatches
+                .GroupBy(b => b.ProductId)
+                .Select(g => new { ProductId = g.Key, Total = g.Sum(b => b.RemainingQuantity) })
+                .ToDictionary(x => x.ProductId, x => x.Total);
+
+            var inv = new InventoryService(_db);
             var totalStockPieces = 0;
             var lowStockCount = 0;
-            var inv = new InventoryService(_db);
 
             var cards = new List<object>();
             foreach (var p in allProducts)
             {
-                var units = _db.ProductUnits.AsNoTracking()
-                    .Where(u => u.ProductId == p.Id).OrderBy(u => u.UnitType).ToList();
-                var stockDisplay = inv.GetStockDisplay(p);
-                var stockPieces  = inv.GetAvailableStock(p);
+                var units = p.Units.OrderBy(u => u.UnitType).ToList();
+                stockData.TryGetValue(p.Id, out var stockPieces);
                 totalStockPieces += stockPieces;
+                var stockDisplay = inv.GetStockDisplay(p);
 
                 var isLowStock = stockPieces <= 0;
                 if (isLowStock) lowStockCount++;

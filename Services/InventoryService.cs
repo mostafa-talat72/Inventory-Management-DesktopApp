@@ -204,4 +204,32 @@ public class InventoryService
 
         await _db.SaveChangesAsync();
     }
+
+    public async Task StockOut(Product product, int totalPieces, string? notes = null)
+    {
+        var batches = _db.InventoryBatches
+            .Where(b => b.ProductId == product.Id && b.RemainingQuantity > 0)
+            .OrderBy(b => b.PurchaseDate)
+            .ToList();
+
+        int toDeduct = totalPieces;
+        foreach (var batch in batches)
+        {
+            if (toDeduct <= 0) break;
+            int take = Math.Min(toDeduct, batch.RemainingQuantity);
+            batch.RemainingQuantity -= take;
+            toDeduct -= take;
+        }
+
+        _db.InventoryMovements.Add(new InventoryMovement
+        {
+            ProductId = product.Id,
+            MovementType = MovementType.StockOut,
+            Quantity = totalPieces,
+            ReferenceType = ReferenceType.Adjustment,
+            Notes = notes ?? $"منصرف - {totalPieces} قطعة"
+        });
+
+        await _db.SaveChangesAsync();
+    }
 }

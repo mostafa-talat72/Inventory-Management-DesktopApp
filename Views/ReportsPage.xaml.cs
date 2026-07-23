@@ -50,7 +50,11 @@ public partial class ReportsPage : Page
             ShowReport_Click(null!, null!);
             AmountsVisibilityService.VisibilityChanged += OnAmountsVisibilityChanged;
         };
-        Unloaded += (_, _) => AmountsVisibilityService.VisibilityChanged -= OnAmountsVisibilityChanged;
+        Unloaded += (_, _) =>
+        {
+            AmountsVisibilityService.VisibilityChanged -= OnAmountsVisibilityChanged;
+            _db.Dispose();
+        };
     }
 
     private void OnAmountsVisibilityChanged() => ApplySummaryMask();

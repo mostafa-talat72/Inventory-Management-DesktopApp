@@ -15,7 +15,7 @@ using System.Text;
 
 namespace ProductApp.Services;
 
-public class ReceiptPrinter
+public class ReceiptPrinter : IDisposable
 {
     private readonly AppDbContext _db;
 
@@ -135,21 +135,7 @@ public class ReceiptPrinter
         </tr>");
         }
 
-        var locationInfoHtml = "";
-        if ((config.PrintLocationAddress     && !string.IsNullOrWhiteSpace(config.LocationAddress))     ||
-            (config.PrintLocationPhone       && !string.IsNullOrWhiteSpace(config.LocationPhone))       ||
-            (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription)))
-        {
-            var sb = new StringBuilder("<div class=\"location-info\">");
-            if (config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress))
-                sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationAddress)}</div>");
-            if (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone))
-                sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationPhone)}</div>");
-            if (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription))
-                sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationDescription)}</div>");
-            sb.Append("</div>");
-            locationInfoHtml = sb.ToString();
-        }
+        var locationInfoHtml = BuildLocationInfoHtml(config);
 
         return $@"<!DOCTYPE html>
 <html dir=""rtl"" lang=""ar"">
@@ -218,8 +204,8 @@ public class ReceiptPrinter
   </table>
   <div class=""divider""></div>
   <div class=""total-section"">
-    {(invoice.Discount > 0 ? $"<div class=\"total-row\">الخصم: {ToArabicNumerals(invoice.Discount.ToString("0.##"))} ج.م</div>" : "")}
     <div class=""total-row grand-total"">الإجمالي: {ToArabicNumerals(invoice.TotalAmount.ToString("0.##"))} ج.م</div>
+    {(invoice.Discount > 0 ? $"<div class=\"total-row\">الخصم: {ToArabicNumerals(invoice.Discount.ToString("0.##"))} ج.م</div>" : "")}
     <div class=""total-row paid"">المدفوع: {ToArabicNumerals(invoice.TotalPaid.ToString("0.##"))} ج.م</div>
     {(remaining <= 0 ? "" : $"<div class=\"total-row remaining\">المتبقي: {ToArabicNumerals(remaining.ToString("0.##"))} ج.م</div>")}
   </div>
@@ -284,21 +270,7 @@ public class ReceiptPrinter
             rowNum++;
         }
 
-        var locationInfoHtml = "";
-        if ((config.PrintLocationAddress     && !string.IsNullOrWhiteSpace(config.LocationAddress))     ||
-            (config.PrintLocationPhone       && !string.IsNullOrWhiteSpace(config.LocationPhone))       ||
-            (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription)))
-        {
-            var sb = new StringBuilder("<div class=\"location-info\">");
-            if (config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress))
-                sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationAddress)}</div>");
-            if (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone))
-                sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationPhone)}</div>");
-            if (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription))
-                sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationDescription)}</div>");
-            sb.Append("</div>");
-            locationInfoHtml = sb.ToString();
-        }
+        var locationInfoHtml = BuildLocationInfoHtml(config);
 
         int totalProducts  = products.Count;
         int outOfStock     = products.Count(p => p.totalPieces <= 0);
@@ -388,6 +360,8 @@ public class ReceiptPrinter
         var html = BuildInventoryHtml(products, config);
         Views.PrintPreviewDialog.ShowInventory(html, "كشف المخزون");
     }
+
+    public void Dispose() => _db.Dispose();
 
     public void Print(Invoice invoice)
     {

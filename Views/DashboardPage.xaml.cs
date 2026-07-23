@@ -29,7 +29,11 @@ public partial class DashboardPage : Page
             LoadDashboard();
             AmountsVisibilityService.VisibilityChanged += OnAmountsVisibilityChanged;
         };
-        Unloaded += (_, _) => AmountsVisibilityService.VisibilityChanged -= OnAmountsVisibilityChanged;
+        Unloaded += (_, _) =>
+        {
+            AmountsVisibilityService.VisibilityChanged -= OnAmountsVisibilityChanged;
+            _db.Dispose();
+        };
     }
 
     private void OnAmountsVisibilityChanged()
@@ -52,48 +56,52 @@ public partial class DashboardPage : Page
             var todayEnd = todayStart.AddDays(1);
             var monthStart = new DateTime(now.Year, now.Month, 1);
 
-            var allInvoices = _db.Invoices.AsNoTracking().ToList();
-            var activeInvoiceIds = allInvoices.Where(i => i.Status != InvoiceStatus.Cancelled).Select(i => i.Id).ToHashSet();
-
-            var allOrders = _db.Orders.AsNoTracking().ToList();
-            var activeOrderIds = allOrders.Where(o => activeInvoiceIds.Contains(o.InvoiceId)).Select(o => o.Id).ToHashSet();
-
-            var allOrderItems = _db.OrderItems
-                .AsNoTracking()
-                .Where(oi => activeOrderIds.Contains(oi.OrderId))
-                .ToList();
-
-            var todayInvoiceIds = allInvoices
+            // Today's active invoice IDs
+            var todayInvoiceIds = _db.Invoices
                 .Where(i => i.CreatedAt >= todayStart && i.CreatedAt < todayEnd && i.Status != InvoiceStatus.Cancelled)
-                .Select(i => i.Id)
-                .ToHashSet();
-            var todayOrderIds = allOrders.Where(o => todayInvoiceIds.Contains(o.InvoiceId)).Select(o => o.Id).ToHashSet();
-            var todayItems = allOrderItems.Where(oi => todayOrderIds.Contains(oi.OrderId)).ToList();
+                .Select(i => i.Id).ToHashSet();
+
+            // Today's order items
+            var todayOrderIds = _db.Orders.Where(o => todayInvoiceIds.Contains(o.InvoiceId)).Select(o => o.Id).ToHashSet();
+            var todayItems = _db.OrderItems.Where(oi => todayOrderIds.Contains(oi.OrderId)).ToList();
             var todaySales = todayItems.Sum(oi => oi.Total);
             var todayCost = todayItems.Sum(oi => oi.CostPrice);
-            var todayInvoices = allInvoices.Count(i => i.CreatedAt >= todayStart && i.CreatedAt < todayEnd && i.Status != InvoiceStatus.Cancelled);
-            var todayDiscount = allInvoices
-                .Where(i => i.CreatedAt >= todayStart && i.CreatedAt < todayEnd && i.Status != InvoiceStatus.Cancelled)
+            var todayInvoices = todayInvoiceIds.Count;
+            var todayDiscount = _db.Invoices
+                .Where(i => todayInvoiceIds.Contains(i.Id) && i.Status != InvoiceStatus.Cancelled)
                 .Sum(i => i.Discount);
             var todayProfit = todaySales - todayCost - todayDiscount;
             var todayProfitMargin = todaySales > 0 ? todayProfit / todaySales * 100 : 0;
 
+            // All-time totals (from database)
+            var activeInvoiceIds = _db.Invoices
+                .Where(i => i.Status != InvoiceStatus.Cancelled)
+                .Select(i => i.Id).ToHashSet();
+            var activeOrderIds = _db.Orders.Where(o => activeInvoiceIds.Contains(o.InvoiceId)).Select(o => o.Id).ToHashSet();
+            var allOrderItems = _db.OrderItems.Where(oi => activeOrderIds.Contains(oi.OrderId)).ToList();
             var totalRevenue = allOrderItems.Sum(oi => oi.Total);
             var totalCost = allOrderItems.Sum(oi => oi.CostPrice);
-            var totalDiscount = allInvoices.Where(i => i.Status != InvoiceStatus.Cancelled).Sum(i => i.Discount);
+            var totalDiscount = _db.Invoices.Where(i => i.Status != InvoiceStatus.Cancelled).Sum(i => i.Discount);
             var totalProfit = totalRevenue - totalCost - totalDiscount;
             var profitMargin = totalRevenue > 0 ? totalProfit / totalRevenue * 100 : 0;
 
-            var activeInvoices = allInvoices.Where(i => i.Status != InvoiceStatus.Cancelled).ToList();
-            var pendingInvoices = allInvoices.Where(i => i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid).ToList();
-            var pendingAmount = pendingInvoices.Sum(i => i.Remaining);
-            var cancelledInvoices = allInvoices.Where(i => i.Status == InvoiceStatus.Cancelled).ToList();
-            var cancelledAmount = cancelledInvoices.Sum(i => i.NetAmount);
+            var pendingAmount = _db.Invoices
+                .Where(i => i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid)
+                .AsEnumerable()
+                .Sum(i => i.TotalAmount - i.Discount - i.TotalPaid);
+            var cancelledAmount = _db.Invoices
+                .Where(i => i.Status == InvoiceStatus.Cancelled)
+                .AsEnumerable()
+                .Sum(i => i.TotalAmount - i.Discount);
 
             var totalCustomers = _db.Customers.Count();
             var newCustomers = _db.Customers.Count(c => c.CreatedAt >= monthStart);
 
-            var recentInvoices = allInvoices.OrderByDescending(i => i.CreatedAt).Take(5).ToList();
+            var recentInvoices = _db.Invoices
+                .OrderByDescending(i => i.CreatedAt)
+                .Take(5)
+                .AsNoTracking()
+                .ToList();
 
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -116,13 +124,16 @@ public partial class DashboardPage : Page
                 TxtTodayCount.Text  = $"{todayInvoices} فاتورة";
                 TxtTodayCostCount.Text = $"{todayInvoices} فاتورة";
                 TxtTodayProfitMargin.Text = todayProfitMargin >= 0 ? $"هامش ربح {todayProfitMargin:0.0}%" : $"خسارة {Math.Abs(todayProfitMargin):0.0}%";
-                TxtTotalInvoices.Text = $"{activeInvoices.Count} فاتورة";
-                TxtTotalCostCount.Text = $"{activeInvoices.Count} فاتورة";
+                var activeCount = _db.Invoices.Count(i => i.Status != InvoiceStatus.Cancelled);
+                var pendingCount = _db.Invoices.Count(i => i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid);
+                var cancelledCount = _db.Invoices.Count(i => i.Status == InvoiceStatus.Cancelled);
+                TxtTotalInvoices.Text = $"{activeCount} فاتورة";
+                TxtTotalCostCount.Text = $"{activeCount} فاتورة";
                 TxtProfitMargin.Text  = profitMargin >= 0 ? $"هامش ربح {profitMargin:0.0}%" : $"خسارة {Math.Abs(profitMargin):0.0}%";
                 TxtTotalCustomers.Text = $"{totalCustomers}";
                 TxtNewCustomers.Text  = $"{newCustomers} هذا الشهر";
-                TxtPendingInvoices.Text = $"{pendingInvoices.Count}";
-                TxtCancelledInvoices.Text = $"{cancelledInvoices.Count}";
+                TxtPendingInvoices.Text = $"{pendingCount}";
+                TxtCancelledInvoices.Text = $"{cancelledCount}";
 
                 ApplyAmountsMask();
 

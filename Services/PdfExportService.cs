@@ -6,6 +6,23 @@ namespace ProductApp.Services;
 
 public static class PdfExportService
 {
+    private static string? FindBrowser()
+    {
+        var candidates = new[]
+        {
+            Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"),
+            Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"),
+            Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"),
+            Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\Google\Chrome\Application\chrome.exe"),
+            Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Microsoft\Edge\Application\msedge.exe"),
+            Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Google\Chrome\Application\chrome.exe"),
+            "/usr/bin/chromium-browser",
+            "/usr/bin/google-chrome",
+            "/usr/bin/microsoft-edge"
+        };
+        return candidates.FirstOrDefault(File.Exists);
+    }
+
     public static bool ExportHtmlToPdf(string html, string outputPdfPath)
     {
         try
@@ -13,13 +30,7 @@ public static class PdfExportService
             var tempHtml = Path.Combine(Path.GetTempPath(), $"pdf_export_{Guid.NewGuid():N}.html");
             File.WriteAllText(tempHtml, html);
 
-            var edge = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
-            var chrome = @"C:\Program Files\Google\Chrome\Application\chrome.exe";
-
-            string? browserPath = null;
-            if (File.Exists(edge)) browserPath = edge;
-            else if (File.Exists(chrome)) browserPath = chrome;
-
+            var browserPath = FindBrowser();
             if (browserPath == null)
                 return false;
 
