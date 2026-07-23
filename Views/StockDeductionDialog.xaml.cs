@@ -50,6 +50,10 @@ public partial class StockDeductionDialog : UserControl
             if (reason?.MovementType != MovementType.ReturnToSupplier)
                 ChkCostRecovered.IsChecked = false;
         };
+        // Apply visibility for the initially selected reason
+        var initial = CmbReason.SelectedItem as DeductionReason;
+        RecoveredBorder.Visibility = initial?.MovementType == MovementType.ReturnToSupplier
+            ? Visibility.Visible : Visibility.Collapsed;
 
         // Determine which unit levels exist and hide unused cards
         var units = db.ProductUnits.AsNoTracking()

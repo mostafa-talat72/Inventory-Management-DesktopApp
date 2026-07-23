@@ -55,6 +55,12 @@ public partial class MovementEditDialog : UserControl
             decimal totalCost = _movement.Quantity * _movement.CostPrice;
             TxtTotalCost.Text = totalCost.ToString("0.##");
             UpdateCostPerPiece();
+
+            if (_movement.MovementType == MovementType.ReturnToSupplier)
+            {
+                RecoveredBorder.Visibility = Visibility.Visible;
+                ChkEditCostRecovered.IsChecked = _movement.IsCostRecovered;
+            }
         }
 
         int available = _inv.GetAvailableStock(product);
@@ -206,6 +212,7 @@ public partial class MovementEditDialog : UserControl
         qtyDesc = qtyDesc.TrimEnd(',', ' ');
 
         _movement.Quantity = newQty;
+        _movement.IsCostRecovered = ChkEditCostRecovered.IsChecked == true;
         _movement.Notes = $"{_item.TypeDisplay} - {qtyDesc}";
         if (decimal.TryParse(TxtTotalCost.Text, System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture, out decimal tc) && tc > 0)

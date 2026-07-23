@@ -128,6 +128,17 @@
                         </StackPanel>
                     </Grid>
                 </Border>
+
+                <!-- Cost recovery checkbox (visible only for ReturnToSupplier) -->
+                <Border x:Name="RecoveredBorder" CornerRadius="8" Background="{DynamicResource SurfaceBackground}"
+                        Padding="14,10" Margin="0,12,0,0" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="ChkEditCostRecovered" VerticalAlignment="Center"
+                                  Foreground="{DynamicResource HeadingTextBrush}" FontSize="13" FontWeight="SemiBold">
+                            تم استرداد الثمن من المورد
+                        </CheckBox>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </Border>
 
