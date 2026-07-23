@@ -247,17 +247,24 @@ public class ReceiptPrinter
         foreach (var (product, stockDisplay, totalPieces) in products.OrderBy(p => p.product.Name))
         {
             var units = product.Units.OrderBy(u => u.UnitType).ToList();
-            var pieceUnit   = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
-            var boxUnit     = units.FirstOrDefault(u => u.UnitType == UnitType.Box);
-            var cartonUnit  = units.FirstOrDefault(u => u.UnitType == UnitType.Carton);
 
-            // Prices — show lowest retail & wholesale across all units
-            var retailPrice    = units.Count > 0 ? units.Min(u => u.RetailPrice)    : 0;
-            var wholesalePrice = units.Count > 0 ? units.Min(u => u.WholesalePrice) : 0;
-
-            var priceText = units.Count > 0
-                ? $"قطاعي: {retailPrice:0.##} | جملة: {wholesalePrice:0.##}"
-                : "-";
+            // Build per-unit price lines
+            var retailLines    = new List<string>();
+            var wholesaleLines = new List<string>();
+            foreach (var u in units)
+            {
+                string unitName = u.Name.Length > 0 ? u.Name : u.UnitType switch
+                {
+                    UnitType.Carton => "كرتونة",
+                    UnitType.Box    => "علبة",
+                    UnitType.Piece  => "قطعة",
+                    _               => ""
+                };
+                retailLines.Add($"{unitName}: {u.RetailPrice:0.##}");
+                wholesaleLines.Add($"{unitName}: {u.WholesalePrice:0.##}");
+            }
+            string retailText    = retailLines.Count    > 0 ? string.Join("\n", retailLines)    : "-";
+            string wholesaleText = wholesaleLines.Count > 0 ? string.Join("\n", wholesaleLines) : "-";
 
             string unitPath = string.Join(" ← ", units.Select(u => u.Name));
 
@@ -267,12 +274,12 @@ public class ReceiptPrinter
           <td class=""num"">{rowNum}</td>
           <td class=""name"">
             <div class=""prod-name"">{System.Net.WebUtility.HtmlEncode(product.Name)}</div>
-            {(string.IsNullOrWhiteSpace(unitPath) ? "" : $"<div class='unit-path'>{System.Net.WebUtility.HtmlEncode(unitPath)}</div>")}
           </td>
           <td class=""stock"">
             <span class=""{(totalPieces <= 0 ? "zero" : "has-stock")}"">{System.Net.WebUtility.HtmlEncode(stockDisplay)}</span>
           </td>
-          <td class=""price"">{System.Net.WebUtility.HtmlEncode(priceText)}</td>
+          <td class=""price"">{System.Net.WebUtility.HtmlEncode(retailText).Replace("&#xA;", "<br/>").Replace("\n", "<br/>")}</td>
+          <td class=""price"">{System.Net.WebUtility.HtmlEncode(wholesaleText).Replace("&#xA;", "<br/>").Replace("\n", "<br/>")}</td>
         </tr>");
             rowNum++;
         }
@@ -308,6 +315,7 @@ public class ReceiptPrinter
     body {{ margin: 0; padding: 8px; font-size: 11px; color: #000; direction: rtl; text-align: center; }}
     .header {{ text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }}
     .org-name {{ font-size: 1.4em; font-weight: 900; margin-bottom: 4px; }}
+    .sys-name {{ font-size: 1.0em; font-weight: 700; color: #555; margin-bottom: 2px; }}
     .title {{ font-size: 1.2em; font-weight: 800; margin-bottom: 4px; }}
     .info {{ font-size: 0.9em; font-weight: 600; color: #444; margin-bottom: 2px; }}
     .summary {{ display: flex; justify-content: center; gap: 16px; margin: 8px 0; flex-wrap: wrap; }}
@@ -320,11 +328,11 @@ public class ReceiptPrinter
     .items-table thead {{ background: #e0e0e0; font-weight: 900; }}
     .items-table th {{ padding: 5px 4px; text-align: center; border: 1.5px solid #000; font-size: 0.9em; }}
     .items-table td {{ padding: 4px 4px; border: 1px solid #000; font-weight: 600; vertical-align: middle; }}
-    .num {{ width: 6%; text-align: center; font-weight: 700; }}
-    .name {{ width: 38%; text-align: right; padding-right: 6px; }}
-    .stock {{ width: 28%; text-align: center; font-weight: 700; }}
-    .price {{ width: 28%; text-align: center; font-size: 0.85em; }}
-    .prod-name {{ font-weight: 800; font-size: 1em; }}
+    .num {{ width: 5%; text-align: center; font-weight: 700; }}
+    .name {{ width: 38%; text-align: center; padding: 0 4px; }}
+    .stock {{ width: 22%; text-align: center; font-weight: 700; }}
+    .price {{ width: 17%; text-align: center; font-size: 0.82em; white-space: pre-line; }}
+    .prod-name {{ font-weight: 800; font-size: 1em; text-align: center; }}
     .unit-path {{ font-size: 0.78em; color: #666; font-weight: 500; margin-top: 2px; }}
     .has-stock {{ color: #1b5e20; font-weight: 800; }}
     .zero {{ color: #c62828; font-weight: 800; }}
@@ -341,6 +349,7 @@ public class ReceiptPrinter
 <body>
   <div class=""header"">
     {(string.IsNullOrWhiteSpace(locationName) ? "" : $"<div class=\"org-name\">{System.Net.WebUtility.HtmlEncode(locationName)}</div>")}
+    <div class=""sys-name"">MTE Stock</div>
     <div class=""title"">كشف المخزون</div>
     <div class=""info"">تاريخ الطباعة: {FormatDateArabic(now)}</div>
   </div>
@@ -357,7 +366,8 @@ public class ReceiptPrinter
         <th class=""num"">#</th>
         <th class=""name"">المنتج</th>
         <th class=""stock"">المخزون</th>
-        <th class=""price"">الأسعار</th>
+        <th class=""price"">قطاعي</th>
+        <th class=""price"">جملة</th>
       </tr>
     </thead>
     <tbody>{rows}</tbody>
