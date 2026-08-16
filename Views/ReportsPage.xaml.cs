@@ -37,6 +37,9 @@ public partial class ReportsPage : Page
     private List<(string name, decimal sales, double barWidth, string barColor, string rankColor, string rankBg)> _rawTopProducts = new();
     private List<(string name, decimal sales, int count, string rankColor, string rankBg)> _rawTopCustomers = new();
 
+    // Raw customer-sales rows (all customers)
+    private List<(string name, string phone, int count, decimal sales, decimal paid, decimal remaining)> _rawCustomerSales = new();
+
     public ReportsPage()
     {
         InitializeComponent();
@@ -115,6 +118,7 @@ public partial class ReportsPage : Page
         LoadInvoiceStatus(invoices);
         LoadTopProducts(items);
         LoadCustomerAnalysis(from, to);
+        LoadCustomerSales(from, to);
         LoadDailyTrend(from, to);
 
         var reportData = items.GroupBy(i => i.Product.Name).Select(g =>
@@ -287,6 +291,9 @@ public partial class ReportsPage : Page
                 }).ToList<object>();
             TopCustomersList.ItemsSource = customers;
         }
+
+        // ── 4.5 Customer sales grid (all customers) ──
+        BuildCustomerSalesGrid();
 
         // ── 5. Detail grid & footer ──
         if (_rawGridData != null && ReportGrid.ItemsSource != null)
@@ -557,6 +564,70 @@ public partial class ReportsPage : Page
 
         TopCustomersList.ItemsSource = cardData;
         EmptyTopCustomers.Visibility = cardData.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void LoadCustomerSales(DateTime from, DateTime to)
+    {
+        var invoices = _db.Invoices
+            .Where(i => i.InvoiceDate >= from && i.InvoiceDate <= to && i.Status != InvoiceStatus.Cancelled)
+            .ToList();
+
+        var customers = _db.Customers.AsNoTracking().OrderByDescending(c => c.Id).ToList();
+
+        var rows = new List<(string name, string phone, int count, decimal sales, decimal paid, decimal remaining)>();
+
+        // طالما العميل معملش فواتير في الفترة، مينفعش يظهر في التقرير
+        foreach (var customer in customers)
+        {
+            var customerInvoices = invoices.Where(i => i.CustomerId == customer.Id).ToList();
+            if (customerInvoices.Count == 0) continue;
+            rows.Add((
+                customer.Name,
+                customer.Phone ?? "",
+                customerInvoices.Count,
+                customerInvoices.Sum(i => i.TotalAmount),
+                customerInvoices.Sum(i => i.TotalPaid),
+                customerInvoices.Sum(i => i.Remaining)
+            ));
+        }
+
+        // النقدي (بدون عميل) يظهر كسطر أخير
+        var cashInvoices = invoices.Where(i => i.CustomerId == null).ToList();
+        if (cashInvoices.Count > 0)
+            rows.Add((
+                "نقدي",
+                "",
+                cashInvoices.Count,
+                cashInvoices.Sum(i => i.TotalAmount),
+                cashInvoices.Sum(i => i.TotalPaid),
+                cashInvoices.Sum(i => i.Remaining)
+            ));
+
+        _rawCustomerSales = rows;
+        TxtCustomerSalesCount.Text = rows.Count.ToString();
+        TxtCustomerSalesSubtitle.Text = $"إجمالي مبيعات كل عميل من {from:yyyy/MM/dd} إلى {to.AddDays(-1):yyyy/MM/dd}";
+        EmptyCustomerSales.Visibility = rows.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
+        CustomerSalesCountBadge.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        BuildCustomerSalesGrid();
+    }
+
+    private void BuildCustomerSalesGrid()
+    {
+        const string mask = "••••••";
+        bool h = AmountsVisibilityService.IsHidden;
+
+        var data = _rawCustomerSales.Select(x => new
+        {
+            Name = x.name,
+            SubDisplay = string.IsNullOrWhiteSpace(x.phone) ? $"{x.count} فاتورة" : $"{x.phone}  •  {x.count} فاتورة",
+            CountDisplay = x.count.ToString(),
+            SalesDisplay = h ? mask : $"{x.sales:0.##} ج.م",
+            PaidDisplay = h ? mask : $"{x.paid:0.##} ج.م",
+            RemainingDisplay = h ? mask : $"{x.remaining:0.##} ج.م"
+        }).ToList();
+
+        CustomerSalesGrid.ItemsSource = data;
     }
 
     private void LoadDailyTrend(DateTime from, DateTime to)

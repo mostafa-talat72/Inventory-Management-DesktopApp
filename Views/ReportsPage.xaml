@@ -590,6 +590,96 @@
                 </Grid>
             </Border>
 
+            <!-- Customer Sales Report (all customers) -->
+            <Border CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="0" Margin="0,0,0,20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
+                </Border.Effect>
+                <StackPanel>
+                    <Border Padding="24,18,24,16" Background="{DynamicResource CardBackgroundAlt}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="{DynamicResource SurfaceBackground}">
+                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#3F51B5" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="مبيعات العملاء" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                                <TextBlock x:Name="TxtCustomerSalesSubtitle" Text="إجمالي مبيعات كل عميل خلال الفترة المحددة" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0" />
+                            </StackPanel>
+                            <Border x:Name="CustomerSalesCountBadge" Grid.Column="2" Padding="12,5" CornerRadius="12"
+                                    Background="{DynamicResource SurfaceBackground}" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="TxtCustomerSalesCount" Text="0" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                                    <TextBlock Text="عميل" FontSize="12" Foreground="{DynamicResource BodyTextBrush}" Margin="3,0,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Header Row -->
+                    <Border Background="#1A237E">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1.5*" />
+                                <ColumnDefinition Width="1.5*" />
+                                <ColumnDefinition Width="1.5*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="العميل" Padding="16,12" Foreground="White" FontWeight="Bold" FontSize="11" />
+                            <TextBlock Grid.Column="1" Text="عدد الفواتير" Padding="8,12" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="إجمالي المبيعات" Padding="8,12" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Text="المدفوع" Padding="8,12" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="4" Text="المتبقي" Padding="8,12" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" />
+                        </Grid>
+                    </Border>
+
+                    <ItemsControl x:Name="CustomerSalesGrid" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="0,8" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="0,0,0,1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="3*" />
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1.5*" />
+                                            <ColumnDefinition Width="1.5*" />
+                                            <ColumnDefinition Width="1.5*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="16,0,8,0">
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource HeadingTextBrush}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding SubDisplay}" FontSize="10"
+                                                       Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding CountDisplay}" FontSize="12" Foreground="{DynamicResource BodyTextBrush}"
+                                                   VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="2" Text="{Binding SalesDisplay}" FontSize="13" FontWeight="Bold"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Text="{Binding PaidDisplay}" FontSize="12"
+                                                   Foreground="#1565C0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="4" Text="{Binding RemainingDisplay}" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border x:Name="EmptyCustomerSales" Visibility="Collapsed" Padding="30,24" Background="Transparent">
+                        <TextBlock Text="لا توجد مبيعات للعملاء في هذه الفترة" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" />
+                    </Border>
+                </StackPanel>
+            </Border>
+
             <!-- Daily Sales Trend -->
             <Border x:Name="DailyTrendCard" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="0" Margin="0,0,0,20"
                     Visibility="Collapsed">
