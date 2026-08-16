@@ -60,6 +60,9 @@ public partial class MainWindow : Window
             case "Suppliers":
                 MainFrame.Navigate(new SuppliersPage());
                 break;
+            case "Debts":
+                MainFrame.Navigate(new DebtsPage());
+                break;
             case "Invoices":
                 MainFrame.Navigate(new InvoicesPage());
                 break;
@@ -81,7 +84,7 @@ public partial class MainWindow : Window
         var inactiveFg    = (System.Windows.Media.Brush)(Application.Current.TryFindResource("NavTextBrush")
                              ?? new System.Windows.Media.BrushConverter().ConvertFrom("#90CAF9")!);
 
-        foreach (var btn in new[] { BtnDashboard, BtnProducts, BtnCustomers, BtnSuppliers, BtnInvoices, BtnReports, BtnSettings })
+        foreach (var btn in new[] { BtnDashboard, BtnProducts, BtnCustomers, BtnSuppliers, BtnDebts, BtnInvoices, BtnReports, BtnSettings })
         {
             var isActive = btn.Tag?.ToString() == _currentPage;
             btn.BorderBrush = isActive ? activeBorder : System.Windows.Media.Brushes.Transparent;

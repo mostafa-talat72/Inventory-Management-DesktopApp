@@ -19,6 +19,9 @@ public DbSet<InventoryBatch> InventoryBatches => Set<InventoryBatch>();
     public DbSet<SupplierInvoice> SupplierInvoices => Set<SupplierInvoice>();
     public DbSet<SupplierInvoiceItem> SupplierInvoiceItems => Set<SupplierInvoiceItem>();
     public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
+    public DbSet<Debt> Debts => Set<Debt>();
+    public DbSet<DebtPayment> DebtPayments => Set<DebtPayment>();
+    public DbSet<DebtAccount> DebtAccounts => Set<DebtAccount>();
 
     private static readonly string DbFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTE Stock");
@@ -148,6 +151,65 @@ CREATE TABLE IF NOT EXISTS ""SupplierPayments"" (
     ""PaymentMethod"" TEXT NULL,
     ""Notes"" TEXT NULL,
     CONSTRAINT ""FK_SupplierPayments_SupplierInvoices_SupplierInvoiceId"" FOREIGN KEY (""SupplierInvoiceId"") REFERENCES ""SupplierInvoices"" (""Id"") ON DELETE CASCADE);");
+
+        // 8) Debts tables (الديون اليدوية + بطاقة ديوني للموردين تُحسب تلقائياً)
+        CreateIfMissing(conn, "Debts", @"
+CREATE TABLE IF NOT EXISTS ""Debts"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_Debts"" PRIMARY KEY AUTOINCREMENT,
+    ""Name"" TEXT NOT NULL,
+    ""Direction"" INTEGER NOT NULL,
+    ""TotalAmount"" TEXT NOT NULL,
+    ""TotalPaid"" TEXT NOT NULL,
+    ""Status"" INTEGER NOT NULL,
+    ""Notes"" TEXT NULL,
+    ""CreatedAt"" TEXT NOT NULL);");
+
+        CreateIfMissing(conn, "DebtPayments", @"
+CREATE TABLE IF NOT EXISTS ""DebtPayments"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_DebtPayments"" PRIMARY KEY AUTOINCREMENT,
+    ""DebtId"" INTEGER NOT NULL,
+    ""Amount"" TEXT NOT NULL,
+    ""PaymentDate"" TEXT NOT NULL,
+    ""PaymentMethod"" TEXT NULL,
+    ""Notes"" TEXT NULL,
+    CONSTRAINT ""FK_DebtPayments_Debts_DebtId"" FOREIGN KEY (""DebtId"") REFERENCES ""Debts"" (""Id"") ON DELETE CASCADE);");
+
+        // 9) Debts tables upgrades: الأشخاص الثابتون + ربط الديون بهم
+        CreateIfMissing(conn, "DebtAccounts", @"
+CREATE TABLE IF NOT EXISTS ""DebtAccounts"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_DebtAccounts"" PRIMARY KEY AUTOINCREMENT,
+    ""Name"" TEXT NOT NULL,
+    ""Phone"" TEXT NULL,
+    ""Notes"" TEXT NULL,
+    ""CreatedAt"" TEXT NOT NULL);");
+
+        using (var checkDebtCol = conn.CreateCommand())
+        {
+            checkDebtCol.CommandText = "PRAGMA table_info(Debts)";
+            using var reader = checkDebtCol.ExecuteReader();
+            var cols = new System.Collections.Generic.HashSet<string>();
+            while (reader.Read()) cols.Add((string)reader["name"]);
+
+            if (!cols.Contains("DebtAccountId"))
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Debts ADD COLUMN DebtAccountId INTEGER NULL";
+                alter.ExecuteNonQuery();
+            }
+            if (!cols.Contains("AccountName"))
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Debts ADD COLUMN AccountName TEXT NOT NULL DEFAULT ''";
+                alter.ExecuteNonQuery();
+            }
+            if (cols.Contains("Name"))
+            {
+                // الجدول القديم كان فيه عمود Name (NOT NULL) — النموذج الجديد يستبدله بـ AccountName
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Debts DROP COLUMN Name";
+                alter.ExecuteNonQuery();
+            }
+        }
     }
 
     private static void CreateIfMissing(System.Data.Common.DbConnection conn, string tableName, string createSql)

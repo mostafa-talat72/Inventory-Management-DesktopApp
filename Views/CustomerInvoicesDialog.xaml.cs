@@ -29,15 +29,16 @@ public partial class CustomerInvoicesDialog : UserControl
     public CustomerInvoicesDialog(AppDbContext db, Customer customer) : this(db, customer, false) { }
 
     // All-invoices mode: shows every invoice (all customers + cash)
-    public CustomerInvoicesDialog(AppDbContext db, bool showAll)
+    public CustomerInvoicesDialog(AppDbContext db, bool showAll, string title = "كل الفواتير", string subtitle = "جميع فواتير العملاء والنقدي", bool includeCash = true)
     {
         InitializeComponent();
         _db = db;
         _customer = null;
         _isCashMode = false;
         _showAllInvoices = true;
-        TxtTitle.Text = "كل الفواتير";
-        TxtSubtitle.Text = "جميع فواتير العملاء والنقدي";
+        _includeCash = includeCash;
+        TxtTitle.Text = title;
+        TxtSubtitle.Text = subtitle;
         TxtSearch.Focus();
         BtnAddOrder.Visibility = Visibility.Collapsed;
         BtnPayCustomer.Visibility = Visibility.Collapsed;
@@ -91,11 +92,16 @@ public partial class CustomerInvoicesDialog : UserControl
     }
 
     private readonly bool _showAllInvoices;
+    private readonly bool _includeCash = true;
 
     private void LoadData()
     {
         if (_showAllInvoices)
-            _allInvoices = _db.Invoices.OrderByDescending(i => i.CreatedAt).ToList();
+        {
+            var q = _db.Invoices.AsQueryable();
+            if (!_includeCash) q = q.Where(i => i.CustomerId != null);
+            _allInvoices = q.OrderByDescending(i => i.CreatedAt).ToList();
+        }
         else
             _allInvoices = _db.Invoices
                 .Where(i => _isCashMode ? i.CustomerId == null : i.CustomerId == _customer!.Id)
