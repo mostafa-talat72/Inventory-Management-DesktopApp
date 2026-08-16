@@ -1032,18 +1032,36 @@ public partial class InvoicesPage : Page
 
         var actions = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
 
-        var viewBtn = new Border
+        // View the invoice's orders (same as details window)
+        var ordersBtn = new Border
         {
-            CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#00695C")!,
-            Cursor = Cursors.Hand, Padding = new Thickness(10, 5, 10, 5), Margin = new Thickness(0, 0, 4, 0),
+            CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#00897B")!,
+            Cursor = Cursors.Hand, Padding = new Thickness(10, 5, 10, 5), Margin = new Thickness(4, 0, 4, 0),
             Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
             {
-                new Path { Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Data = Geometry.Parse("M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,8.39C13.57,9.4 15.39,10 17.42,10C18.31,10 19.14,9.85 19.92,9.59C19.02,12.18 17.04,14.34 14.38,15.62C13.51,16.15 12.44,16.39 11.28,16.39C7.75,16.39 4.5,14.5 4.5,12C4.5,10.78 5.25,9.67 6.38,8.87C7.93,8.46 9.38,8.39 11,8.39C11.31,8.39 11.63,8.39 12,8.39Z") },
-                new TextBlock { Text = "عرض", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(5, 0, 0, 0) }
+                new Path { Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Data = Geometry.Parse("M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z") },
+                new TextBlock { Text = "الطلبيات", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(5, 0, 0, 0) }
             }}
         };
-        viewBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; OpenSupplierInvoice(invoice); };
-        actions.Children.Add(viewBtn);
+        ordersBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; OpenSupplierInvoice(invoice); };
+        actions.Children.Add(ordersBtn);
+
+        if (invoice.Status != InvoiceStatus.Paid && invoice.Status != InvoiceStatus.Cancelled)
+        {
+            // Add an order to THIS supplier invoice
+            var addBtn = new Border
+            {
+                CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#1565C0")!,
+                Cursor = Cursors.Hand, Padding = new Thickness(10, 5, 10, 5), Margin = new Thickness(4, 0, 4, 0),
+                Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
+                {
+                    new Path { Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Data = Geometry.Parse("M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z") },
+                    new TextBlock { Text = "إضافة طلبية", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(5, 0, 0, 0) }
+                }}
+            };
+            addBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; AddSupplierOrder(invoice); };
+            actions.Children.Add(addBtn);
+        }
 
         var printBtn = new Border
         {
@@ -1102,6 +1120,18 @@ public partial class InvoicesPage : Page
     {
         var mainWindow = (MainWindow)Window.GetWindow(this);
         var dialog = new SupplierInvoiceDetailsDialog(_db, invoice);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            ApplySupplierFilter();
+        };
+    }
+
+    private void AddSupplierOrder(SupplierInvoice invoice)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new StockInDialog(invoice);
         mainWindow.ShowOverlay(dialog);
         dialog.DialogClosed += (s, r) =>
         {

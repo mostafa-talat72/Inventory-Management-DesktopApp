@@ -31,6 +31,7 @@
     <SolidColorBrush x:Key="BodyTextBrush"          Color="#B0BEC5" />
     <SolidColorBrush x:Key="SubtleTextBrush"        Color="#78909C" />
     <SolidColorBrush x:Key="MutedTextBrush"         Color="#546E7A" />
+    <SolidColorBrush x:Key="HintTextBrush"          Color="#FFFFFF" />
     <SolidColorBrush x:Key="NavTextBrush"           Color="#90CAF9" />
 
     <!-- Borders -->

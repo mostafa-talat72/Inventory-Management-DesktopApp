@@ -435,19 +435,36 @@ public partial class SupplierInvoicesDialog : UserControl
         printBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; PrintInvoice(invoice); };
         actions.Children.Add(printBtn);
 
-        // View invoice details
-        var viewBtn = new Border
+        // View the invoice's orders (same as details window)
+        var ordersBtn = new Border
         {
-            CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#00695C")!,
+            CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#00897B")!,
             Cursor = Cursors.Hand, Padding = new Thickness(10, 5, 10, 5), Margin = new Thickness(4, 0, 4, 0),
             Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
             {
-                new Path { Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Data = Geometry.Parse("M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z") },
-                new TextBlock { Text = "عرض", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(5, 0, 0, 0) }
+                new Path { Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Data = Geometry.Parse("M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z") },
+                new TextBlock { Text = "الطلبيات", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(5, 0, 0, 0) }
             }}
         };
-        viewBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; OpenInvoice(invoice); };
-        actions.Children.Add(viewBtn);
+        ordersBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; OpenInvoice(invoice); };
+        actions.Children.Add(ordersBtn);
+
+        if (invoice.Status != InvoiceStatus.Paid && invoice.Status != InvoiceStatus.Cancelled)
+        {
+            // Add an order to THIS supplier invoice
+            var addBtn = new Border
+            {
+                CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#1565C0")!,
+                Cursor = Cursors.Hand, Padding = new Thickness(10, 5, 10, 5), Margin = new Thickness(4, 0, 4, 0),
+                Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
+                {
+                    new Path { Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Data = Geometry.Parse("M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z") },
+                    new TextBlock { Text = "إضافة طلبية", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(5, 0, 0, 0) }
+                }}
+            };
+            addBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; AddOrderToInvoice(invoice); };
+            actions.Children.Add(addBtn);
+        }
 
         if (invoice.Status != InvoiceStatus.Paid && invoice.Status != InvoiceStatus.Cancelled)
         {
@@ -644,6 +661,19 @@ public partial class SupplierInvoicesDialog : UserControl
             if (r == true) LoadData();
         };
         mainWindow.ShowOverlay(dialog);
+    }
+
+    private void AddOrderToInvoice(SupplierInvoice invoice)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var fullInvoice = _db.SupplierInvoices.First(i => i.Id == invoice.Id);
+        var dialog = new StockInDialog(fullInvoice);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            ApplyFilter();
+        };
     }
 
     private static readonly SolidColorBrush BlueBrush = new(Color.FromRgb(21, 101, 192));

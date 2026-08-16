@@ -23,6 +23,7 @@ public partial class StockInDialog : UserControl
     private readonly ObservableCollection<StockInEntry> _selectedEntries = [];
     private List<Models.Product> _allProducts = [];
     private bool _loaded;
+    private readonly SupplierInvoice? _targetInvoice;
 
     private readonly Dictionary<int, System.Windows.Threading.DispatcherTimer> _flashTimers = new();
     private readonly Dictionary<int, Brush?> _originalBrushes = new();
@@ -31,17 +32,30 @@ public partial class StockInDialog : UserControl
         Interval = TimeSpan.FromMilliseconds(300)
     };
 
-    public StockInDialog()
+    public StockInDialog() : this(null)
+    {
+    }
+
+    public StockInDialog(SupplierInvoice? invoice)
     {
         InitializeComponent();
         _db = new AppDbContext();
         _inv = new InventoryService(_db);
+        _targetInvoice = invoice != null
+            ? _db.SupplierInvoices.Include(i => i.Items).First(i => i.Id == invoice.Id)
+            : null;
         SelectedItemsList.ItemsSource = _selectedEntries;
         _searchTimer.Tick += (_, _) =>
         {
             _searchTimer.Stop();
             LoadProductCards(TxtSearch.Text.Trim());
         };
+        if (_targetInvoice != null)
+        {
+            TxtDialogTitle.Text = $"إضافة طلبية لفاتورة المورد #{_targetInvoice.Id}";
+            TxtDialogSubtitle.Text = $"{_targetInvoice.SupplierName ?? "بدون مورد"} — المنتجات الجديدة تُضاف للمخزون وتُسجل على الفاتورة";
+            SupplierBar.Visibility = Visibility.Collapsed;
+        }
         LoadSuppliers();
         LoadProductCards();
         _loaded = true;
@@ -276,6 +290,33 @@ public partial class StockInDialog : UserControl
             {
                 await _inv.StockIn(product, entry.CartonQty, entry.BoxQty, entry.PieceQty, entry.TotalCost);
             }
+        }
+
+        if (_targetInvoice != null)
+        {
+            foreach (var entry in toSave)
+            {
+                _targetInvoice.Items.Add(new SupplierInvoiceItem
+                {
+                    SupplierInvoiceId = _targetInvoice.Id,
+                    ProductId = entry.ProductId,
+                    CartonQuantity = entry.CartonQty,
+                    BoxQuantity = entry.BoxQty,
+                    PieceQuantity = entry.PieceQty,
+                    CostPrice = entry.TotalCost
+                });
+            }
+            _targetInvoice.TotalAmount += toSave.Sum(e => e.TotalCost);
+            if (_targetInvoice.Remaining <= 0)
+                _targetInvoice.Status = _targetInvoice.TotalPaid > 0 ? InvoiceStatus.Paid : InvoiceStatus.Open;
+            else
+                _targetInvoice.Status = InvoiceStatus.PartiallyPaid;
+            await _db.SaveChangesAsync();
+            App.NotifyDataChanged();
+            App.AppBackup?.BackupIfOnOperation();
+            NotificationManager.ShowSuccess($"تمت إضافة الطلبية بنجاح على فاتورة المورد #{_targetInvoice.Id}");
+            DialogClosed?.Invoke(this, true);
+            return;
         }
 
         var supplierItem = CmbSupplier.SelectedItem as ComboBoxItem;

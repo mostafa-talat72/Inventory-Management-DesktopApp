@@ -59,8 +59,10 @@ public partial class SupplierInvoiceDetailsDialog : UserControl
             ? Visibility.Collapsed
             : Visibility.Visible;
         BtnAddPayment.Visibility = BtnPay.Visibility;
+        BtnAddItem.Visibility = BtnPay.Visibility;
 
-        // المنتجات
+        // الطلبيات
+        var canEditItems = _invoice.Status is not (InvoiceStatus.Paid or InvoiceStatus.Cancelled);
         var itemItems = _invoice.Items.OrderBy(i => i.Id).Select(i =>
         {
             var units = i.Product.Units.ToList();
@@ -73,12 +75,17 @@ public partial class SupplierInvoiceDetailsDialog : UserControl
             if (i.BoxQuantity > 0)    parts.Add($"{i.BoxQuantity} {boxName}");
             if (i.PieceQuantity > 0)  parts.Add($"{i.PieceQuantity} {pieceName}");
 
-            return new ItemRow
+            var row = new ItemRow
             {
+                Id = i.Id,
                 ProductName = i.Product.Name,
                 QtyDisplay = parts.Count > 0 ? string.Join("، ", parts) : "—",
-                CostDisplay = $"{i.CostPrice:0.##} ج.م"
+                CostDisplay = $"{i.CostPrice:0.##} ج.م",
+                CanEdit = canEditItems ? Visibility.Visible : Visibility.Collapsed
             };
+            row.EditCommand = new RelayCommand(() => EditItem(i.Id));
+            row.DeleteCommand = new RelayCommand(() => DeleteItem(i.Id));
+            return row;
         }).ToList();
         ItemsList.ItemsSource = itemItems;
 
@@ -121,6 +128,108 @@ public partial class SupplierInvoiceDetailsDialog : UserControl
             App.AppBackup?.BackupIfOnOperation();
             LoadData();
         }, ConfirmDialog.DialogType.Danger);
+    }
+
+    private void BtnAddItem_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new StockInDialog(_invoice);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true)
+            {
+                _db.Entry(_invoice).Reload();
+                _db.Entry(_invoice).Collection(i => i.Items).Load();
+                LoadData();
+            }
+        };
+    }
+
+    private void EditItem(int itemId)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var item = _db.SupplierInvoiceItems.First(i => i.Id == itemId);
+        var dialog = new SupplierItemEditDialog(_db, item);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true) LoadData();
+        };
+    }
+
+    private void DeleteItem(int itemId)
+    {
+        var item = _db.SupplierInvoiceItems.Include(i => i.Product).FirstOrDefault(i => i.Id == itemId);
+        if (item == null) return;
+        var product = item.Product;
+
+        ConfirmDialog.Show("حذف الطلبية",
+            $"هل تريد حذف طلبية «{product.Name}» من فاتورة المورد #{_invoice.Id}؟\nسيتم خصم كميتها من المخزون.",
+            result =>
+            {
+                if (result != true) return;
+
+                int totalPieces = _inv.CalculatePieceEquivalent(product, item.CartonQuantity, item.BoxQuantity, item.PieceQuantity);
+                if (totalPieces > 0)
+                {
+                    var (fifoCost, consumed) = _inv.CalculateFifoCost(product, totalPieces);
+                    _db.InventoryMovements.Add(new InventoryMovement
+                    {
+                        ProductId = product.Id,
+                        MovementType = MovementType.StockOut,
+                        Quantity = totalPieces,
+                        CostPrice = totalPieces > 0 ? fifoCost / totalPieces : 0,
+                        ReferenceType = ReferenceType.Adjustment,
+                        Notes = $"حذف طلبية من فاتورة مورد #{_invoice.Id}"
+                    });
+                    foreach (var batch in consumed)
+                        _db.Entry(batch).State = EntityState.Modified;
+                }
+
+                _db.SupplierInvoiceItems.Remove(item);
+                _db.SaveChanges();
+
+                _db.Entry(_invoice).Reload();
+
+                // لو الفاتورة بقت فارغة تتحذف تلقائياً (مثل حذف طلبات العملاء)
+                int remainingItems = _db.SupplierInvoiceItems.Count(i => i.SupplierInvoiceId == _invoice.Id);
+                if (remainingItems == 0)
+                {
+                    var payments = _db.SupplierPayments.Where(p => p.SupplierInvoiceId == _invoice.Id).ToList();
+                    _db.SupplierPayments.RemoveRange(payments);
+                    _db.SupplierInvoices.Remove(_invoice);
+                    _db.SaveChanges();
+                    App.NotifyDataChanged();
+                    App.AppBackup?.BackupIfOnOperation();
+                    NotificationManager.ShowSuccess($"تم حذف فاتورة المورد #{_invoice.Id} تلقائياً لأنها أصبحت فارغة");
+                    DialogClosed?.Invoke(this, true);
+                    return;
+                }
+
+                _invoice.TotalAmount = _db.SupplierInvoiceItems
+                    .Where(i => i.SupplierInvoiceId == _invoice.Id)
+                    .Sum(i => i.CostPrice);
+                if (_invoice.Remaining <= 0)
+                    _invoice.Status = _invoice.TotalPaid > 0 ? InvoiceStatus.Paid : InvoiceStatus.Open;
+                else
+                    _invoice.Status = InvoiceStatus.PartiallyPaid;
+                _db.SaveChanges();
+                App.NotifyDataChanged();
+                App.AppBackup?.BackupIfOnOperation();
+
+                // طباعة الفاتورة بعد الحذف مثل حذف طلبات العملاء
+                try
+                {
+                    new ReceiptPrinter(_db).PrintSupplierInvoice(_invoice);
+                }
+                catch (System.Exception) { }
+
+                LoadData();
+            },
+            ConfirmDialog.DialogType.Danger);
     }
 
     private void BtnAddPayment_Click(object sender, RoutedEventArgs e)
@@ -202,9 +311,13 @@ public partial class SupplierInvoiceDetailsDialog : UserControl
 
     public class ItemRow
     {
+        public int Id { get; set; }
         public string ProductName { get; set; } = "";
         public string QtyDisplay { get; set; } = "";
         public string CostDisplay { get; set; } = "";
+        public Visibility CanEdit { get; set; } = Visibility.Visible;
+        public ICommand EditCommand { get; set; } = null!;
+        public ICommand DeleteCommand { get; set; } = null!;
     }
 
     public class PaymentRow : INotifyPropertyChanged
