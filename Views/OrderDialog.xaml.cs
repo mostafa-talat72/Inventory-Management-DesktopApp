@@ -80,6 +80,10 @@ public partial class OrderDialog : UserControl
         PricesPanel.Visibility = Visibility.Visible;
         QtyPanel.Visibility = Visibility.Visible;
 
+        TxtCartonLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        TxtBoxLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
+        TxtPieceLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+
         TxtCartonQty.Text = "0";
         TxtBoxQty.Text = "0";
         TxtPieceQty.Text = "0";
@@ -249,6 +253,10 @@ public partial class OrderDialog : UserControl
 
         _invoice.TotalAmount += total;
 
+        var cartonName = cartonUnit?.Name ?? "كرتونة";
+        var boxName = boxUnit?.Name ?? "علبة";
+        var pieceName = pieceUnit?.Name ?? "قطعة";
+
         _db.InventoryMovements.Add(new InventoryMovement
         {
             ProductId = _selectedProduct.Id,
@@ -258,7 +266,7 @@ public partial class OrderDialog : UserControl
             SellingPrice = total,
             ReferenceType = ReferenceType.Sale,
             ReferenceId = order.Id,
-            Notes = $"بيع {cartonQty} كرتونة, {boxQty} علبة, {pieceQty} قطعة - فاتورة {_invoice.Id}"
+            Notes = $"بيع {cartonQty} {cartonName}, {boxQty} {boxName}, {pieceQty} {pieceName} - فاتورة {_invoice.Id}"
         });
 
         foreach (var batch in consumed)

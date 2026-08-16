@@ -33,6 +33,8 @@ public class ProductUnit
 
     public decimal WholesalePrice { get; set; }
 
+    public int MinStockLevel { get; set; }
+
     public bool IsBaseUnit { get; set; }
 
     public ICollection<ProductUnit> ChildUnits { get; set; } = new List<ProductUnit>();

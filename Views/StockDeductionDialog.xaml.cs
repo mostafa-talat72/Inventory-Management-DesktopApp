@@ -66,13 +66,10 @@ public partial class StockDeductionDialog : UserControl
         BoxBorder.Visibility    = _hasBox    ? Visibility.Visible : Visibility.Collapsed;
         PieceBorder.Visibility  = _hasPiece  ? Visibility.Visible : Visibility.Collapsed;
 
-        // If only one unit type, show its real name
-        if (!_hasCarton && !_hasBox && _hasPiece)
-            TxtPieceLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
-        if (!_hasCarton && _hasBox && !_hasPiece)
-            TxtBoxLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
-        if (_hasCarton && !_hasBox && !_hasPiece)
-            TxtCartonLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        // Use the real unit names
+        TxtCartonLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        TxtBoxLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
+        TxtPieceLabel.Text = units.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
     }
 
     private void Qty_TextChanged(object sender, TextChangedEventArgs e)
@@ -98,15 +95,19 @@ public partial class StockDeductionDialog : UserControl
         int available   = _inv.GetAvailableStock(_product);
         int remaining   = available - totalPieces;
 
+        var pieceName = _db.ProductUnits.AsNoTracking()
+            .Where(u => u.ProductId == _product.Id && u.UnitType == UnitType.Piece)
+            .Select(u => u.Name).FirstOrDefault() ?? "قطعة";
+
         // Temporarily create a fake stock state for display
         TxtAfterStock.Text = remaining > 0
             ? FormatRemainingStock(remaining)
-            : (remaining == 0 ? "0 (نفاد)" : $"تجاوز بـ {-remaining} قطعة");
+            : (remaining == 0 ? "0 (نفاد)" : $"تجاوز بـ {-remaining} {pieceName}");
 
         bool exceeded = remaining < 0;
         WarningBorder.Visibility = exceeded ? Visibility.Visible : Visibility.Collapsed;
         if (exceeded)
-            TxtWarning.Text = $"الكمية المطلوبة ({totalPieces} قطعة) تتجاوز المخزون ({available} قطعة)";
+            TxtWarning.Text = $"الكمية المطلوبة ({totalPieces} {pieceName}) تتجاوز المخزون ({available} {pieceName})";
     }
 
     private string FormatRemainingStock(int pieces)
@@ -118,6 +119,10 @@ public partial class StockDeductionDialog : UserControl
         bool hasBox    = units.Any(u => u.UnitType == UnitType.Box);
         bool hasPiece  = units.Any(u => u.UnitType == UnitType.Piece);
 
+        var cartonName = units.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        var boxName = units.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
+        var pieceName = units.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+
         int ppc = _inv.GetPiecesPerCarton(_product);
         int ppb = _inv.GetPiecesPerBox(_product);
         int bpc = _inv.GetBoxesPerCarton(_product);
@@ -127,31 +132,31 @@ public partial class StockDeductionDialog : UserControl
         {
             int cartons = pieces / ppc; int rem1 = pieces % ppc;
             int boxes   = rem1  / ppb; int rem2 = rem1 % ppb;
-            if (cartons > 0) parts.Add($"{cartons} كرتونة");
-            if (boxes   > 0) parts.Add($"{boxes} علبة");
-            if (rem2    > 0) parts.Add($"{rem2} قطعة");
+            if (cartons > 0) parts.Add($"{cartons} {cartonName}");
+            if (boxes   > 0) parts.Add($"{boxes} {boxName}");
+            if (rem2    > 0) parts.Add($"{rem2} {pieceName}");
         }
         else if (hasCarton && hasBox)
         {
             int cartons = pieces / bpc; int rem = pieces % bpc;
-            if (cartons > 0) parts.Add($"{cartons} كرتونة");
-            if (rem     > 0) parts.Add($"{rem} علبة");
+            if (cartons > 0) parts.Add($"{cartons} {cartonName}");
+            if (rem     > 0) parts.Add($"{rem} {boxName}");
         }
         else if (hasCarton && hasPiece)
         {
             int cartons = pieces / ppc; int rem = pieces % ppc;
-            if (cartons > 0) parts.Add($"{cartons} كرتونة");
-            if (rem     > 0) parts.Add($"{rem} قطعة");
+            if (cartons > 0) parts.Add($"{cartons} {cartonName}");
+            if (rem     > 0) parts.Add($"{rem} {pieceName}");
         }
         else if (hasBox && hasPiece)
         {
             int boxes = pieces / ppb; int rem = pieces % ppb;
-            if (boxes > 0) parts.Add($"{boxes} علبة");
-            if (rem   > 0) parts.Add($"{rem} قطعة");
+            if (boxes > 0) parts.Add($"{boxes} {boxName}");
+            if (rem   > 0) parts.Add($"{rem} {pieceName}");
         }
-        else if (hasCarton) parts.Add($"{pieces} كرتونة");
-        else if (hasBox)    parts.Add($"{pieces} علبة");
-        else                parts.Add($"{pieces} قطعة");
+        else if (hasCarton) parts.Add($"{pieces} {cartonName}");
+        else if (hasBox)    parts.Add($"{pieces} {boxName}");
+        else                parts.Add($"{pieces} {pieceName}");
 
         return parts.Count > 0 ? string.Join("، ", parts) : "0";
     }
@@ -184,16 +189,24 @@ public partial class StockDeductionDialog : UserControl
 
         if (totalPieces > available)
         {
+            var pieceName = _db.ProductUnits.AsNoTracking()
+                .Where(u => u.ProductId == _product.Id && u.UnitType == UnitType.Piece)
+                .Select(u => u.Name).FirstOrDefault() ?? "قطعة";
             NotificationManager.ShowWarning(
-                $"الكمية المطلوبة ({totalPieces} قطعة) تتجاوز المخزون المتاح ({available} قطعة).\n" +
+                $"الكمية المطلوبة ({totalPieces} {pieceName}) تتجاوز المخزون المتاح ({available} {pieceName}).\n" +
                 $"المخزون الحالي: {_inv.GetStockDisplay(_product)}");
             return;
         }
 
+        var unitsForDesc = _db.ProductUnits.AsNoTracking().Where(u => u.ProductId == _product.Id).ToList();
+        var descCartonName = unitsForDesc.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        var descBoxName = unitsForDesc.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
+        var descPieceName = unitsForDesc.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+
         var parts = new List<string>();
-        if (carton > 0) parts.Add($"{carton} كرتونة");
-        if (box    > 0) parts.Add($"{box} علبة");
-        if (piece  > 0) parts.Add($"{piece} قطعة");
+        if (carton > 0) parts.Add($"{carton} {descCartonName}");
+        if (box    > 0) parts.Add($"{box} {descBoxName}");
+        if (piece  > 0) parts.Add($"{piece} {descPieceName}");
         string qtyDesc = string.Join("، ", parts);
 
         ConfirmDialog.Show(

@@ -39,8 +39,7 @@ public static class ThemeService
         var toRemove = dicts
             .Where(d => d.Source != null &&
                         (d.Source.OriginalString.Contains("LightTheme") ||
-                         d.Source.OriginalString.Contains("DarkTheme") ||
-                         d.Source.OriginalString.Contains("Colors.xaml")))
+                         d.Source.OriginalString.Contains("DarkTheme")))
             .ToList();
 
         foreach (var d in toRemove)

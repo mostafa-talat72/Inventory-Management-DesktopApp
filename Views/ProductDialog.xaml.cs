@@ -1,6 +1,11 @@
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Microsoft.EntityFrameworkCore;
 using ProductApp.Data;
 using ProductApp.Models;
 using ProductApp.Services;
@@ -11,9 +16,14 @@ public partial class ProductDialog : UserControl
 {
     public event EventHandler<bool?>? DialogClosed;
 
+    private static readonly string ImagesFolder = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "MTE Stock", "ProductImages");
+
     private readonly AppDbContext _db;
     private readonly Product? _product;
     private readonly HashSet<string> _dirtyFields = [];
+    private string? _selectedImagePath;
     private bool _loaded;
     private bool _isUpdating;
 
@@ -34,6 +44,7 @@ public partial class ProductDialog : UserControl
         }
 
         _loaded = true;
+        UpdateUnitLabels();
     }
 
     private void LoadProductData()
@@ -42,7 +53,14 @@ public partial class ProductDialog : UserControl
 
         TxtName.Text = _product!.Name;
         TxtDescription.Text = _product.Description;
+        TxtBarcode.Text = _product.Barcode ?? "";
         BtnSave.Content = "حفظ التعديلات";
+
+        if (!string.IsNullOrWhiteSpace(_product.ImagePath) && File.Exists(_product.ImagePath))
+        {
+            _selectedImagePath = _product.ImagePath;
+            ShowImagePreview(_product.ImagePath);
+        }
 
         var units = _db.ProductUnits.Where(u => u.ProductId == _product.Id).ToList();
         var piece = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
@@ -55,6 +73,7 @@ public partial class ProductDialog : UserControl
             TxtPieceName.Text = piece.Name;
             TxtPieceRetail.Text = piece.RetailPrice.ToString();
             TxtPieceWholesale.Text = piece.WholesalePrice == piece.RetailPrice ? "" : piece.WholesalePrice.ToString("0.##");
+            TxtPieceMin.Text = piece.MinStockLevel > 0 ? piece.MinStockLevel.ToString() : "";
         }
 
         ChkHasBox.IsChecked = box != null;
@@ -64,6 +83,7 @@ public partial class ProductDialog : UserControl
             TxtBoxQty.Text = box.QuantityPerParent.ToString();
             TxtBoxRetail.Text = box.RetailPrice.ToString("0.##");
             TxtBoxWholesale.Text = box.WholesalePrice == box.RetailPrice ? "" : box.WholesalePrice.ToString("0.##");
+            TxtBoxMin.Text = box.MinStockLevel > 0 ? box.MinStockLevel.ToString() : "";
         }
 
         ChkHasCarton.IsChecked = carton != null;
@@ -73,11 +93,12 @@ public partial class ProductDialog : UserControl
             TxtCartonQty.Text = carton.QuantityPerParent.ToString();
             TxtCartonRetail.Text = carton.RetailPrice.ToString("0.##");
             TxtCartonWholesale.Text = carton.WholesalePrice == carton.RetailPrice ? "" : carton.WholesalePrice.ToString("0.##");
+            TxtCartonMin.Text = carton.MinStockLevel > 0 ? carton.MinStockLevel.ToString() : "";
 
             bool hasBox = units.Any(u => u.UnitType == UnitType.Box && u.ParentUnitId == carton.Id);
         }
 
-        UpdatePieceDependentFields();
+        UpdateUnitLabels();
         _loaded = true;
     }
 
@@ -141,6 +162,10 @@ public partial class ProductDialog : UserControl
         bool hasBox = ChkHasBox.IsChecked == true;
         bool hasCarton = ChkHasCarton.IsChecked == true;
 
+        var pieceName = PieceName;
+        var boxName = BoxName;
+        var cartonName = CartonName;
+
         if (hasBox && !hasPiece)
         {
             BoxQtyCol.Width = new GridLength(0);
@@ -166,13 +191,13 @@ public partial class ProductDialog : UserControl
         // Box label & hint
         if (hasPiece)
         {
-            TxtBoxUnitLabel.Text = "العلبة تحتوي على: قطع";
-            TxtBoxHint.Text = "* السعر يُحتسب تلقائياً من سعر القطعة × عدد القطع";
+            TxtBoxUnitLabel.Text = $"{boxName} تحتوي على: {pieceName}";
+            TxtBoxHint.Text = $"* السعر يُحتسب تلقائياً من سعر {pieceName} × عدد {pieceName}";
             TxtBoxHint.Visibility = Visibility.Visible;
         }
         else
         {
-            TxtBoxUnitLabel.Text = "العلبة - وحدة مستقلة";
+            TxtBoxUnitLabel.Text = $"{boxName} - وحدة مستقلة";
             TxtBoxHint.Visibility = Visibility.Collapsed;
         }
 
@@ -181,23 +206,56 @@ public partial class ProductDialog : UserControl
         {
             if (hasBox)
             {
-                TxtCartonUnitLabel.Text = "الكرتونة تحتوي على: علب";
-                TxtCartonHint.Text = "* السعر يُحتسب تلقائياً من سعر العلبة × عدد العلب";
+                TxtCartonUnitLabel.Text = $"{cartonName} تحتوي على: {boxName}";
+                TxtCartonHint.Text = $"* السعر يُحتسب تلقائياً من سعر {boxName} × عدد {boxName}";
                 TxtCartonHint.Visibility = Visibility.Visible;
             }
             else if (hasPiece)
             {
-                TxtCartonUnitLabel.Text = "الكرتونة تحتوي على: قطع مباشرة";
-                TxtCartonHint.Text = "* السعر يُحتسب تلقائياً من سعر القطعة × عدد القطع";
+                TxtCartonUnitLabel.Text = $"{cartonName} تحتوي على: {pieceName} مباشرة";
+                TxtCartonHint.Text = $"* السعر يُحتسب تلقائياً من سعر {pieceName} × عدد {pieceName}";
                 TxtCartonHint.Visibility = Visibility.Visible;
             }
             else
             {
-                TxtCartonUnitLabel.Text = "الكرتونة - وحدة مستقلة";
+                TxtCartonUnitLabel.Text = $"{cartonName} - وحدة مستقلة";
                 TxtCartonHint.Text = "* أدخل السعر يدوياً";
                 TxtCartonHint.Visibility = Visibility.Visible;
             }
         }
+
+        PieceMinField.Visibility = hasPiece ? Visibility.Visible : Visibility.Collapsed;
+        BoxMinField.Visibility = hasBox ? Visibility.Visible : Visibility.Collapsed;
+        CartonMinField.Visibility = hasCarton ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private string PieceName => string.IsNullOrWhiteSpace(TxtPieceName?.Text) ? "قطعة" : TxtPieceName.Text.Trim();
+    private string BoxName => string.IsNullOrWhiteSpace(TxtBoxName?.Text) ? "علبة" : TxtBoxName.Text.Trim();
+    private string CartonName => string.IsNullOrWhiteSpace(TxtCartonName?.Text) ? "كرتونة" : TxtCartonName.Text.Trim();
+
+    private void UpdateUnitLabels()
+    {
+        if (ChkHasPiece == null || ChkHasBox == null || ChkHasCarton == null) return;
+
+        ChkHasPiece.Content = $"يوجد {PieceName}";
+        ChkHasBox.Content = $"يوجد {BoxName}";
+        ChkHasCarton.Content = $"يوجد {CartonName}";
+        TxtPieceTitle.Text = PieceName;
+        TxtBoxTitle.Text = BoxName;
+        TxtCartonTitle.Text = CartonName;
+        if (TxtPieceMinLabel != null)
+            TxtPieceMinLabel.Text = $"({PieceName}):";
+        if (TxtBoxMinLabel != null)
+            TxtBoxMinLabel.Text = $"({BoxName}):";
+        if (TxtCartonMinLabel != null)
+            TxtCartonMinLabel.Text = $"({CartonName}):";
+        UpdatePieceDependentFields();
+    }
+
+    private void UnitName_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!_loaded) return;
+        UpdateUnitLabels();
     }
 
     private void Qty_TextChanged(object sender, TextChangedEventArgs e)
@@ -291,10 +349,55 @@ public partial class ProductDialog : UserControl
 
     private void BtnSave_Click(object sender, RoutedEventArgs e)
     {
+        if (SaveProduct())
+            DialogClosed?.Invoke(this, true);
+    }
+
+    private void BtnSaveAndAdd_Click(object sender, RoutedEventArgs e)
+    {
+        if (SaveProduct())
+        {
+            NotificationManager.ShowSuccess("تم الحفظ — يمكنك إضافة منتج آخر");
+            ResetForm();
+        }
+    }
+
+    private void ResetForm()
+    {
+        _loaded = false;
+        _dirtyFields.Clear();
+
+        TxtName.Text = string.Empty;
+        TxtDescription.Text = string.Empty;
+        TxtBarcode.Text = string.Empty;
+
+        ChkHasPiece.IsChecked = false;
+        TxtPieceName.Text = "قطعة";
+        TxtPieceRetail.Text = string.Empty;
+        TxtPieceWholesale.Text = string.Empty;
+
+        ChkHasBox.IsChecked = true;
+        TxtBoxName.Text = "علبة";
+        TxtBoxQty.Text = string.Empty;
+        TxtBoxRetail.Text = string.Empty;
+        TxtBoxWholesale.Text = string.Empty;
+
+        ChkHasCarton.IsChecked = false;
+        TxtCartonName.Text = "كرتونة";
+        TxtCartonQty.Text = string.Empty;
+        TxtCartonRetail.Text = string.Empty;
+        TxtCartonWholesale.Text = string.Empty;
+
+        _loaded = true;
+        TxtName.Focus();
+    }
+
+    private bool SaveProduct()
+    {
         if (string.IsNullOrWhiteSpace(TxtName.Text) || TxtName.Text == ProductApp.Converters.WatermarkBehavior.GetWatermark(TxtName))
         {
             NotificationManager.ShowError("الرجاء إدخال اسم المنتج");
-            return;
+            return false;
         }
 
         var name = TxtName.Text.Trim();
@@ -302,7 +405,7 @@ public partial class ProductDialog : UserControl
         if (_db.Products.Any(p => p.Name == name && p.Id != excludeId))
         {
             NotificationManager.ShowError("هذا الاسم موجود بالفعل");
-            return;
+            return false;
         }
 
         bool hasPiece = ChkHasPiece.IsChecked == true;
@@ -311,32 +414,32 @@ public partial class ProductDialog : UserControl
 
         if (!hasPiece && !hasBox && !hasCarton)
         {
-            NotificationManager.ShowError("الرجاء اختيار نوع تعبئة واحد على الأقل (قطعة، علبة، كرتونة)");
-            return;
+            NotificationManager.ShowError($"الرجاء اختيار نوع تعبئة واحد على الأقل ({PieceName}، {BoxName}، {CartonName})");
+            return false;
         }
 
         if (hasPiece && (string.IsNullOrWhiteSpace(TxtPieceRetail.Text) || !TryParseDecimal(TxtPieceRetail.Text, out _)))
         {
-            NotificationManager.ShowError("الرجاء إدخال سعر القطاعي للقطعة");
-            return;
+            NotificationManager.ShowError($"الرجاء إدخال سعر القطاعي لـ{PieceName}");
+            return false;
         }
         if (hasBox && (string.IsNullOrWhiteSpace(TxtBoxRetail.Text) || !TryParseDecimal(TxtBoxRetail.Text, out _)))
         {
-            NotificationManager.ShowError("الرجاء إدخال سعر القطاعي للعلبة");
-            return;
+            NotificationManager.ShowError($"الرجاء إدخال سعر القطاعي لـ{BoxName}");
+            return false;
         }
         if (hasCarton && (string.IsNullOrWhiteSpace(TxtCartonRetail.Text) || !TryParseDecimal(TxtCartonRetail.Text, out _)))
         {
-            NotificationManager.ShowError("الرجاء إدخال سعر القطاعي للكرتونة");
-            return;
+            NotificationManager.ShowError($"الرجاء إدخال سعر القطاعي لـ{CartonName}");
+            return false;
         }
 
         Product product;
         if (_product != null)
         {
-            product = _product;
-            _db.Attach(product);
-            _db.ProductUnits.RemoveRange(_db.ProductUnits.Where(u => u.ProductId == product.Id));
+            product = _db.Products.Find(_product!.Id)!;
+            var oldUnits = _db.ProductUnits.Where(u => u.ProductId == product.Id).ToList();
+            _db.ProductUnits.RemoveRange(oldUnits);
         }
         else
         {
@@ -346,6 +449,21 @@ public partial class ProductDialog : UserControl
 
         product.Name = name;
         product.Description = TxtDescription.Text?.Trim();
+        var barcodeText = TxtBarcode.Text?.Trim();
+        if (!string.IsNullOrWhiteSpace(barcodeText) && barcodeText != ProductApp.Converters.WatermarkBehavior.GetWatermark(TxtBarcode))
+        {
+            if (_db.Products.Any(p => p.Barcode == barcodeText && p.Id != excludeId))
+            {
+                NotificationManager.ShowError("هذا الباركود مستخدم لمنتج آخر");
+                return false;
+            }
+            product.Barcode = barcodeText;
+        }
+        else
+        {
+            product.Barcode = null;
+        }
+        product.ImagePath = _selectedImagePath;
         _db.SaveChanges();
 
         ProductUnit? pieceUnit = null;
@@ -356,7 +474,6 @@ public partial class ProductDialog : UserControl
         {
             TryParseDecimal(TxtPieceRetail.Text, out decimal pieceRetail);
             decimal pieceWholesale = TryParseDecimal(TxtPieceWholesale.Text, out decimal pw) ? pw : pieceRetail;
-
             pieceUnit = new ProductUnit
             {
                 ProductId = product.Id,
@@ -364,6 +481,7 @@ public partial class ProductDialog : UserControl
                 UnitType = UnitType.Piece,
                 RetailPrice = pieceRetail,
                 WholesalePrice = pieceWholesale,
+                MinStockLevel = int.TryParse(TxtPieceMin.Text?.Trim(), out int pieceMin) && pieceMin > 0 ? pieceMin : 0,
                 IsBaseUnit = !hasBox && !hasCarton,
                 QuantityPerParent = 1
             };
@@ -376,15 +494,14 @@ public partial class ProductDialog : UserControl
             bool boxQtyValid = int.TryParse(TxtBoxQty.Text, out int boxQty) && boxQty > 0;
             decimal boxRetail = TryParseDecimal(TxtBoxRetail.Text, out decimal br) ? br : 0;
             decimal boxWholesale = TryParseDecimal(TxtBoxWholesale.Text, out decimal bw) ? bw : boxRetail;
-            string boxName = string.IsNullOrWhiteSpace(TxtBoxName.Text) ? "علبة" : TxtBoxName.Text.Trim();
-
             boxUnit = new ProductUnit
             {
                 ProductId = product.Id,
-                Name = boxName,
+                Name = string.IsNullOrWhiteSpace(TxtBoxName.Text) ? "علبة" : TxtBoxName.Text.Trim(),
                 UnitType = UnitType.Box,
                 RetailPrice = boxRetail,
                 WholesalePrice = boxWholesale,
+                MinStockLevel = int.TryParse(TxtBoxMin.Text?.Trim(), out int boxMin) && boxMin > 0 ? boxMin : 0,
                 QuantityPerParent = boxQtyValid ? boxQty : 1,
                 IsBaseUnit = !hasPiece && !hasCarton
             };
@@ -397,15 +514,14 @@ public partial class ProductDialog : UserControl
             bool cartonQtyValid = int.TryParse(TxtCartonQty.Text, out int cartonQty) && cartonQty > 0;
             decimal cartonRetail = TryParseDecimal(TxtCartonRetail.Text, out decimal cr) ? cr : 0;
             decimal cartonWholesale = TryParseDecimal(TxtCartonWholesale.Text, out decimal cw) ? cw : cartonRetail;
-            string cartonName = string.IsNullOrWhiteSpace(TxtCartonName.Text) ? "كرتونة" : TxtCartonName.Text.Trim();
-
             cartonUnit = new ProductUnit
             {
                 ProductId = product.Id,
-                Name = cartonName,
+                Name = string.IsNullOrWhiteSpace(TxtCartonName.Text) ? "كرتونة" : TxtCartonName.Text.Trim(),
                 UnitType = UnitType.Carton,
                 RetailPrice = cartonRetail,
                 WholesalePrice = cartonWholesale,
+                MinStockLevel = int.TryParse(TxtCartonMin.Text?.Trim(), out int cartonMin) && cartonMin > 0 ? cartonMin : 0,
                 QuantityPerParent = cartonQtyValid ? cartonQty : 1,
                 IsBaseUnit = !hasPiece && !hasBox
             };
@@ -419,28 +535,92 @@ public partial class ProductDialog : UserControl
             if (boxUnit != null)
             {
                 pieceUnit.ParentUnitId = boxUnit.Id;
-                if (cartonUnit != null)
-                    boxUnit.ParentUnitId = cartonUnit.Id;
+                if (cartonUnit != null) boxUnit.ParentUnitId = cartonUnit.Id;
             }
             else if (cartonUnit != null)
-            {
                 pieceUnit.ParentUnitId = cartonUnit.Id;
-            }
         }
         else if (boxUnit != null && cartonUnit != null)
-        {
             boxUnit.ParentUnitId = cartonUnit.Id;
-        }
 
         _db.SaveChanges();
-        DialogClosed?.Invoke(this, true);
+        return true;
     }
 
     private static bool TryParseDecimal(string? text, out decimal value) =>
         decimal.TryParse(text?.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out value);
+
+    private void BtnChooseImage_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "اختيار صورة المنتج",
+            Filter = "صور (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg;*.bmp;*.gif"
+        };
+        if (dialog.ShowDialog() != true) return;
+
+        try
+        {
+            Directory.CreateDirectory(ImagesFolder);
+            var ext = Path.GetExtension(dialog.FileName).ToLowerInvariant();
+            if (string.IsNullOrEmpty(ext)) ext = ".png";
+            var dest = Path.Combine(ImagesFolder, $"{Guid.NewGuid():N}{ext}");
+            File.Copy(dialog.FileName, dest, true);
+
+            if (_selectedImagePath != null &&
+                !string.IsNullOrWhiteSpace(_product?.ImagePath) &&
+                !string.Equals(_selectedImagePath, _product.ImagePath, StringComparison.OrdinalIgnoreCase))
+            {
+                try { File.Delete(_selectedImagePath); } catch { }
+            }
+
+            _selectedImagePath = dest;
+            ShowImagePreview(dest);
+        }
+        catch (Exception ex)
+        {
+            NotificationManager.ShowError($"تعذر حفظ الصورة:\n{ex.Message}");
+        }
+    }
+
+    private void BtnRemoveImage_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedImagePath != null &&
+            !string.Equals(_selectedImagePath, _product?.ImagePath, StringComparison.OrdinalIgnoreCase))
+        {
+            try { File.Delete(_selectedImagePath); } catch { }
+        }
+        _selectedImagePath = null;
+        ImgPreview.Source = null;
+        ImgPreview.Visibility = Visibility.Collapsed;
+        ImgPlaceholder.Visibility = Visibility.Visible;
+    }
+
+    private void ShowImagePreview(string path)
+    {
+        try
+        {
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(path);
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.DecodePixelWidth = 112;
+            bitmap.EndInit();
+            ImgPreview.Source = bitmap;
+            ImgPreview.Visibility = Visibility.Visible;
+            ImgPlaceholder.Visibility = Visibility.Collapsed;
+        }
+        catch
+        {
+            ImgPreview.Source = null;
+            ImgPreview.Visibility = Visibility.Collapsed;
+            ImgPlaceholder.Visibility = Visibility.Visible;
+        }
+    }
 
     private void BtnCancel_Click(object sender, RoutedEventArgs e)
     {
         DialogClosed?.Invoke(this, false);
     }
 }
+

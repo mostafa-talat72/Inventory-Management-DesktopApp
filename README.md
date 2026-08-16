@@ -1,158 +1,108 @@
 # MTE Stock — نظام إدارة المخزون والمبيعات
 
-**MTE Stock** is a full-featured desktop inventory management and point-of-sale (POS) system for small to medium businesses. Built with **WPF (.NET 9)** and **SQLite**, fully localized in **Arabic** with RTL support.
+تطبيق سطح مكتب (WPF) باللغة العربية لإدارة المخازن والمبيعات بشكل متكامل، مع دعم الوحدات المتعددة (كرتونة > علبة > قطعة)، وتسعير مختلف للبيع (قطاعي / جملة)، وتكلفة FIFO.
 
 ---
 
-## Features
+## المميزات
 
-### 📦 Products & Multi-Level Units
-- Define products with a **hierarchical unit system**: Carton → Box → Piece
-- Each unit has its own retail/wholesale price and barcode
-- Automatic price calculation: box price = piece price × pieces per box; carton price = box price × boxes per carton
-
-### 📊 Inventory Management (FIFO)
-- **Batch-based** inventory tracking with **FIFO** cost calculation
-- Stock in / stock out / adjustments / returns / shortages
-- Automatic conversion between unit levels (e.g., 2 cartons, 5 boxes, 3 pieces)
-- Real-time stock sufficiency checking before orders
-
-### 🧾 Invoicing & Orders
-- Create invoices with multiple orders per invoice
-- Support for **retail** and **wholesale** pricing per order item
-- Track invoice status: Open / Partially Paid / Paid / Cancelled
-- Order editing with automatic stock return and re-deduction
-
-### 👥 Customer Management
-- Customer records with phone, address, notes
-- Customer status indicators: Good / Has Unpaid / Overdue
-- View customer invoice history and payment summary
-
-### 💳 Payments & Discounts
-- Record, edit, and confirm payments
-- Apply discounts to invoices
-- Merge invoices
-
-### 🖨️ Printing & PDF Export
-- HTML receipt preview with QR code and barcode
-- Direct thermal/printer support via WPF printing
-- **PDF export** using headless Edge/Chrome
-
-### 🔄 Backup & Restore
-- Automatic backups on startup, on operation, and periodic timer
-- Manual backup/restore from Settings
-- Keeps up to 5 latest backups with auto-cleanup
-
-### 📈 Reports & Analytics
-- Dashboard with key metrics: today's sales, costs, profit, customer count
-- Sales/cost/profit reports
-- Stock movement history
+- **إدارة المنتجات**: إضافة وتعديل وحذف المنتجات مع صور وباركود وQR code
+- **الأقسام الهرمية**: تنظيم المنتجات في أقسام وأقسام فرعية (غير محدود المستويات)
+- **الوحدات المتعددة**: كل منتج يدعم 3 وحدات (كرتونة ← علبة ← قطعة) بأسعار مختلفة للقطاعي والجملة
+- **المخزون**: إضافة مخزون (وارد) مع تسجيل التكلفة، خصم آلي باستخدام FIFO
+- **المبيعات (الفواتير)**: إنشاء فواتير مع إضافة طلبات متعددة، تعديل الكميات، خصم آلي من المخزون
+- **سجل حركة المخزون**: تسجيل كل حركة (وارد، صادر، مرتجع، تعديل) مع سعر الوحدة والإجمالي والمرجع
+- **العملاء**: إدارة بيانات العملاء وسجل فواتيرهم ومديونياتهم
+- **المدفوعات**: تسجيل مدفوعات العملاء مع تعديل وحذف
+- **دمج الفواتير**: دمج فواتير متعددة في فاتورة واحدة
+- **التقارير**: تقارير المبيعات والأرباح (يومي، شهري، سنوي، حسب العميل)
+- **الطباعة**: طباعة الفواتير والفواتير المدمجة مع دعم طابعة الاستلام والشبكة
+- **تصدير PDF**: تصدير التقارير والفواتير إلى PDF
+- **النسخ الاحتياطي**: نسخ احتياطي تلقائي للتشفير مع إعدادات مرنة
+- **الأمان**: تسجيل دخول بكلمة مرور (PBKDF2)، إظهار/إخفاء المبالغ
+- **السمات**: واجهة بالوضع الفاتح والداكن
+- **البحث والفلترة**: بحث ذكي عن المنتجات والعملاء والفواتير مع فلترة حسب الأقسام
 
 ---
 
-## Tech Stack
+## التقنيات المستخدمة
 
-| Component | Technology |
-|---|---|
-| Language | C# 12 (.NET 9.0) |
-| UI | Windows Presentation Foundation (WPF) |
-| Database | SQLite via Entity Framework Core 9.0 |
-| PDF Export | Headless Edge/Chrome (`--print-to-pdf`) |
-| Barcodes | ZXing.Net (CODE_128) |
-| QR Codes | QRCoder |
-| Installer | Inno Setup 6 |
+- **.NET 9** — Windows Presentation Foundation (WPF)
+- **Entity Framework Core 9** — SQLite (محلي)
+- **QRCoder** — توليد QR code
+- **ZXing.Net** — قراءة وكتابة الباركود
+- **Inno Setup** — إنشاء مثبت التطبيق
 
 ---
 
-## Project Structure
+## هيكل المشروع
 
 ```
-├── App.xaml / App.xaml.cs          # Application entry, startup, global error handling
-├── Converters/                     # Value converters and attached behaviors
-├── Data/
-│   ├── AppDbContext.cs             # EF Core DbContext (8 DbSets)
-│   └── DbSeeder.cs                 # Sample data seeder
-├── Models/                         # Entity classes (Product, Invoice, Order, etc.)
-├── Services/                       # Business logic layer
-│   ├── AppConfig.cs                # JSON configuration management
-│   ├── BackupService.cs            # Database backup/restore
-│   ├── BillPrintService.cs         # HTML receipt generation
-│   ├── InventoryService.cs         # FIFO stock calculations
-│   ├── NotificationManager.cs      # Toast notification system
-│   ├── PdfExportService.cs         # HTML → PDF conversion
-│   └── ReceiptPrinter.cs           # Thermal printer support
-├── Styles/                         # Theme and control styles
-├── Views/                          # All pages and dialogs (29 controls)
-│   ├── Pages: Dashboard, Products, Customers, Invoices, Reports, Settings
-│   └── Dialogs: Product, Customer, Order, Invoice, Stock, Print, etc.
-├── installer/                      # Inno Setup installer script
-└── publish/                        # Published builds
+MTE Stock/
+├── App.xaml                # نقطة بداية التطبيق
+├── MainWindow.xaml         # النافذة الرئيسية
+├── Models/                 # نماذج البيانات
+│   ├── Category.cs         # قسم المنتج (هرمي)
+│   ├── Product.cs          # المنتج
+│   ├── ProductUnit.cs      # الوحدة (كرتونة/علبة/قطعة)
+│   ├── Customer.cs         # العميل
+│   ├── Invoice.cs          # الفاتورة
+│   ├── Order.cs            # الطلب
+│   ├── OrderItem.cs        # صنف الطلب
+│   ├── Payment.cs          # الدفعة
+│   ├── InventoryBatch.cs   # batch المخزون (FIFO)
+│   └── InventoryMovement.cs# حركة المخزون
+├── Views/                  # واجهات المستخدم
+│   ├── ProductsPage        # صفحة المنتجات
+│   ├── StockInDialog       # إضافة مخزون
+│   ├── AddOrderDialog      # إضافة طلب
+│   ├── InvoicesPage        # صفحة الفواتير
+│   ├── CustomersPage       # صفحة العملاء
+│   ├── DashboardPage       # لوحة المعلومات
+│   ├── ReportsPage         # التقارير
+│   ├── SettingsPage        # الإعدادات
+│   └── ...                 # باقي النوافذ
+├── Services/               # طبقة الخدمات
+│   ├── InventoryService    # منطق المخزون و FIFO
+│   ├── BillPrintService    # طباعة الفواتير
+│   ├── BackupService       # النسخ الاحتياطي
+│   ├── ThemeService        # إدارة السمات
+│   └── ...
+├── Data/                   # قاعدة البيانات
+│   ├── AppDbContext.cs     # EF Core DbContext
+│   └── DbSeeder.cs        # بذرة البيانات
+├── Styles/                 # ملفات السمات
+├── Converters/             # محولات XAML
+└── installer/              # ملف المثبت (Inno Setup)
 ```
 
 ---
 
-## Database
+## متطلبات التشغيل
 
-- **Engine:** SQLite
-- **Location:** `%LOCALAPPDATA%\MTE Stock\inventory.db`
-- **Tables:** Products, ProductUnits, Customers, Invoices, Orders, OrderItems, Payments, InventoryBatches, InventoryMovements
-- **Auto-created** on first run via `EnsureCreated()`
+- **نظام التشغيل**: Windows 10 / 11
+- **الإطار**: .NET 9.0 Runtime
+- **قاعدة البيانات**: SQLite (مضمنة، لا تحتاج تثبيت)
+- **المثبت**: `MTEStock_Setup.exe`
 
----
-
-## Setup & Installation
-
-### Prerequisites
-- Windows 10/11 (64-bit)
-- [.NET 9.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (if not using self-contained build)
-
-### Build from Source
-```powershell
-# Restore & build
-dotnet restore
-dotnet build -c Release
-
-# Publish self-contained
-dotnet publish -c Release -r win-x64 --self-contained true -o publish
-
-# Build installer (requires Inno Setup 6)
-& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\setup.iss
-```
-
-### Install
-Run the generated `installer\MTEStock_Setup.exe` and enter the installation password.
-
-**Default password:** Contact the developer
+قاعدة البيانات والملفات موجودة في `%LOCALAPPDATA%\MTE Stock\`
 
 ---
 
-## Configuration
+## التثبيت
 
-Settings are stored in `%LOCALAPPDATA%\MTE Stock\config.json`:
-- Location name, address, phone
-- Backup folder and auto-backup interval
-- Printer selection
-- Print display settings
-- Password (SHA256 hash)
-
----
-
-## Error Logging
-
-Errors are logged to two locations:
-- `%LOCALAPPDATA%\MTE Stock\error.log`
-- `error.log` in the application directory
+1. شغّل `MTEStock_Setup.exe`
+2. المثبت محمي بكلمة مرور — اتصل بالمطور للحصول عليها
+3. اتبع خطوات التثبيت (المسار الافتراضي: `%PROGRAMFILES%\MTE Stock`)
+4. سيتم إنشاء اختصار على سطح المكتب وقائمة ابدأ
+5. كلمة المرور الافتراضية للدخول: `123456`
 
 ---
 
-## Developer
+## المطور
 
-**Eng. Mustafa Talaat**  
-📞 01116626164  
-🔗 [https://github.com/anomalyco](https://github.com/anomalyco)
+**م. مصطفى طلعت** — للحلول البرمجية  
+هاتف: `01116626164`  
+البريد: `mostafa.taal3t@gmail.com`
 
----
-
-## License
-
-Proprietary — All rights reserved.
+© 2025 مهندس مصطفى طلعت للحلول البرمجية

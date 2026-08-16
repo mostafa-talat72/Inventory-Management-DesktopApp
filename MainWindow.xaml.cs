@@ -57,6 +57,9 @@ public partial class MainWindow : Window
             case "Customers":
                 MainFrame.Navigate(new CustomersPage());
                 break;
+            case "Suppliers":
+                MainFrame.Navigate(new SuppliersPage());
+                break;
             case "Invoices":
                 MainFrame.Navigate(new InvoicesPage());
                 break;
@@ -78,7 +81,7 @@ public partial class MainWindow : Window
         var inactiveFg    = (System.Windows.Media.Brush)(Application.Current.TryFindResource("NavTextBrush")
                              ?? new System.Windows.Media.BrushConverter().ConvertFrom("#90CAF9")!);
 
-        foreach (var btn in new[] { BtnDashboard, BtnProducts, BtnCustomers, BtnInvoices, BtnReports, BtnSettings })
+        foreach (var btn in new[] { BtnDashboard, BtnProducts, BtnCustomers, BtnSuppliers, BtnInvoices, BtnReports, BtnSettings })
         {
             var isActive = btn.Tag?.ToString() == _currentPage;
             btn.BorderBrush = isActive ? activeBorder : System.Windows.Media.Brushes.Transparent;
@@ -129,6 +132,9 @@ public partial class MainWindow : Window
 
     public void HideOverlay()
     {
+        // أي إغلاق لنافذة منبثقة (زر الإغلاق أو الضغط خارجها) = تحديث الصفحات المفتوحة تلقائيًا
+        App.NotifyDataChanged();
+
         if (_overlayStack.Count > 0)
             _overlayStack.Pop();
 
@@ -163,6 +169,7 @@ public partial class MainWindow : Window
                 login.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 if (login.ShowDialog() == true)
                 {
+                    AmountsVisibilityService.Initialize(true);
                     NavigateToPage("Dashboard");
                     Show();
                 }

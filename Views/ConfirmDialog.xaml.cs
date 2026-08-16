@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ProductApp.Views;
@@ -44,12 +45,20 @@ public partial class ConfirmDialog : UserControl
 
     public static void Show(string title, string message, Action<bool> callback,
         DialogType type = DialogType.Info,
-        string confirmText = "نعم، تأكيد", string cancelText = "إلغاء")
+        string confirmText = "نعم، تأكيد", string cancelText = "إلغاء",
+        string? requiredText = null)
     {
         var mainWindow = Application.Current.MainWindow as MainWindow;
         if (mainWindow == null) return;
 
         var dialog = new ConfirmDialog(title, message, type, confirmText, cancelText);
+        if (!string.IsNullOrWhiteSpace(requiredText))
+        {
+            dialog.ConfirmInputPanel.Visibility = Visibility.Visible;
+            dialog.TxtConfirmHint.Text = $"اكتب \"{requiredText}\" للمتابعة";
+            dialog.BtnConfirm.IsEnabled = false;
+            dialog.TxtConfirmInput.Tag = requiredText;
+        }
         dialog.DialogClosed += (_, result) =>
         {
             mainWindow.HideOverlay();
@@ -58,8 +67,22 @@ public partial class ConfirmDialog : UserControl
         mainWindow.ShowOverlay(dialog);
     }
 
+    private void TxtConfirmInput_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        BtnConfirm.IsEnabled = TxtConfirmInput.Text == TxtConfirmInput.Tag as string;
+    }
+
+    private void TxtConfirmInput_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && BtnConfirm.IsEnabled)
+            BtnConfirm_Click(sender, e);
+    }
+
     private void BtnConfirm_Click(object sender, RoutedEventArgs e)
     {
+        if (ConfirmInputPanel.Visibility == Visibility.Visible &&
+            TxtConfirmInput.Text != TxtConfirmInput.Tag as string)
+            return;
         DialogClosed?.Invoke(this, true);
     }
 

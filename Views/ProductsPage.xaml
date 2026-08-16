@@ -1,262 +1,468 @@
-﻿<Page x:Class="ProductApp.Views.ProductsPage"
+<Page x:Class="ProductApp.Views.ProductsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:wm="clr-namespace:ProductApp.Converters"
+      xmlns:ctrls="clr-namespace:ProductApp.Controls"
       Title="المنتجات"
       FlowDirection="RightToLeft"
+      KeyDown="Page_KeyDown"
       Background="{DynamicResource AppBackground}">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="28,24,28,24">
+    <Grid>
+
+        <!-- Products Area -->
+        <Grid Margin="28,24,28,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Border CornerRadius="16" Background="{DynamicResource CardBackground}" Padding="28,20" Margin="0,0,0,20">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Width="50" Height="50" CornerRadius="16">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#E8EAF6" Offset="0"/>
-                                <GradientStop Color="#C5CAE9" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <Path FlowDirection="LeftToRight" Width="24" Height="24" Fill="#1A237E" Stretch="Uniform"
-                              HorizontalAlignment="Center" VerticalAlignment="Center"
-                              Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
-                    </Border>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
-                        <TextBlock Text="المنتجات" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
-                        <TextBlock Text="إدارة المنتجات ومستويات التعبئة والأسعار" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button x:Name="BtnPrintInventory" Click="PrintInventory_Click"
-                                Height="42" Padding="18,0" Cursor="Hand"
-                                Background="#546E7A" Foreground="White" BorderThickness="0"
-                                FontSize="13" FontWeight="SemiBold">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="b" CornerRadius="10"
-                                            Background="{TemplateBinding Background}"
-                                            Padding="{TemplateBinding Padding}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
-                                                  VerticalAlignment="Center"
-                                                  Data="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                                            <TextBlock Text="طباعة المخزون" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="b" Property="Opacity" Value="0.88" />
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="b" Property="Opacity" Value="0.75" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                        <Button x:Name="BtnAddProduct" Click="AddProduct_Click"
-                                Height="42" Padding="22,0" Cursor="Hand" Margin="10,0,0,0"
-                                Background="#1A237E" Foreground="White" BorderThickness="0"
-                                FontSize="13" FontWeight="SemiBold">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="b" CornerRadius="10"
-                                            Background="{TemplateBinding Background}"
-                                            Padding="{TemplateBinding Padding}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
-                                                  VerticalAlignment="Center"
-                                                  Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                                            <TextBlock Text="إضافة منتج" Margin="8,0,0,0"
-                                                       VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="b" Property="Opacity" Value="0.88" />
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="b" Property="Opacity" Value="0.75" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                        <Button x:Name="BtnStockIn" Click="StockIn_Click"
-                                Height="42" Padding="22,0" Cursor="Hand" Margin="10,0,0,0"
-                                Background="#00897B" Foreground="White" BorderThickness="0"
-                                FontSize="13" FontWeight="SemiBold">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="b" CornerRadius="10"
-                                            Background="{TemplateBinding Background}"
-                                            Padding="{TemplateBinding Padding}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
-                                                  VerticalAlignment="Center"
-                                                  Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
-                                            <TextBlock Text="إضافة مخزون" Margin="8,0,0,0"
-                                                       VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="b" Property="Opacity" Value="0.88" />
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="b" Property="Opacity" Value="0.75" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <!-- Summary Stats -->
-            <Grid Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
+            <Border Grid.Row="0" CornerRadius="16" Background="{DynamicResource CardBackground}" Padding="28,20" Margin="0,0,0,20">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#E8EAF6">
-                            <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#3F51B5" Stretch="Uniform"
-                                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="إجمالي المنتجات" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
-                            <TextBlock x:Name="TxtTotalProducts" Text="0" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Grid>
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
-                    </Border.Effect>
-                </Border>
-                <Border Grid.Column="2" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#E8F5E9">
-                            <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#2E7D32" Stretch="Uniform"
+                        <Border Grid.Column="0" Width="50" Height="50" CornerRadius="16">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#E8EAF6" Offset="0"/>
+                                    <GradientStop Color="#C5CAE9" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Path FlowDirection="LeftToRight" Width="24" Height="24" Fill="#1A237E" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                   Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
                         </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="إجمالي المخزون" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
-                            <TextBlock x:Name="TxtTotalStock" Text="0" FontSize="22" FontWeight="Bold" Foreground="#2E7D32" Margin="0,2,0,0" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                            <TextBlock Text="المنتجات" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <TextBlock Text="إدارة المنتجات ومستويات التعبئة والأسعار" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="BtnPrintInventory" Click="PrintInventory_Click"
+                                    Height="42" Padding="18,0" Cursor="Hand"
+                                    Background="#546E7A" Foreground="White" BorderThickness="0"
+                                    FontSize="13" FontWeight="SemiBold">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" CornerRadius="10"
+                                                Background="{TemplateBinding Background}"
+                                                Padding="{TemplateBinding Padding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                                      VerticalAlignment="Center"
+                                                      Data="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                                                <TextBlock Text="طباعة المخزون" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="b" Property="Opacity" Value="0.88" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="b" Property="Opacity" Value="0.75" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            <Button x:Name="BtnAddProduct" Click="AddProduct_Click"
+                                    Height="42" Padding="22,0" Cursor="Hand" Margin="10,0,0,0"
+                                    Background="#1A237E" Foreground="White" BorderThickness="0"
+                                    FontSize="13" FontWeight="SemiBold">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" CornerRadius="10"
+                                                Background="{TemplateBinding Background}"
+                                                Padding="{TemplateBinding Padding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                                      VerticalAlignment="Center"
+                                                      Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                                                <TextBlock Text="إضافة منتج" Margin="8,0,0,0"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="b" Property="Opacity" Value="0.88" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="b" Property="Opacity" Value="0.75" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            <Button x:Name="BtnStockIn" Click="StockIn_Click"
+                                    Height="42" Padding="22,0" Cursor="Hand" Margin="10,0,0,0"
+                                    Background="#00897B" Foreground="White" BorderThickness="0"
+                                    FontSize="13" FontWeight="SemiBold">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" CornerRadius="10"
+                                                Background="{TemplateBinding Background}"
+                                                Padding="{TemplateBinding Padding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                                      VerticalAlignment="Center"
+                                                      Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
+                                                <TextBlock Text="إضافة مخزون" Margin="8,0,0,0"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="b" Property="Opacity" Value="0.88" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="b" Property="Opacity" Value="0.75" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
                         </StackPanel>
                     </Grid>
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
-                    </Border.Effect>
                 </Border>
-                <Border Grid.Column="4" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#FFF3E0">
-                            <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#E65100" Stretch="Uniform"
-                                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  Data="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z" />
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="منتجات منخفضة" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
-                            <TextBlock x:Name="TxtLowStock" Text="0" FontSize="22" FontWeight="Bold" Foreground="#E65100" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Grid>
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
-                    </Border.Effect>
-                </Border>
-                <Border Grid.Column="6" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#F3E5F5">
-                            <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#7B1FA2" Stretch="Uniform"
-                                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  Data="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="قيمة المخزون" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
-                            <TextBlock x:Name="TxtStockValue" Text="0 ج.م" FontSize="22" FontWeight="Bold" Foreground="#7B1FA2" Margin="0,2,0,0" />
-                        </StackPanel>
-                    </Grid>
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000" />
-                    </Border.Effect>
-                </Border>
-            </Grid>
 
-            <!-- Search -->
-            <Border CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="16" Margin="0,0,0,20">
-                <Border CornerRadius="10" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1"
-                        Background="{DynamicResource SurfaceBackground}" Padding="0" Height="42">
+                <!-- Summary Stats -->
+                <Grid Grid.Row="1" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16"
+                            Cursor="Hand" ToolTip="إظهار جميع المنتجات (إلغاء كل الفلاتر)"
+                            MouseLeftButtonUp="StatTotalProducts_Click">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#E8EAF6">
+                                <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#3F51B5" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="إجمالي المنتجات" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                                <TextBlock x:Name="TxtTotalProducts" Text="0" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Column="2" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16"
+                            Cursor="Hand" ToolTip="ترتيب المنتجات حسب المخزون"
+                            MouseLeftButtonUp="StatTotalStock_Click">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#E8F5E9">
+                                <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#2E7D32" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.2V15.91M13,19.29L19,15.91V9.2L13,12.58V19.29Z" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="إجمالي المخزون" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                                <TextBlock x:Name="TxtTotalStock" Text="0" FontSize="22" FontWeight="Bold" Foreground="#2E7D32" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Column="4" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16"
+                            Cursor="Hand" ToolTip="عرض المنتجات المنخفضة فقط"
+                            MouseLeftButtonUp="StatLowStock_Click">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#FFF3E0">
+                                <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#E65100" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="منتجات منخفضة" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                                <TextBlock x:Name="TxtLowStock" Text="0" FontSize="22" FontWeight="Bold" Foreground="#E65100" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Column="6" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="20,16"
+                            Cursor="Hand" ToolTip="ترتيب المنتجات حسب قيمة المخزون"
+                            MouseLeftButtonUp="StatStockValue_Click">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="#F3E5F5">
+                                <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#7B1FA2" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="قيمة المخزون" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                                <TextBlock x:Name="TxtStockValue" Text="0 ج.م" FontSize="22" FontWeight="Bold" Foreground="#7B1FA2" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Search -->
+                <Border Grid.Row="2" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="16" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" CornerRadius="10" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1"
+                                Background="{DynamicResource SurfaceBackground}" Padding="0" Height="42">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="42" Background="Transparent" CornerRadius="10,0,0,10">
+                                    <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="#B0BEC5" Stretch="Uniform"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Data="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                                </Border>
+                                <TextBox x:Name="SearchBox" Grid.Column="1"
+                                         wm:WatermarkBehavior.Watermark="بحث عن منتج..."
+                                         TextChanged="SearchBox_TextChanged"
+                                         Padding="8,0" BorderThickness="0"
+                                         Background="Transparent"
+                                         Foreground="{DynamicResource HeadingTextBrush}"
+                                         CaretBrush="{DynamicResource HeadingTextBrush}"
+                                         FontSize="13"
+                                         VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+                        <!-- ترتيب المنتجات -->
+                        <ComboBox Grid.Column="1" x:Name="CmbSort" Height="42" Width="160" FontSize="12"
+                                  Margin="12,0,0,0" VerticalContentAlignment="Center"
+                                  SelectionChanged="CmbSort_SelectionChanged"
+                                  ToolTip="ترتيب المنتجات">
+                            <ComboBoxItem Content="الترتيب: الاسم" IsSelected="True" />
+                            <ComboBoxItem Content="المخزون: الأقل أولاً" />
+                            <ComboBoxItem Content="المخزون: الأعلى أولاً" />
+                            <ComboBoxItem Content="القيمة: الأعلى أولاً" />
+                            <ComboBoxItem Content="المفضلة أولاً" />
+                        </ComboBox>
+                        <!-- فلتر المنتجات المنخفضة -->
+                        <ToggleButton Grid.Column="2" x:Name="TglLowStockOnly" Cursor="Hand" Height="42"
+                                      Margin="12,0,0,0"
+                                      Checked="TglLowStockOnly_Changed" Unchecked="TglLowStockOnly_Changed"
+                                      ToolTip="عرض المنتجات المنخفضة فقط">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="b" CornerRadius="10"
+                                            BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1"
+                                            Background="{DynamicResource SurfaceBackground}"
+                                            Padding="14,0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#E65100" Stretch="Uniform"
+                                                  VerticalAlignment="Center"
+                                                  Data="M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M13,6H11V7H13V6M13,8H11V17H13V8Z" />
+                                            <TextBlock x:Name="txt" Text="المنتجات المنخفضة" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource HeadingTextBrush}" Margin="8,0,0,0"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="b" Property="Background" Value="#FFF3E0" />
+                                            <Setter TargetName="b" Property="BorderBrush" Value="#FFCC80" />
+                                            <Setter TargetName="txt" Property="Foreground" Value="#E65100" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="b" Property="Opacity" Value="0.85" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <!-- وضع التحديد المتعدد -->
+                        <ToggleButton Grid.Column="3" x:Name="BtnSelectMode" Cursor="Hand" Height="42"
+                                      Margin="12,0,0,0"
+                                      Checked="ToggleSelectionMode_Click" Unchecked="ToggleSelectionMode_Click"
+                                      ToolTip="وضع التحديد المتعدد (حذف جماعي)">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="b" CornerRadius="10"
+                                            BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1"
+                                            Background="{DynamicResource SurfaceBackground}"
+                                            Padding="14,0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#6A1B9A" Stretch="Uniform"
+                                                  VerticalAlignment="Center"
+                                                  Data="M5,16L10.5,10.5L8,8L5,11L2.5,8.5L0,11L5,16M18,7V13.37L18.69,13.34C19.35,13.33 20,13.55 20.55,14L20,14.55L17,17.11V7H18M8,2C9.1,2 10,2.9 10,4V8C10,9.1 9.1,10 8,10H4C2.9,10 2,9.1 2,8V4C2,2.9 2.9,2 4,2H8M8,4H4V8H8V4M18,2C19.1,2 20,2.9 20,4V8C20,9.1 19.1,10 18,10H14C12.9,10 12,9.1 12,8V4C12,2.9 12.9,2 14,2H18M18,4H14V8H18V4M8,12C9.1,12 10,12.9 10,14V18C10,19.1 9.1,20 8,20H4C2.9,20 2,19.1 2,18V14C2,12.9 2.9,12 4,12H8M8,14H4V18H8V14Z" />
+                                            <TextBlock x:Name="txt2" Text="تحديد متعدد" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource HeadingTextBrush}" Margin="8,0,0,0"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="b" Property="Background" Value="#F3E5F5" />
+                                            <Setter TargetName="b" Property="BorderBrush" Value="#CE93D8" />
+                                            <Setter TargetName="txt2" Property="Foreground" Value="#6A1B9A" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="b" Property="Opacity" Value="0.85" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <!-- اختصارات F1 -->
+                        <Border Grid.Column="4" Width="42" Height="42" Cursor="Hand" Margin="12,0,0,0"
+                                MouseLeftButtonDown="Help_Click"
+                                ToolTip="اختصارات لوحة المفاتيح (F1)">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushLight}" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="0.75" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border.CornerRadius>10</Border.CornerRadius>
+                            <Grid>
+                                <TextBlock Text="؟" FontSize="20" FontWeight="Bold" Foreground="#546E7A"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Batch action bar (تحديد متعدد) -->
+                <Border x:Name="BulkBar" Grid.Row="3" Margin="0,0,0,12" CornerRadius="12" Background="#F3E5F5"
+                        Padding="14,10" BorderBrush="#CE93D8" BorderThickness="1" Visibility="Collapsed">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Width="42" Background="Transparent" CornerRadius="10,0,0,10">
-                            <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="#B0BEC5" Stretch="Uniform"
-                                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                                  Data="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        <Border Grid.Column="0" CornerRadius="6" Background="#E1BEE7" Padding="10,4" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtBulkCount" Text="0" FontSize="12" FontWeight="Bold" Foreground="#6A1B9A" />
                         </Border>
-                        <TextBox x:Name="SearchBox" Grid.Column="1"
-                                 wm:WatermarkBehavior.Watermark="بحث عن منتج..."
-                                 TextChanged="SearchBox_TextChanged"
-                                 Padding="8,0" BorderThickness="0"
-                                 Background="Transparent"
-                                 Foreground="{DynamicResource HeadingTextBrush}"
-                                 CaretBrush="{DynamicResource HeadingTextBrush}"
-                                 FontSize="13"
-                                 VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="محددة" FontSize="11" Foreground="#7B1FA2" VerticalAlignment="Center" Margin="6,0,0,0" />
+                        <Border Grid.Column="2" x:Name="BtnSelectAll" CornerRadius="6" Background="#546E7A" Padding="12,6" Cursor="Hand" Margin="0,0,6,0"
+                                MouseLeftButtonDown="SelectAllCards_Click">
+                            <TextBlock x:Name="BtnSelectAllText" Text="تحديد الكل" FontSize="11" FontWeight="Bold" Foreground="White" />
+                        </Border>
+                        <Border Grid.Column="3" x:Name="BtnDeleteSelected" CornerRadius="6" Background="#C62828" Padding="12,6" Cursor="Hand" Margin="0,0,6,0"
+                                MouseLeftButtonDown="DeleteSelected_Click" Opacity="0.45">
+                            <TextBlock Text="حذف المحدد" FontSize="11" FontWeight="Bold" Foreground="White" />
+                        </Border>
+                        <Border Grid.Column="4" CornerRadius="6" Background="#78909C" Padding="12,6" Cursor="Hand"
+                                MouseLeftButtonDown="CancelSelection_Click">
+                            <TextBlock Text="إلغاء" FontSize="11" FontWeight="Bold" Foreground="White" />
+                        </Border>
                     </Grid>
                 </Border>
-            </Border>
 
-            <!-- Product Grid -->
-            <Border CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="16" Margin="0,0,0,12">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.05" Color="#000" />
-                </Border.Effect>
-                <ItemsControl x:Name="ProductsList" Focusable="False"
-                              HorizontalAlignment="Center">
-                    <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Width="248" Height="200" Margin="7" CornerRadius="14"
-                                        Background="{DynamicResource CardBackground}" BorderBrush="#EDEDED" BorderThickness="1"
-                                        Cursor="Hand">
+                <!-- Product Grid -->
+                <Border Grid.Row="4" CornerRadius="14" Background="{DynamicResource CardBackground}" Padding="16" Margin="0,0,0,12">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.05" Color="#000" />
+                    </Border.Effect>
+                    <Grid>
+                        <ListView x:Name="ProductsList" Focusable="False"
+                                  Background="Transparent" BorderThickness="0"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  ScrollViewer.CanContentScroll="True"
+                                  VirtualizingPanel.IsVirtualizing="True"
+                                  VirtualizingPanel.VirtualizationMode="Recycling">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ctrls:VirtualizingWrapPanel />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                                    <Setter Property="Focusable" Value="False" />
+                                    <Setter Property="IsTabStop" Value="False" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListViewItem">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="248" Height="284" Margin="7" CornerRadius="14"
+                                            Background="{DynamicResource CardBackground}" BorderBrush="#EDEDED" BorderThickness="1"
+                                            Cursor="Hand" Tag="{Binding Product}"
+                                            MouseEnter="ProductCard_MouseEnter">
                                     <Border.InputBindings>
                                         <MouseBinding MouseAction="LeftClick" Command="{Binding SelectCommand}" />
                                     </Border.InputBindings>
@@ -280,23 +486,59 @@
                                     <Grid Margin="16,14,16,14">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" MaxHeight="64" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
 
-                                        <!-- Row 0: Name + Actions -->
+                                        <!-- Row 0: Image + Name + Actions -->
                                         <Grid Grid.Row="0">
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Name}"
-                                                       FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       VerticalAlignment="Center" />
-                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="7"
+                                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="9"
+                                                    Background="#ECEFF1" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                    Margin="0,0,8,0">
+                                                <Grid>
+                                                    <Border CornerRadius="9" Padding="2" ClipToBounds="False">
+                                                        <Image Source="{Binding ProductImage}" Width="36" Height="36"
+                                                               Stretch="UniformToFill" Visibility="{Binding HasImage}" />
+                                                    </Border>
+                                                    <Path FlowDirection="LeftToRight" Width="18" Height="18"
+                                                          Fill="#B0BEC5" Stretch="Uniform"
+                                                          Visibility="{Binding NoImage}"
+                                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          Data="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17M12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15Z" />
+                                                </Grid>
+                                            </Border>
+                                            <Border Grid.Column="2" Width="28" Height="28" CornerRadius="7"
+                                                     Background="Transparent" Cursor="Hand"
+                                                     ToolTip="إضافة مخزون" Margin="2,0">
+                                                <Border.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick" Command="{Binding AddStockCommand}" />
+                                                </Border.InputBindings>
+                                                <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#00897B" Stretch="Uniform"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                      Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#E0F2F1" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
+                                            <Border Grid.Column="3" Width="28" Height="28" CornerRadius="7"
                                                     Background="Transparent" Cursor="Hand"
                                                     ToolTip="تعديل" Margin="2,0">
                                                 <Border.InputBindings>
@@ -315,10 +557,57 @@
                                                     </Style>
                                                 </Border.Style>
                                             </Border>
-                                            <Border Grid.Column="2" Width="28" Height="28" CornerRadius="7"
+                                            <!-- زر المفضلة -->
+                                            <Border Grid.Column="4" Width="28" Height="28" CornerRadius="7"
                                                     Background="Transparent" Cursor="Hand"
-                                                    ToolTip="حذف">
+                                                    ToolTip="إضافة إلى المفضلة" Margin="2,0">
                                                 <Border.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick" Command="{Binding FavoriteCommand}" />
+                                                </Border.InputBindings>
+                                                <Grid>
+                                                    <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#B0BEC5" Stretch="Uniform"
+                                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          Data="M12,15.39L8.24,17.66L9.23,13.38L5.91,10.5L10.29,10.13L12,6.09L13.71,10.13L18.09,10.5L14.77,13.38L15.76,17.66L12,15.39Z">
+                                                        <Path.Style>
+                                                            <Style TargetType="Path">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsFavorite}" Value="False">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Path.Style>
+                                                    </Path>
+                                                    <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#FFC107" Stretch="Uniform"
+                                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z">
+                                                        <Path.Style>
+                                                            <Style TargetType="Path">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Path.Style>
+                                                    </Path>
+                                                </Grid>
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#FFF8E1" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
+                                            <!-- حذف -->
+                                            <Border Grid.Column="5" Width="28" Height="28" CornerRadius="7"
+                                                    Background="Transparent" Cursor="Hand"
+                                                    ToolTip="حذف"><Border.InputBindings>
                                                     <MouseBinding MouseAction="LeftClick" Command="{Binding DeleteCommand}" />
                                                 </Border.InputBindings>
                                                 <Path FlowDirection="LeftToRight" Width="13" Height="13" Fill="#EF5350" Stretch="Uniform"
@@ -334,17 +623,40 @@
                                                     </Style>
                                                 </Border.Style>
                                             </Border>
+                                            <!-- CheckBox التحديد المتعدد -->
+                                            <CheckBox Grid.Column="6" Width="20" Height="20" VerticalAlignment="Center" Margin="3,0,2,0"
+                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      Visibility="{Binding SelectionVisible}"
+                                                      Cursor="Hand" ToolTip="تحديد" />
                                         </Grid>
 
-                                        <!-- Row 1: Units path -->
-                                        <Border Grid.Row="1" CornerRadius="5" Background="{DynamicResource CardBackgroundAlt}"
-                                                Padding="8,4" Margin="0,8,0,0">
-                                            <TextBlock Text="{Binding UnitsDisplay}" FontSize="10"
-                                                       Foreground="{DynamicResource SubtleTextBrush}" TextTrimming="CharacterEllipsis" />
-                                        </Border>
+                                        <!-- Row 1: Full-width name -->
+                                        <TextBlock Grid.Row="1" Text="{Binding Name}"
+                                                   FontSize="15" FontWeight="Bold"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   TextWrapping="Wrap" TextTrimming="None"
+                                                   VerticalAlignment="Top" Margin="0,6,0,0" />
 
-                                        <!-- Row 2: Stock + Value -->
-                                        <Grid Grid.Row="2" Margin="0,8,0,0">
+                                        <!-- Row 2: Units path -->
+                                        <Grid Grid.Row="2" Margin="0,6,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" CornerRadius="5" Background="{DynamicResource CardBackgroundAlt}"
+                                                    Padding="8,4">
+                                                <TextBlock Text="{Binding UnitsDisplay}" FontSize="10"
+                                                           Foreground="{DynamicResource SubtleTextBrush}" TextTrimming="CharacterEllipsis" />
+                                            </Border>
+                                            <Border Grid.Column="1" CornerRadius="5" Padding="8,4" Margin="6,0,0,0"
+                                                    Background="{Binding BadgeBg}" Visibility="{Binding HasBadge}">
+                                                <TextBlock Text="{Binding BadgeText}" FontSize="10" FontWeight="Bold"
+                                                           Foreground="{Binding BadgeFg}" />
+                                            </Border>
+                                        </Grid>
+
+                                        <!-- Row 3: Stock + Value -->
+                                        <Grid Grid.Row="3" Margin="0,6,0,0">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="6" />
@@ -374,12 +686,13 @@
                                             </Border>
                                         </Grid>
 
-                                        <!-- Row 3: Prices -->
-                                        <Grid Grid.Row="3" Margin="0,10,0,0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
+                                        <!-- Row 4: Prices -->
+                                        <Grid Grid.Row="4" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
                                             <Border Grid.Column="0" CornerRadius="6" Background="#F0F0FF" Padding="8,4" Margin="0,0,3,0">
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                                     <TextBlock Text="قطاعي:" FontSize="9" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" />
@@ -395,12 +708,77 @@
                                                 </StackPanel>
                                             </Border>
                                         </Grid>
+
+                                        <!-- Row 5: Quick actions -->
+                                        <Grid Grid.Row="5" Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="6" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <!-- زر خصم من المخزون -->
+                                            <Border Grid.Column="0" CornerRadius="8" Background="#FFEBEE" Cursor="Hand"
+                                                    Padding="0,7">
+                                                <Border.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick" Command="{Binding DeductStockCommand}" />
+                                                </Border.InputBindings>
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Opacity" Value="0.75" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Path FlowDirection="LeftToRight" Width="12" Height="12" Fill="#D32F2F" Stretch="Uniform"
+                                                          VerticalAlignment="Center"
+                                                          Data="M19,13H5V11H19V13Z" />
+                                                    <TextBlock Text="خصم مخزون" FontSize="10" FontWeight="SemiBold"
+                                                               Foreground="#C62828" Margin="4,0,0,0" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+                                            <!-- زر سجل حركة المخزون -->
+                                            <Border Grid.Column="2" CornerRadius="8" Background="#E8EAF6" Cursor="Hand"
+                                                    Padding="0,7">
+                                                <Border.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick" Command="{Binding HistoryCommand}" />
+                                                </Border.InputBindings>
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Opacity" Value="0.75" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Path FlowDirection="LeftToRight" Width="12" Height="12" Fill="#3949AB" Stretch="Uniform"
+                                                          VerticalAlignment="Center"
+                                                          Data="M13,3C8.03,3 4,7.03 4,12H1L4.89,15.89L4.96,16.03L9,12H6C6,8.13 9.13,5 13,5C16.87,5 20,8.13 20,12C20,15.87 16.87,19 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21C17.97,21 22,16.97 22,12C22,7.03 17.97,3 13,3M12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" />
+                                                    <TextBlock Text="سجل الحركة" FontSize="10" FontWeight="SemiBold"
+                                                               Foreground="#3949AB" Margin="4,0,0,0" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+                        </ListView.ItemTemplate>
+                        </ListView>
+                        <StackPanel x:Name="TxtEmptyProducts" Visibility="Collapsed"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,30">
+                        <Path FlowDirection="LeftToRight" Width="40" Height="40" Fill="#B0BEC5" Stretch="Uniform"
+                              HorizontalAlignment="Center"
+                              Data="M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M13,6H11V7H13V6M13,8H11V17H13V8Z" />
+                        <TextBlock Text="لا توجد منتجات مطابقة" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center"
+                                   Margin="0,10,0,0" />
+                    </StackPanel>
+                </Grid>
+                </Border>
+        </Grid>
+    </Grid>
 </Page>

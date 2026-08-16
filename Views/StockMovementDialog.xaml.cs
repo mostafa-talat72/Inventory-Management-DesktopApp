@@ -169,6 +169,39 @@ public partial class StockMovementDialog : UserControl
         EmptyState.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    private void ExportExcel_Click(object sender, RoutedEventArgs e)
+    {
+        if (MovementGrid.ItemsSource is not List<MovementItem> items || items.Count == 0)
+        {
+            MessageBox.Show("لا توجد حركات للتصدير.", "تصدير", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var saveDialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "Excel Files (*.xlsx)|*.xlsx",
+            FileName = $"حركة_مخزون_{_product.Name}_{DateTime.Now:yyyyMMdd}.xlsx"
+        };
+        if (saveDialog.ShowDialog() != true) return;
+
+        try
+        {
+            string[] headers = { "التاريخ", "النوع", "الكمية", "سعر الوحدة", "الإجمالي", "السبب / المرجع", "المخزون بعد" };
+            var rows = items.Select(i => new object?[]
+            {
+                i.DateDisplay, i.TypeDisplay, i.QuantityDisplay,
+                i.UnitPriceDisplay, i.TotalDisplay, i.ReasonDisplay, i.StockAfterDisplay
+            }).ToList();
+
+            ExcelExportService.Export(saveDialog.FileName, headers, rows);
+            NotificationManager.ShowSuccess("تم تصدير حركة المخزون إلى Excel بنجاح");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"حدث خطأ أثناء التصدير:\n{ex.Message}", "تصدير", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void EditMovement_Click(object sender, RoutedEventArgs e)
     {
         if (((FrameworkElement)sender).DataContext is not MovementItem item) return;
@@ -193,50 +226,87 @@ public partial class StockMovementDialog : UserControl
         if (((FrameworkElement)sender).DataContext is not MovementItem item) return;
         if (!item.CanDelete) return;
 
-        ConfirmDialog.Show("تأكيد الحذف", "هل أنت متأكد من حذف هذه الحركة؟", result => {
+        ConfirmDialog.Show("تأكيد الحذف",
+            "هل أنت متأكد من حذف هذه الحركة؟\nسيتم تعديل المخزون والدفعات المرتبطة بها ولا يمكن التراجع.",
+            result => {
             if (!result) return;
+            DeleteMovementCore(item.MovementId);
+        }, ConfirmDialog.DialogType.Danger, requiredText: "حذف");
+    }
 
-            var movement = _db.InventoryMovements.Find(item.MovementId);
-            if (movement == null) return;
+    private void UndoLast_Click(object sender, RoutedEventArgs e)
+    {
+        var last = _db.InventoryMovements
+            .Where(m => m.ProductId == _product.Id)
+            .OrderByDescending(m => m.CreatedAt)
+            .FirstOrDefault();
 
-            // إذا كانت الحركة إضافة مخزون، نطرح الكمية من الـ batch المرتبط
-            if (movement.MovementType == MovementType.StockIn)
+        if (last == null)
+        {
+            NotificationManager.ShowInfo("لا توجد حركات للتراجع عنها");
+            return;
+        }
+
+        if (last.ReferenceId.HasValue)
+        {
+            NotificationManager.ShowWarning("آخر حركة مرتبطة بطلب أو فاتورة ولا يمكن التراجع عنها");
+            return;
+        }
+
+        var movementId = last.Id;
+        ConfirmDialog.Show("التراجع عن آخر حركة",
+            "سيتم إلغاء آخر حركة وتحديث المخزون والدفعات.\nلا يمكن التراجع عن هذا الإجراء.",
+            result => {
+            if (!result) return;
+            DeleteMovementCore(movementId);
+        }, ConfirmDialog.DialogType.Warning, requiredText: "تراجع");
+    }
+
+    private void DeleteMovementCore(int movementId)
+    {
+        var movement = _db.InventoryMovements.Find(movementId);
+        if (movement == null) return;
+
+        // إذا كانت الحركة إضافة مخزون، نطرح الكمية من الـ batch المرتبط
+        if (movement.MovementType == MovementType.StockIn)
+        {
+            var batch = FindLinkedBatch(movement);
+            if (batch == null)
             {
-                var batch = FindLinkedBatch(movement);
-                if (batch == null)
-                {
-                    NotificationManager.ShowError("لم يتم العثور على الدفعة المرتبطة بهذه الحركة");
-                    return;
-                }
-
-                // التحقق أن المخزون المتاح كافٍ لطرح الكمية
-                if (batch.RemainingQuantity < movement.Quantity)
-                {
-                    int consumed = batch.InitialQuantity - batch.RemainingQuantity;
-                    NotificationManager.ShowWarning(
-                        $"لا يمكن حذف هذه الحركة.\n" +
-                        $"تم استهلاك {consumed} قطعة من هذه الدفعة بالفعل.\n" +
-                        $"المتبقي في الدفعة: {batch.RemainingQuantity} قطعة فقط.");
-                    return;
-                }
-
-                // طرح الكمية من الدفعة
-                batch.RemainingQuantity -= movement.Quantity;
-                batch.InitialQuantity -= movement.Quantity;
-
-                // إذا أصبحت الدفعة فارغة تماماً احذفها
-                if (batch.InitialQuantity <= 0)
-                    _db.InventoryBatches.Remove(batch);
-                else
-                    _db.Entry(batch).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                NotificationManager.ShowError("لم يتم العثور على الدفعة المرتبطة بهذه الحركة");
+                return;
             }
 
-            _db.InventoryMovements.Remove(movement);
-            _db.SaveChanges();
-            NotificationManager.ShowSuccess("تم حذف الحركة وتحديث المخزون بنجاح");
-            LoadSummary();
-            LoadMovements();
-        }, ConfirmDialog.DialogType.Danger);
+            // التحقق أن المخزون المتاح كافٍ لطرح الكمية
+            if (batch.RemainingQuantity < movement.Quantity)
+            {
+                int consumed = batch.InitialQuantity - batch.RemainingQuantity;
+                var unitName = _db.ProductUnits.AsNoTracking()
+                    .Where(u => u.ProductId == _product.Id && u.UnitType == UnitType.Piece)
+                    .Select(u => u.Name).FirstOrDefault() ?? "قطعة";
+                NotificationManager.ShowWarning(
+                    $"لا يمكن حذف هذه الحركة.\n" +
+                    $"تم استهلاك {consumed} {unitName} من هذه الدفعة بالفعل.\n" +
+                    $"المتبقي في الدفعة: {batch.RemainingQuantity} {unitName} فقط.");
+                return;
+            }
+
+            // طرح الكمية من الدفعة
+            batch.RemainingQuantity -= movement.Quantity;
+            batch.InitialQuantity -= movement.Quantity;
+
+            // إذا أصبحت الدفعة فارغة تماماً احذفها
+            if (batch.InitialQuantity <= 0)
+                _db.InventoryBatches.Remove(batch);
+            else
+                _db.Entry(batch).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        }
+
+        _db.InventoryMovements.Remove(movement);
+        _db.SaveChanges();
+        NotificationManager.ShowSuccess("تم حذف الحركة وتحديث المخزون بنجاح");
+        LoadSummary();
+        LoadMovements();
     }
 
     /// <summary>
@@ -273,6 +343,10 @@ public partial class StockMovementDialog : UserControl
         int ppb = _inv.GetPiecesPerBox(_product);
         int bpc = _inv.GetBoxesPerCarton(_product);
 
+        var cartonName = units.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        var boxName = units.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
+        var pieceName = units.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+
         var parts = new List<string>();
 
         if (hasCarton && hasBox && hasPiece)
@@ -281,42 +355,42 @@ public partial class StockMovementDialog : UserControl
             int afterCartons = totalPieces % ppc;
             int boxes = afterCartons / ppb;
             int pieces = afterCartons % ppb;
-            if (cartons > 0) parts.Add($"{cartons} كرتونة");
-            if (boxes > 0) parts.Add($"{boxes} علبة");
-            if (pieces > 0) parts.Add($"{pieces} قطعة");
+            if (cartons > 0) parts.Add($"{cartons} {cartonName}");
+            if (boxes > 0) parts.Add($"{boxes} {boxName}");
+            if (pieces > 0) parts.Add($"{pieces} {pieceName}");
         }
         else if (hasCarton && hasBox && !hasPiece)
         {
             int cartons = totalPieces / bpc;
             int remBoxes = totalPieces % bpc;
-            if (cartons > 0) parts.Add($"{cartons} كرتونة");
-            if (remBoxes > 0) parts.Add($"{remBoxes} علبة");
+            if (cartons > 0) parts.Add($"{cartons} {cartonName}");
+            if (remBoxes > 0) parts.Add($"{remBoxes} {boxName}");
         }
         else if (hasCarton && !hasBox && hasPiece)
         {
             int cartons = totalPieces / ppc;
             int pieces = totalPieces % ppc;
-            if (cartons > 0) parts.Add($"{cartons} كرتونة");
-            if (pieces > 0) parts.Add($"{pieces} قطعة");
+            if (cartons > 0) parts.Add($"{cartons} {cartonName}");
+            if (pieces > 0) parts.Add($"{pieces} {pieceName}");
         }
         else if (hasCarton && !hasBox && !hasPiece)
         {
-            if (totalPieces > 0) parts.Add($"{totalPieces} كرتونة");
+            if (totalPieces > 0) parts.Add($"{totalPieces} {cartonName}");
         }
         else if (!hasCarton && hasBox && hasPiece)
         {
             int boxes = totalPieces / ppb;
             int pieces = totalPieces % ppb;
-            if (boxes > 0) parts.Add($"{boxes} علبة");
-            if (pieces > 0) parts.Add($"{pieces} قطعة");
+            if (boxes > 0) parts.Add($"{boxes} {boxName}");
+            if (pieces > 0) parts.Add($"{pieces} {pieceName}");
         }
         else if (!hasCarton && hasBox && !hasPiece)
         {
-            if (totalPieces > 0) parts.Add($"{totalPieces} علبة");
+            if (totalPieces > 0) parts.Add($"{totalPieces} {boxName}");
         }
         else
         {
-            if (totalPieces > 0) parts.Add($"{totalPieces} قطعة");
+            if (totalPieces > 0) parts.Add($"{totalPieces} {pieceName}");
         }
 
         return parts.Count > 0 ? string.Join(", ", parts) : "0";

@@ -404,7 +404,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Border BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" CornerRadius="8" Padding="2" Grid.Column="0">
-                                <ComboBox x:Name="CmbPrinter" Grid.Column="0" Height="36" FontSize="13" DisplayMemberPath="FullName" BorderThickness="0" Padding="10,0" Background="{DynamicResource CardBackground}" />
+                                <ComboBox x:Name="CmbPrinter" Grid.Column="0" Height="36" FontSize="13" BorderThickness="0" Padding="10,0" Background="{DynamicResource CardBackground}" />
                             </Border>
                             <Button x:Name="BtnSavePrinter" Click="BtnSavePrinter_Click" Grid.Column="1" Background="#1565C0" Style="{StaticResource SaveBtn}" Margin="8,0">
                                 <StackPanel Orientation="Horizontal">

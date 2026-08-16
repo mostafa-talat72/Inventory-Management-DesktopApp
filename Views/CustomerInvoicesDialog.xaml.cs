@@ -40,7 +40,7 @@ public partial class CustomerInvoicesDialog : UserControl
         TxtSubtitle.Text = "جميع فواتير العملاء والنقدي";
         TxtSearch.Focus();
         BtnAddOrder.Visibility = Visibility.Collapsed;
-        BtnManageOrders.Visibility = Visibility.Collapsed;
+        BtnPayCustomer.Visibility = Visibility.Collapsed;
         BtnMerge.Visibility = Visibility.Collapsed;
         RegisterVisibilityEvents();
         LoadData();
@@ -55,6 +55,7 @@ public partial class CustomerInvoicesDialog : UserControl
         TxtTitle.Text = "فواتير نقدي";
         TxtSubtitle.Text = "الفواتير النقدية (بدون عميل)";
         TxtSearch.Focus();
+        BtnPayCustomer.Visibility = Visibility.Collapsed;
         RegisterVisibilityEvents();
         LoadData();
     }
@@ -102,7 +103,6 @@ public partial class CustomerInvoicesDialog : UserControl
                 .ToList();
 
         SetFilter("Unpaid");
-        UpdateManageOrdersVisibility();
     }
 
     private List<Invoice> GetFiltered()
@@ -417,6 +417,37 @@ public partial class CustomerInvoicesDialog : UserControl
         printBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; PrintInvoice(invoice); };
         actions.Children.Add(printBtn);
 
+        // View orders of THIS invoice
+        var ordersBtn = new Border
+        {
+            CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#00897B")!,
+            Cursor = Cursors.Hand, Padding = new Thickness(10, 5, 10, 5), Margin = new Thickness(4, 0, 4, 0),
+            Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
+            {
+                new Path { Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Data = Geometry.Parse("M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z") },
+                new TextBlock { Text = "الطلبات", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(5, 0, 0, 0) }
+            }}
+        };
+        ordersBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; ShowOrders(invoice); };
+        actions.Children.Add(ordersBtn);
+
+        if (invoice.Status != InvoiceStatus.Paid && invoice.Status != InvoiceStatus.Cancelled)
+        {
+            // Add order to THIS invoice
+            var addBtn = new Border
+            {
+                CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#1565C0")!,
+                Cursor = Cursors.Hand, Padding = new Thickness(10, 5, 10, 5), Margin = new Thickness(4, 0, 4, 0),
+                Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
+                {
+                    new Path { Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Data = Geometry.Parse("M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z") },
+                    new TextBlock { Text = "إضافة طلب", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(5, 0, 0, 0) }
+                }}
+            };
+            addBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; AddOrderToInvoice(invoice); };
+            actions.Children.Add(addBtn);
+        }
+
         if (invoice.Status != InvoiceStatus.Paid && invoice.Status != InvoiceStatus.Cancelled)
         {
             var payBtn = new Border
@@ -495,29 +526,14 @@ public partial class CustomerInvoicesDialog : UserControl
                         if (item.ProductUnit == null) continue;
                         int totalPieces = inv.CalculatePieceEquivalent(item.Product, item.CartonQuantity, item.BoxQuantity, item.PieceQuantity);
                         if (totalPieces <= 0) continue;
-                        var batch = _db.InventoryBatches
-                            .Where(b => b.ProductId == item.ProductId && b.RemainingQuantity > 0)
-                            .OrderByDescending(b => b.PurchaseDate)
-                            .FirstOrDefault();
-                        if (batch != null)
-                            batch.RemainingQuantity += totalPieces;
-                        else
-                        {
-                            _db.InventoryBatches.Add(new InventoryBatch
-                            {
-                                ProductId = item.ProductId,
-                                CostPricePerPiece = item.CostPrice / totalPieces,
-                                InitialQuantity = totalPieces,
-                                RemainingQuantity = totalPieces,
-                                PurchaseDate = DateTime.Now
-                            });
-                        }
+                        var (unitCost, totalCost) = inv.ReturnToBatches(item.ProductId, totalPieces);
                         _db.InventoryMovements.Add(new InventoryMovement
                         {
                             ProductId = item.ProductId,
                             MovementType = MovementType.Return,
                             Quantity = totalPieces,
-                            CostPrice = item.CostPrice / totalPieces,
+                            CostPrice = unitCost,
+                            SellingPrice = totalCost,
                             ReferenceType = ReferenceType.Return,
                             ReferenceId = full.Id,
                             Notes = $"مرتجعات بيع - فاتورة #{full.Id}"
@@ -583,6 +599,55 @@ public partial class CustomerInvoicesDialog : UserControl
         };
     }
 
+    private void BtnPayCustomer_Click(object sender, RoutedEventArgs e)
+    {
+        if (_customer == null || _isCashMode) return;
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new PayCustomerDialog(_db, _customer);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true) LoadData();
+        };
+    }
+
+    private void BtnPrintAll_Click(object sender, RoutedEventArgs e)
+    {
+        var invoices = GetFiltered();
+        if (invoices.Count == 0)
+        {
+            NotificationManager.ShowWarning("لا توجد فواتير للطباعة.");
+            return;
+        }
+        var printer = new ReceiptPrinter(_db);
+        printer.PrintInvoices(invoices);
+    }
+
+    private void ShowOrders(Invoice invoice)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new ManageOrdersDialog(_db, invoice);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true) LoadData();
+        };
+    }
+
+    private void AddOrderToInvoice(Invoice invoice)
+    {
+        var mainWindow = (MainWindow)Window.GetWindow(this);
+        var dialog = new AddOrderDialog(_db, invoice);
+        mainWindow.ShowOverlay(dialog);
+        dialog.DialogClosed += (s, r) =>
+        {
+            mainWindow.HideOverlay();
+            if (r == true) LoadData();
+        };
+    }
+
     private void PrintInvoice(Invoice invoice)
     {
         var printer = new ReceiptPrinter(_db);
@@ -636,42 +701,10 @@ public partial class CustomerInvoicesDialog : UserControl
     private void BtnPaid_Click(object sender, MouseButtonEventArgs e) => SetFilter("Paid");
     private void BtnAll_Click(object sender, MouseButtonEventArgs e) => SetFilter("All");
 
-    private Invoice? GetOpenInvoice()
-    {
-        if (_showAllInvoices) return null;
-        if (_customer == null && !_isCashMode) return null;
-        return _db.Invoices
-            .Where(i => (_isCashMode ? i.CustomerId == null : i.CustomerId == _customer!.Id)
-                && i.Status != InvoiceStatus.Paid
-                && i.Status != InvoiceStatus.Cancelled)
-            .OrderByDescending(i => i.CreatedAt)
-            .FirstOrDefault();
-    }
-
-    private void UpdateManageOrdersVisibility()
-    {
-        if (_showAllInvoices) { BtnManageOrders.Visibility = Visibility.Collapsed; return; }
-        BtnManageOrders.Visibility = GetOpenInvoice() != null ? Visibility.Visible : Visibility.Collapsed;
-    }
-
     private void BtnAddOrder_Click(object sender, RoutedEventArgs e)
     {
         var mainWindow = (MainWindow)Window.GetWindow(this);
-        var dialog = new AddOrderDialog(_db, _customer);
-        mainWindow.ShowOverlay(dialog);
-        dialog.DialogClosed += (s, r) =>
-        {
-            mainWindow.HideOverlay();
-            if (r == true) LoadData();
-        };
-    }
-
-    private void BtnManageOrders_Click(object sender, RoutedEventArgs e)
-    {
-        var invoice = GetOpenInvoice();
-        if (invoice == null) return;
-        var mainWindow = (MainWindow)Window.GetWindow(this);
-        var dialog = new ManageOrdersDialog(_db, invoice);
+        var dialog = new AddOrderDialog(_db, _customer, forceNewInvoice: true);
         mainWindow.ShowOverlay(dialog);
         dialog.DialogClosed += (s, r) =>
         {

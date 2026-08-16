@@ -6,15 +6,19 @@ namespace ProductApp.Data;
 
 public class AppDbContext : DbContext
 {
-    public DbSet<Product> Products => Set<Product>();
+public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductUnit> ProductUnits => Set<ProductUnit>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Payment> Payments => Set<Payment>();
-    public DbSet<InventoryBatch> InventoryBatches => Set<InventoryBatch>();
+public DbSet<InventoryBatch> InventoryBatches => Set<InventoryBatch>();
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<SupplierInvoice> SupplierInvoices => Set<SupplierInvoice>();
+    public DbSet<SupplierInvoiceItem> SupplierInvoiceItems => Set<SupplierInvoiceItem>();
+    public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
 
     private static readonly string DbFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTE Stock");
@@ -31,24 +35,137 @@ public class AppDbContext : DbContext
     {
         using var db = new AppDbContext();
         db.Database.EnsureCreated();
-        using var cmd = db.Database.GetDbConnection().CreateCommand();
-        cmd.CommandText = "PRAGMA table_info(InventoryMovements)";
-        if (cmd.Connection!.State != System.Data.ConnectionState.Open)
-            cmd.Connection.Open();
-        using var reader = cmd.ExecuteReader();
-        var hasCol = false;
-        while (reader.Read())
-            if ((string)reader["name"] == "IsCostRecovered") { hasCol = true; break; }
-        reader.Close();
-        if (!hasCol)
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open)
+            conn.Open();
+
+        // 1) IsCostRecovered column
+        using (var checkCmd = conn.CreateCommand())
         {
-            using var alter = db.Database.GetDbConnection().CreateCommand();
-            alter.CommandText = "ALTER TABLE InventoryMovements ADD COLUMN IsCostRecovered INTEGER NOT NULL DEFAULT 0";
-            alter.ExecuteNonQuery();
+            checkCmd.CommandText = "PRAGMA table_info(InventoryMovements)";
+            using var reader = checkCmd.ExecuteReader();
+            var hasCol = false;
+            while (reader.Read())
+                if ((string)reader["name"] == "IsCostRecovered") { hasCol = true; break; }
+            if (!hasCol)
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE InventoryMovements ADD COLUMN IsCostRecovered INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
         }
+
+// 2) MinStockLevel column in ProductUnits
+        using (var checkMin = conn.CreateCommand())
+        {
+            checkMin.CommandText = "PRAGMA table_info(ProductUnits)";
+            using var reader = checkMin.ExecuteReader();
+            var hasMinCol = false;
+            while (reader.Read())
+                if ((string)reader["name"] == "MinStockLevel") { hasMinCol = true; break; }
+            if (!hasMinCol)
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE ProductUnits ADD COLUMN MinStockLevel INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+        }
+
+        // 5) Barcode column in Products
+        using (var checkBarcode = conn.CreateCommand())
+        {
+            checkBarcode.CommandText = "PRAGMA table_info(Products)";
+            using var reader = checkBarcode.ExecuteReader();
+            var hasBarcode = false;
+            while (reader.Read())
+                if ((string)reader["name"] == "Barcode") { hasBarcode = true; break; }
+            if (!hasBarcode)
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Products ADD COLUMN Barcode TEXT";
+                alter.ExecuteNonQuery();
+            }
+        }
+
+        // 6) IsFavorite column in Products
+        using (var checkFav = conn.CreateCommand())
+        {
+            checkFav.CommandText = "PRAGMA table_info(Products)";
+            using var reader = checkFav.ExecuteReader();
+            var hasFav = false;
+            while (reader.Read())
+                if ((string)reader["name"] == "IsFavorite") { hasFav = true; break; }
+            if (!hasFav)
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Products ADD COLUMN IsFavorite INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+        }
+
+        // 7) Supplier tables (only for databases created before this version)
+        CreateIfMissing(conn, "Suppliers", @"
+CREATE TABLE IF NOT EXISTS ""Suppliers"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_Suppliers"" PRIMARY KEY AUTOINCREMENT,
+    ""Name"" TEXT NOT NULL,
+    ""Phone"" TEXT NULL,
+    ""Address"" TEXT NULL,
+    ""Notes"" TEXT NULL,
+    ""CreatedAt"" TEXT NOT NULL);");
+
+        CreateIfMissing(conn, "SupplierInvoices", @"
+CREATE TABLE IF NOT EXISTS ""SupplierInvoices"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_SupplierInvoices"" PRIMARY KEY AUTOINCREMENT,
+    ""SupplierId"" INTEGER NULL,
+    ""SupplierName"" TEXT NULL,
+    ""InvoiceDate"" TEXT NOT NULL,
+    ""TotalAmount"" TEXT NOT NULL,
+    ""TotalPaid"" TEXT NOT NULL,
+    ""Status"" INTEGER NOT NULL,
+    ""Notes"" TEXT NULL,
+    ""CreatedAt"" TEXT NOT NULL,
+    CONSTRAINT ""FK_SupplierInvoices_Suppliers_SupplierId"" FOREIGN KEY (""SupplierId"") REFERENCES ""Suppliers"" (""Id"") ON DELETE SET NULL);");
+
+        CreateIfMissing(conn, "SupplierInvoiceItems", @"
+CREATE TABLE IF NOT EXISTS ""SupplierInvoiceItems"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_SupplierInvoiceItems"" PRIMARY KEY AUTOINCREMENT,
+    ""SupplierInvoiceId"" INTEGER NOT NULL,
+    ""ProductId"" INTEGER NOT NULL,
+    ""CartonQuantity"" INTEGER NOT NULL,
+    ""BoxQuantity"" INTEGER NOT NULL,
+    ""PieceQuantity"" INTEGER NOT NULL,
+    ""CostPrice"" TEXT NOT NULL,
+    ""CreatedAt"" TEXT NOT NULL,
+    CONSTRAINT ""FK_SupplierInvoiceItems_SupplierInvoices_SupplierInvoiceId"" FOREIGN KEY (""SupplierInvoiceId"") REFERENCES ""SupplierInvoices"" (""Id"") ON DELETE CASCADE,
+    CONSTRAINT ""FK_SupplierInvoiceItems_Products_ProductId"" FOREIGN KEY (""ProductId"") REFERENCES ""Products"" (""Id"") ON DELETE CASCADE);");
+
+        CreateIfMissing(conn, "SupplierPayments", @"
+CREATE TABLE IF NOT EXISTS ""SupplierPayments"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_SupplierPayments"" PRIMARY KEY AUTOINCREMENT,
+    ""SupplierInvoiceId"" INTEGER NOT NULL,
+    ""Amount"" TEXT NOT NULL,
+    ""PaymentDate"" TEXT NOT NULL,
+    ""PaymentMethod"" TEXT NULL,
+    ""Notes"" TEXT NULL,
+    CONSTRAINT ""FK_SupplierPayments_SupplierInvoices_SupplierInvoiceId"" FOREIGN KEY (""SupplierInvoiceId"") REFERENCES ""SupplierInvoices"" (""Id"") ON DELETE CASCADE);");
     }
 
-    protected override void OnModelCreating(ModelBuilder model)
+    private static void CreateIfMissing(System.Data.Common.DbConnection conn, string tableName, string createSql)
+    {
+        using var check = conn.CreateCommand();
+        check.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = @name";
+        var p = check.CreateParameter();
+        p.ParameterName = "@name";
+        p.Value = tableName;
+        check.Parameters.Add(p);
+        if ((long)check.ExecuteScalar()! > 0) return;
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = createSql;
+        cmd.ExecuteNonQuery();
+    }
+
+protected override void OnModelCreating(ModelBuilder model)
     {
         model.Entity<ProductUnit>()
             .HasOne(u => u.ParentUnit)
@@ -56,10 +173,16 @@ public class AppDbContext : DbContext
             .HasForeignKey(u => u.ParentUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        model.Entity<Invoice>()
+model.Entity<Invoice>()
             .HasOne(i => i.Customer)
             .WithMany(c => c.Invoices)
             .HasForeignKey(i => i.CustomerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        model.Entity<SupplierInvoice>()
+            .HasOne(i => i.Supplier)
+            .WithMany(s => s.Invoices)
+            .HasForeignKey(i => i.SupplierId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }

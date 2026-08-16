@@ -14,6 +14,10 @@ public partial class App : Application
     public static BackupService? AppBackup { get; private set; }
     public static AppConfig? AppConfiguration { get; private set; }
 
+    // يُرفع بعد أي عملية حفظ (إضافة/تعديل/دفع/حذف) حتى تتحدث الصفحات المفتوحة تلقائيًا
+    public static event Action? DataChanged;
+    public static void NotifyDataChanged() => DataChanged?.Invoke();
+
     private void App_OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
         LogError(e.Exception);
@@ -42,6 +46,16 @@ public partial class App : Application
 
         // Arabic UI for resource localization
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ar-SA");
+
+        // Force IE11 standards mode for the WebBrowser control (print preview)
+        // حتى تُحترم قواعد @page (margin: 0) وتطبع المعاينة بعرض الورقة بالكامل
+        try
+        {
+            const string emulationKey = @"Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION";
+            using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(emulationKey);
+            key?.SetValue(System.Diagnostics.Process.GetCurrentProcess().ProcessName + ".exe", 11001, Microsoft.Win32.RegistryValueKind.DWord);
+        }
+        catch { }
 
         AppDbContext.MigrateIfNeeded();
         Thread.CurrentThread.CurrentUICulture = new CultureInfo("ar-SA");
@@ -121,6 +135,9 @@ public partial class App : Application
             Shutdown();
             return;
         }
+
+        // Always hide amounts after login, regardless of saved preference
+        AmountsVisibilityService.Initialize(true);
 
         // Initialize backup service
         var backup = new BackupService(config);

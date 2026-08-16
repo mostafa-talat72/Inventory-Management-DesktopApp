@@ -1,11 +1,13 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.EntityFrameworkCore;
 using ProductApp.Data;
 using ProductApp.Models;
 using ProductApp.Services;
@@ -22,31 +24,53 @@ public partial class StockInDialog : UserControl
     private List<Models.Product> _allProducts = [];
     private bool _loaded;
 
+    private readonly Dictionary<int, System.Windows.Threading.DispatcherTimer> _flashTimers = new();
+    private readonly Dictionary<int, Brush?> _originalBrushes = new();
+    private readonly System.Windows.Threading.DispatcherTimer _searchTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(300)
+    };
+
     public StockInDialog()
     {
         InitializeComponent();
         _db = new AppDbContext();
         _inv = new InventoryService(_db);
         SelectedItemsList.ItemsSource = _selectedEntries;
+        _searchTimer.Tick += (_, _) =>
+        {
+            _searchTimer.Stop();
+            LoadProductCards(TxtSearch.Text.Trim());
+        };
+        LoadSuppliers();
         LoadProductCards();
         _loaded = true;
+        Unloaded += (_, _) => { _db.Dispose(); };
     }
 
     private void LoadProductCards(string? search = null)
     {
         var query = _db.Products.AsQueryable();
-        if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(p => p.Name.Contains(search));
 
-        _allProducts = query.ToList();
-        var cardItems = _allProducts.Select(p =>
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(p => p.Name.Contains(search) || (p.Barcode != null && p.Barcode.Contains(search)));
+
+        var products = query.Include(p => p.Units).ToList();
+        _allProducts = products;
+
+        var totals = _db.InventoryBatches
+            .GroupBy(b => b.ProductId)
+            .Select(g => new { ProductId = g.Key, Total = g.Sum(b => b.RemainingQuantity) })
+            .ToDictionary(x => x.ProductId, x => x.Total);
+
+        var cardItems = products.Select(p =>
         {
-            var units = _db.ProductUnits.Where(u => u.ProductId == p.Id).OrderBy(u => u.UnitType).ToList();
+            var units = p.Units.OrderBy(u => u.UnitType).ToList();
             return new
             {
                 p.Name,
                 UnitsDisplay = string.Join(" → ", units.Select(u => u.Name)),
-                StockDisplay = _inv.GetStockDisplay(p),
+                StockDisplay = InventoryService.GetStockDisplay(p.Units, totals.GetValueOrDefault(p.Id)),
                 SelectCommand = new StockInRelayCommand(() => AddProduct(p))
             };
         }).ToList();
@@ -54,22 +78,131 @@ public partial class StockInDialog : UserControl
         ProductCards.ItemsSource = cardItems;
     }
 
-    private void AddProduct(Models.Product product)
+    private void LoadSuppliers()
     {
-        if (_selectedEntries.Any(e => e.ProductId == product.Id))
+        var suppliers = _db.Suppliers.OrderByDescending(s => s.CreatedAt).ToList();
+        CmbSupplier.Items.Clear();
+        foreach (var s in suppliers)
+        {
+            var item = new ComboBoxItem { Content = s.Name, Tag = s };
+            CmbSupplier.Items.Add(item);
+        }
+    }
+
+    public void SetSupplier(Supplier supplier)
+    {
+        for (int i = 0; i < CmbSupplier.Items.Count; i++)
+        {
+            if (CmbSupplier.Items[i] is ComboBoxItem item && item.Tag is Supplier s && s.Id == supplier.Id)
+            {
+                CmbSupplier.SelectedIndex = i;
+                return;
+            }
+        }
+
+        // المورد جديد ولم يظهر في القائمة (أضيف بعد فتح الشاشة)
+        var newItem = new ComboBoxItem { Content = supplier.Name, Tag = supplier };
+        CmbSupplier.Items.Add(newItem);
+        CmbSupplier.SelectedItem = newItem;
+    }
+
+    public void PreSelectProduct(Models.Product product) => AddProduct(product);
+
+    private void AddProduct(Models.Product product)
+    {// لو موجود — اسكرول إليه وأضئه
+        var existing = _selectedEntries.FirstOrDefault(e => e.ProductId == product.Id);
+        if (existing != null)
+        {
+            ScrollToEntry(existing, highlight: true);
             return;
+        }
 
         var units = _db.ProductUnits.Where(u => u.ProductId == product.Id).ToList();
 
-        _selectedEntries.Add(new StockInEntry
+        var entry = new StockInEntry
         {
             ProductId = product.Id,
             ProductName = product.Name,
             HasCarton = units.Any(u => u.UnitType == UnitType.Carton),
-            HasBox = units.Any(u => u.UnitType == UnitType.Box),
-            HasPiece = units.Any(u => u.UnitType == UnitType.Piece)
-        });
+            HasBox    = units.Any(u => u.UnitType == UnitType.Box),
+            HasPiece  = units.Any(u => u.UnitType == UnitType.Piece),
+            CartonName = units.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة",
+            BoxName    = units.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة",
+            PieceName  = units.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة"
+        };
+        _selectedEntries.Add(entry);
         UpdateSelectedCount();
+
+        // اسكرول للعنصر الجديد بعد render
+        Dispatcher.InvokeAsync(() => ScrollToEntry(entry, highlight: false),
+            System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    private void ScrollToEntry(StockInEntry entry, bool highlight)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            var container = SelectedItemsList.ItemContainerGenerator
+                .ContainerFromItem(entry) as FrameworkElement;
+            if (container == null) return;
+
+            container.BringIntoView();
+
+            if (!highlight) return;
+
+            var border = FindFirstBorder(container);
+            if (border == null) return;
+
+            // أوقف timer سابق لنفس المنتج إن وجد
+            if (_flashTimers.TryGetValue(entry.ProductId, out var old))
+            {
+                old.Stop();
+                _flashTimers.Remove(entry.ProductId);
+                // استعد اللون الأصلي
+                if (_originalBrushes.TryGetValue(entry.ProductId, out var saved))
+                {
+                    border.Background = saved;
+                    _originalBrushes.Remove(entry.ProductId);
+                }
+            }
+
+            var original = border.Background;
+            _originalBrushes[entry.ProductId] = original;
+
+            int step = 0;
+            var timer = new System.Windows.Threading.DispatcherTimer
+                { Interval = TimeSpan.FromMilliseconds(180) };
+            _flashTimers[entry.ProductId] = timer;
+
+            timer.Tick += (_, _) =>
+            {
+                step++;
+                border.Background = step % 2 == 1
+                    ? new SolidColorBrush(Color.FromRgb(0x00, 0xC8, 0x96))
+                    : original;
+                if (step >= 4)
+                {
+                    timer.Stop();
+                    _flashTimers.Remove(entry.ProductId);
+                    _originalBrushes.Remove(entry.ProductId);
+                    border.Background = original;
+                }
+            };
+            timer.Start();
+        }, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    private static Border? FindFirstBorder(DependencyObject parent)
+    {
+        int count = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is Border b) return b;
+            var found = FindFirstBorder(child);
+            if (found != null) return found;
+        }
+        return null;
     }
 
     private void RemoveEntry_Click(object sender, RoutedEventArgs e)
@@ -94,9 +227,23 @@ public partial class StockInDialog : UserControl
     {
         if (!_loaded) return;
         var text = TxtSearch.Text;
-        if (text == "بحث عن منتج...")
-            return;
-        LoadProductCards(text);
+        if (text == ProductApp.Converters.WatermarkBehavior.GetWatermark(TxtSearch)) return;
+        _searchTimer.Stop();
+        _searchTimer.Start();
+    }
+
+    private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        _searchTimer.Stop();
+        var text = TxtSearch.Text.Trim();
+        if (text.Length == 0) return;
+        var match = _db.Products.FirstOrDefault(p => p.Barcode == text || p.Name == text);
+        if (match != null)
+        {
+            AddProduct(match);
+            e.Handled = true;
+        }
     }
 
     private async void BtnSave_Click(object sender, RoutedEventArgs e)
@@ -131,9 +278,46 @@ public partial class StockInDialog : UserControl
             }
         }
 
+        var supplierItem = CmbSupplier.SelectedItem as ComboBoxItem;
+        var supplier = supplierItem?.Tag as Supplier;
+
+        // فاتورة المورد تُسجل دائمًا: بالمورد المختار، أو باسم «بدون مورد» لو لم يُختر مورد
+        var invItems = new List<SupplierInvoiceItem>();
+        foreach (var entry in toSave)
+        {
+            invItems.Add(new SupplierInvoiceItem
+            {
+                ProductId = entry.ProductId,
+                CartonQuantity = entry.CartonQty,
+                BoxQuantity = entry.BoxQty,
+                PieceQuantity = entry.PieceQty,
+                CostPrice = entry.TotalCost
+            });
+        }
+
+        var total = invItems.Sum(i => i.CostPrice);
+
+        if (total > 0)
+        {
+            // الفاتورة تُسجل غير مدفوعة (Open) — تمامًا كفواتير العملاء — والدفع يتم لاحقًا
+            var invoice = new SupplierInvoice
+            {
+                SupplierId = supplier?.Id,
+                SupplierName = supplier?.Name ?? "بدون مورد",
+                TotalAmount = total,
+                TotalPaid = 0,
+                Status = InvoiceStatus.Open,
+                Items = invItems
+            };
+            _db.SupplierInvoices.Add(invoice);
+            await _db.SaveChangesAsync();
+            App.NotifyDataChanged();
+        }
+
         App.AppBackup?.BackupIfOnOperation();
 
-        NotificationManager.ShowSuccess("تم إضافة المخزون بنجاح");
+        var invoiceLabel = supplier?.Name ?? "بدون مورد";
+        NotificationManager.ShowSuccess($"تم إضافة المخزون بنجاح وسُجلت فاتورة مورد غير مدفوعة ({invoiceLabel})");
         DialogClosed?.Invoke(this, true);
     }
 
@@ -207,6 +391,10 @@ public class StockInEntry : INotifyPropertyChanged
     public bool HasCarton { get; set; }
     public bool HasBox { get; set; }
     public bool HasPiece { get; set; }
+
+    public string CartonName { get; set; } = "كرتونة";
+    public string BoxName { get; set; } = "علبة";
+    public string PieceName { get; set; } = "قطعة";
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropChanged([CallerMemberName] string? n = null)

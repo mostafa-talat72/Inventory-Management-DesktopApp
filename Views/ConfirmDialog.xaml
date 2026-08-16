@@ -23,6 +23,23 @@
                            HorizontalAlignment="Center" TextWrapping="Wrap"
                            Margin="0,0,0,24" />
 
+                <StackPanel x:Name="ConfirmInputPanel" Visibility="Collapsed" Margin="0,0,0,14">
+                    <TextBlock x:Name="TxtConfirmHint" Text=""
+                               FontSize="11" Foreground="{DynamicResource MutedTextBrush}"
+                               HorizontalAlignment="Center" Margin="0,0,0,8" />
+                    <Border CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" Background="{DynamicResource InputBackground}">
+                        <TextBox x:Name="TxtConfirmInput" FontSize="13" Height="38"
+                                 Padding="10,0" BorderThickness="0" Background="Transparent"
+                                 Foreground="{DynamicResource HeadingTextBrush}"
+                                 CaretBrush="{DynamicResource HeadingTextBrush}"
+                                 VerticalContentAlignment="Center"
+                                 HorizontalContentAlignment="Center"
+                                 TextChanged="TxtConfirmInput_TextChanged"
+                                 KeyDown="TxtConfirmInput_KeyDown" />
+                    </Border>
+                </StackPanel>
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />

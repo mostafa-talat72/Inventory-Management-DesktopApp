@@ -50,6 +50,13 @@ public partial class MovementEditDialog : UserControl
         BoxSection.Visibility = u.Any(x => x.UnitType == UnitType.Box) ? Visibility.Visible : Visibility.Collapsed;
         PieceSection.Visibility = u.Any(x => x.UnitType == UnitType.Piece) ? Visibility.Visible : Visibility.Collapsed;
 
+        TxtCartonLabel.Text = u.FirstOrDefault(x => x.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        TxtBoxLabel.Text = u.FirstOrDefault(x => x.UnitType == UnitType.Box)?.Name ?? "علبة";
+        TxtPieceLabel.Text = u.FirstOrDefault(x => x.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+
+        var pieceName = u.FirstOrDefault(x => x.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+        TxtCostPerPieceLabel.Text = $"سعر {pieceName}";
+
         if (_movement != null)
         {
             decimal totalCost = _movement.Quantity * _movement.CostPrice;
@@ -71,7 +78,7 @@ public partial class MovementEditDialog : UserControl
             .Where(b => b.ProductId == product.Id && b.RemainingQuantity > 0)
             .Sum(b => b.RemainingQuantity);
         TxtFifoCost.Text = totalBatchPieces > 0
-            ? $"{fifoValue / totalBatchPieces:0.##} ج.م/قطعة"
+            ? $"{fifoValue / totalBatchPieces:0.##} ج.م/{pieceName}"
             : "-";
         TxtAvailableStock.Text = _inv.GetStockDisplay(product);
     }
@@ -149,10 +156,13 @@ public partial class MovementEditDialog : UserControl
                 int consumed = batch.InitialQuantity - batch.RemainingQuantity;
                 if (newQty < consumed)
                 {
+                    var unitName = _db.ProductUnits.AsNoTracking()
+                        .Where(u => u.ProductId == _product.Id && u.UnitType == UnitType.Piece)
+                        .Select(u => u.Name).FirstOrDefault() ?? "قطعة";
                     NotificationManager.ShowWarning(
-                        $"لا يمكن تقليل الكمية إلى {newQty} قطعة.\n" +
-                        $"تم استهلاك {consumed} قطعة من هذه الدفعة بالفعل.\n" +
-                        $"الحد الأدنى المسموح: {consumed} قطعة");
+                        $"لا يمكن تقليل الكمية إلى {newQty} {unitName}.\n" +
+                        $"تم استهلاك {consumed} {unitName} من هذه الدفعة بالفعل.\n" +
+                        $"الحد الأدنى المسموح: {consumed} {unitName}");
                     return;
                 }
             }
@@ -176,7 +186,10 @@ public partial class MovementEditDialog : UserControl
             int available = _inv.GetAvailableStock(_product) + _item.Quantity;
             if (newQty > available)
             {
-                NotificationManager.ShowWarning($"الكمية المطلوبة ({newQty} قطعة) تتجاوز المخزون المتاح ({available} قطعة).\nالمخزون الحالي: {_inv.GetStockDisplay(_product)}");
+                var unitName = _db.ProductUnits.AsNoTracking()
+                    .Where(u => u.ProductId == _product.Id && u.UnitType == UnitType.Piece)
+                    .Select(u => u.Name).FirstOrDefault() ?? "قطعة";
+                NotificationManager.ShowWarning($"الكمية المطلوبة ({newQty} {unitName}) تتجاوز المخزون المتاح ({available} {unitName}).\nالمخزون الحالي: {_inv.GetStockDisplay(_product)}");
                 return;
             }
 
@@ -206,9 +219,13 @@ public partial class MovementEditDialog : UserControl
         }
 
         string qtyDesc = "";
-        if (cartonQty > 0) qtyDesc += $"{cartonQty} كرتونة, ";
-        if (boxQty > 0) qtyDesc += $"{boxQty} علبة, ";
-        if (pieceQty > 0) qtyDesc += $"{pieceQty} قطعة, ";
+        var descUnits = _db.ProductUnits.AsNoTracking().Where(u => u.ProductId == _product.Id).ToList();
+        var descCartonName = descUnits.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        var descBoxName = descUnits.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
+        var descPieceName = descUnits.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+        if (cartonQty > 0) qtyDesc += $"{cartonQty} {descCartonName}, ";
+        if (boxQty > 0) qtyDesc += $"{boxQty} {descBoxName}, ";
+        if (pieceQty > 0) qtyDesc += $"{pieceQty} {descPieceName}, ";
         qtyDesc = qtyDesc.TrimEnd(',', ' ');
 
         _movement.Quantity = newQty;

@@ -154,6 +154,17 @@
                                   Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                         </Grid>
                     </Button>
+                    <Button x:Name="BtnSuppliers" Style="{StaticResource NavButton}" Click="NavigateToPage" Tag="Suppliers">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="1" Text="الموردين" FontSize="14" VerticalAlignment="Center" Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" />
+                            <Path FlowDirection="LeftToRight" Grid.Column="0" Width="20" Height="20" Fill="White" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,12,0"
+                                  Data="M20,8H4V6H20M20,18H4V16H20M9,10H4V12H9V10M8,11H6V16H8V11M15,9.7C15,11 13.6,12 11.8,12C9.9,12 8.5,11 8.5,9.7C8.5,9.5 8.6,8.8 8.7,8.2C7.6,8 6.7,7.9 6.7,7.9C8.7,5.3 12.1,5 12.6,6.1C13.1,7.2 11.5,8.1 11.5,8.1C10.7,8.6 9.2,9.4 9.2,10C9.2,10.4 10.2,10.9 11.8,10.9C13.7,10.9 15,10.2 15,9.7M10.5,9C10.8,9.1 11,8.9 10.9,8.6C10.7,8.3 10.3,8.1 10,8.1C9.8,8.1 9.6,8.2 9.6,8.4C9.7,8.7 10.2,8.9 10.5,9M3,4L3,22C3,22.55 3.45,23 4,23H13C13.55,23 14,22.55 14,22V20H20C20.55,20 21,19.55 21,19V4C21,3.45 20.55,3 20,3H4C3.45,3 3,3.45 3,4M12,21H5V4H19V18H13C12.6,18 12.3,18.4 12.3,18.9L12,21Z" />
+                        </Grid>
+                    </Button>
                     <Button x:Name="BtnInvoices" Style="{StaticResource NavButton}" Click="NavigateToPage" Tag="Invoices">
                         <Grid>
                             <Grid.ColumnDefinitions>

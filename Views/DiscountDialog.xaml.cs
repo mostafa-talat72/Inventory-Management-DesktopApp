@@ -80,6 +80,11 @@ public partial class DiscountDialog : UserControl
         }
 
         _invoice.Discount = amount;
+        if (_invoice.TotalPaid > _invoice.NetAmount)
+            _invoice.TotalPaid = Math.Max(0, _invoice.NetAmount);
+        _invoice.Status = _invoice.Remaining <= 0 ? InvoiceStatus.Paid
+            : _invoice.TotalPaid > 0 ? InvoiceStatus.PartiallyPaid
+            : InvoiceStatus.Open;
         _db.SaveChanges();
 
         App.AppBackup?.BackupIfOnOperation();

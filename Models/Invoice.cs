@@ -27,7 +27,8 @@ public class Invoice
 
     public decimal NetAmount => TotalAmount - Discount;
 
-    public decimal Remaining => NetAmount - TotalPaid;
+    // لا يسمح بمتبقي سالب (لو المدفوع تجاوز الصافي لأي سبب)
+    public decimal Remaining => Math.Max(0, NetAmount - TotalPaid);
 
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Open;
 

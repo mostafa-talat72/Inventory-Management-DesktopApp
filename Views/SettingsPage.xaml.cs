@@ -54,21 +54,18 @@ public partial class SettingsPage : UserControl
         CmbPrinter.Items.Clear();
 
         // Add "default" option
-        CmbPrinter.Items.Add(new { FullName = "اختيار الطابعة عند الطباعة (افتراضي)" });
+        CmbPrinter.Items.Add("اختيار الطابعة عند الطباعة (افتراضي)");
 
         foreach (var p in printers)
-            CmbPrinter.Items.Add(new { FullName = p.FullName });
+            CmbPrinter.Items.Add(p.FullName);
 
-        CmbPrinter.DisplayMemberPath = "FullName";
         CmbPrinter.SelectedIndex = 0;
 
         if (!string.IsNullOrWhiteSpace(_config.PrinterName))
         {
             for (int i = 0; i < CmbPrinter.Items.Count; i++)
             {
-                var item = CmbPrinter.Items[i];
-                var name = item.GetType().GetProperty("FullName")?.GetValue(item)?.ToString();
-                if (name == _config.PrinterName)
+                if (CmbPrinter.Items[i]?.ToString() == _config.PrinterName)
                 {
                     CmbPrinter.SelectedIndex = i;
                     break;
@@ -220,14 +217,13 @@ public partial class SettingsPage : UserControl
 
     private void BtnSavePrinter_Click(object sender, RoutedEventArgs e)
     {
-        if (CmbPrinter.SelectedItem == null)
+        if (CmbPrinter.SelectedItem == null || CmbPrinter.SelectedIndex == 0)
         {
             _config.PrinterName = "";
         }
         else
         {
-            var name = CmbPrinter.SelectedItem.GetType().GetProperty("FullName")?.GetValue(CmbPrinter.SelectedItem)?.ToString();
-            _config.PrinterName = name ?? "";
+            _config.PrinterName = CmbPrinter.SelectedItem.ToString() ?? "";
         }
 
         _config.Save();

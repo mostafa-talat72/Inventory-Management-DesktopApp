@@ -1,0 +1,353 @@
+<Page x:Class="ProductApp.Views.SuppliersPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:wm="clr-namespace:ProductApp.Converters"
+      xmlns:ctrls="clr-namespace:ProductApp.Controls"
+      Title="الموردين"
+      FlowDirection="RightToLeft"
+      Background="{DynamicResource AppBackground}">
+
+    <Grid Margin="28,24,28,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header with icon -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <Border Width="44" Height="44" CornerRadius="14" Background="#E0F2F1">
+                <Path FlowDirection="LeftToRight" Width="22" Height="22" Fill="#00695C" Stretch="Uniform"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Data="M20,8H4V6H20M20,18H4V16H20M9,10H4V12H9V10M8,11H6V16H8V11M15,9.7C15,11 13.6,12 11.8,12C9.9,12 8.5,11 8.5,9.7C8.5,9.5 8.6,8.8 8.7,8.2C7.6,8 6.7,7.9 6.7,7.9C8.7,5.3 12.1,5 12.6,6.1C13.1,7.2 11.5,8.1 11.5,8.1C10.7,8.6 9.2,9.4 9.2,10C9.2,10.4 10.2,10.9 11.8,10.9C13.7,10.9 15,10.2 15,9.7M10.5,9C10.8,9.1 11,8.9 10.9,8.6C10.7,8.3 10.3,8.1 10,8.1C9.8,8.1 9.6,8.2 9.6,8.4C9.7,8.7 10.2,8.9 10.5,9M3,4L3,22C3,22.55 3.45,23 4,23H13C13.55,23 14,22.55 14,22V20H20C20.55,20 21,19.55 21,19V4C21,3.45 20.55,3 20,3H4C3.45,3 3,3.45 3,4M12,21H5V4H19V18H13C12.6,18 12.3,18.4 12.3,18.9L12,21Z" />
+            </Border>
+            <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
+                <TextBlock Text="الموردين" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="إدارة الموردين وفواتير التوريد" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,1,0,0" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Search + Add -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="16" Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource CardBackgroundAlt}" Margin="0,0,12,0">
+                    <TextBox x:Name="SearchBox"
+                             wm:WatermarkBehavior.Watermark="بحث عن مورد..."
+                             TextChanged="SearchBox_TextChanged" Padding="12,10" BorderThickness="0"
+                             Background="Transparent" Foreground="{DynamicResource HeadingTextBrush}" CaretBrush="{DynamicResource HeadingTextBrush}" FontSize="13" />
+                </Border>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Click="AddOrder_Click"
+                            Height="40" Cursor="Hand" Padding="20,0" Margin="0,0,10,0"
+                            Background="#00897B" Foreground="White" BorderThickness="0"
+                            FontSize="13" FontWeight="SemiBold" ToolTip="فتح شاشة إضافة طلبية من مورد">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="{TemplateBinding Background}"
+                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                              VerticalAlignment="Center"
+                                              Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                                        <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        إضافة طلبية
+                    </Button>
+                    <Button Click="AllInvoices_Click"
+                            Height="40" Cursor="Hand" Padding="20,0" Margin="0,0,10,0"
+                            Background="#6A1B9A" Foreground="White" BorderThickness="0"
+                            FontSize="13" FontWeight="SemiBold">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="{TemplateBinding Background}"
+                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                              VerticalAlignment="Center"
+                                              Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
+                                        <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        كل الفواتير
+                    </Button>
+                    <Button Click="AddSupplier_Click"
+                            Height="40" Cursor="Hand" Padding="20,0"
+                            Background="#00695C" Foreground="White" BorderThickness="0"
+                            FontSize="13" FontWeight="SemiBold">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="{TemplateBinding Background}"
+                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                              VerticalAlignment="Center"
+                                              Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                                        <ContentPresenter VerticalAlignment="Center" Margin="8,0,0,0" />
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.85" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        إضافة مورد
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- بدون مورد card -->
+        <Border Grid.Row="2" Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1"
+                CornerRadius="14" Cursor="Hand" Margin="0,0,0,16"
+                MouseLeftButtonDown="NoSupplierCard_Click">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06" Color="#000" />
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect BlurRadius="14" ShadowDepth="2" Opacity="0.12" Color="#00838F" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="6" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" CornerRadius="14,0,0,14" Background="#00838F" />
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,16,0,16">
+                    <Border Width="40" Height="40" CornerRadius="11" Background="#E0F7FA" VerticalAlignment="Center">
+                        <Path FlowDirection="LeftToRight" Width="20" Height="20" Fill="#00838F" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Data="M19,3H5c-1.1,0-2,0.9-2,2v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3M19,15H15c0,2.21-1.79,4-4,4s-4-1.79-4-4H5V5h14V15Z" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
+                        <TextBlock Text="بدون مورد" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        <TextBlock Text="فواتير التوريد المسجلة بدون مورد" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <Border Background="#E0F7FA" CornerRadius="8" Padding="12,6" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="TxtNoSupplierCount" Text="0" FontSize="16" FontWeight="Bold" Foreground="#00838F" />
+                            <TextBlock Text=" فاتورة توريد" FontSize="11" Foreground="#00838F" Margin="4,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+                    <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="#B0BEC5" Stretch="Uniform" VerticalAlignment="Center" Margin="10,0,0,0"
+                          Data="M20,11H7.83l5.59-5.59L12,4l-8,8 8,8 1.41-1.41L7.83,13H20v-2z" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Supplier Cards -->
+        <ListView x:Name="SupplierList" Grid.Row="3" HorizontalContentAlignment="Stretch"
+                  Background="Transparent"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ctrls:VirtualizingWrapPanel />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Top" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Top" />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Border Width="260" MinHeight="152" Margin="8" CornerRadius="14"
+                            Background="{DynamicResource CardBackground}" BorderThickness="0"
+                            Cursor="Hand">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.1" Color="#000" />
+                        </Border.Effect>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.16" Color="#00695C" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid Margin="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Accent bar -->
+                            <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{Binding AccentBg}" />
+
+                            <!-- Content -->
+                            <Grid Grid.Row="1" Margin="16,12,16,14">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Row 0: icon + name + actions -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
+                                            Background="{Binding IconBg}" VerticalAlignment="Center">
+                                        <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="{Binding IconFg}" Stretch="Uniform"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Data="M20,8H4V6H20M20,18H4V16H20M9,10H4V12H9V10M8,11H6V16H8V11M15,9.7C15,11 13.6,12 11.8,12C9.9,12 8.5,11 8.5,9.7C8.5,9.5 8.6,8.8 8.7,8.2C7.6,8 6.7,7.9 6.7,7.9C8.7,5.3 12.1,5 12.6,6.1C13.1,7.2 11.5,8.1 11.5,8.1C10.7,8.6 9.2,9.4 9.2,10C9.2,10.4 10.2,10.9 11.8,10.9C13.7,10.9 15,10.2 15,9.7M10.5,9C10.8,9.1 11,8.9 10.9,8.6C10.7,8.3 10.3,8.1 10,8.1C9.8,8.1 9.6,8.2 9.6,8.4C9.7,8.7 10.2,8.9 10.5,9M3,4L3,22C3,22.55 3.45,23 4,23H13C13.55,23 14,22.55 14,22V20H20C20.55,20 21,19.55 21,19V4C21,3.45 20.55,3 20,3H4C3.45,3 3,3.45 3,4M12,21H5V4H19V18H13C12.6,18 12.3,18.4 12.3,18.9L12,21Z" />
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                                        <TextBlock Text="{Binding Phone}" FontSize="11" Foreground="{DynamicResource SubtleTextBrush}" Margin="0,1,0,0" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top">
+                                        <Button Click="EditSupplier_Click"
+                                                Background="Transparent" BorderThickness="0"
+                                                Cursor="Hand" Width="28" Height="28"
+                                                ToolTip="تعديل">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                                                            CornerRadius="6" Padding="0">
+                                                        <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#546E7A" Stretch="Uniform"
+                                                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                              Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="border" Property="Background" Value="#E0F2F1" />
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="border" Property="Background" Value="#B2DFDB" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                        <Button Click="DeleteSupplier_Click"
+                                                Background="Transparent" BorderThickness="0"
+                                                Cursor="Hand" Width="28" Height="28" Margin="2,0,0,0"
+                                                ToolTip="حذف">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                                                            CornerRadius="6" Padding="0">
+                                                        <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="#E53935" Stretch="Uniform"
+                                                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                              Data="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 19,6.41Z" />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="border" Property="Background" Value="#FFEBEE" />
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="border" Property="Background" Value="#FFCDD2" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Row 1: divider -->
+                                <Border Grid.Row="1" Height="1" Background="{DynamicResource DividerBrush}" Margin="0,10,0,8" />
+
+                                <!-- Row 2: status info -->
+                                <StackPanel Grid.Row="2">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <Border Width="8" Height="8" CornerRadius="4" Background="{Binding AccentBg}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding StatusDisplay}" FontSize="11" Foreground="{DynamicResource BodyTextBrush}"
+                                                   Margin="6,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Border Background="#00695C" CornerRadius="6" Padding="10,5" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding InvoicesCount}" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="White" />
+                                        </Border>
+                                        <Border Background="{Binding RemainingBg}" CornerRadius="6" Padding="10,5" HorizontalAlignment="Left" Margin="6,0,0,0"
+                                                Visibility="{Binding RemainingVisible}">
+                                            <TextBlock Text="{Binding RemainingDisplay}" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="White" />
+                                        </Border>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                        <Border.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" Command="{Binding SelectCommand}" />
+                        </Border.InputBindings>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

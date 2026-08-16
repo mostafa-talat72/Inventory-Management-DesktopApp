@@ -14,6 +14,11 @@ public class Product
 
     public string? ImagePath { get; set; }
 
+    [MaxLength(100)]
+    public string? Barcode { get; set; }
+
+    public bool IsFavorite { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public ICollection<ProductUnit> Units { get; set; } = new List<ProductUnit>();

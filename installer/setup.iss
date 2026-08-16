@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=MTE Stock
-AppVersion=1.0
+AppVersion=1.3
 AppPublisher=م. مصطفى طلعت
 AppPublisherURL=https://github.com/anomalyco
 AppContact=01116626164
@@ -13,7 +13,7 @@ UninstallDisplayIcon={app}\ProductApp.exe
 Compression=lzma2/max
 SolidCompression=yes
 OutputDir=.
-OutputBaseFilename=MTEStock_Setup_V1.2
+OutputBaseFilename=MTEStock_Setup
 SetupIconFile=..\app.ico
 UninstallDisplayName=MTE Stock
 PrivilegesRequired=admin

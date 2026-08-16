@@ -33,7 +33,10 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                                <TextBlock Grid.Row="0" Text="{Binding Name}" FontSize="14" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           TextWrapping="Wrap" TextTrimming="None" MaxHeight="54"
+                                           VerticalAlignment="Top" />
                                 <TextBlock Grid.Row="1" Text="{Binding UnitsDisplay}" FontSize="11" Foreground="{DynamicResource SubtleTextBrush}" Margin="0,2,0,0" />
                                 <TextBlock Grid.Row="2" Text="{Binding StockDisplay}" FontSize="11" Foreground="{DynamicResource BodyTextBrush}" VerticalAlignment="Center" />
                                 <TextBlock Grid.Row="3" Text="{Binding PriceDisplay}" FontSize="12" FontWeight="SemiBold" Foreground="#00897B" />
@@ -94,15 +97,15 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Margin="4">
-                        <TextBlock Text="كرتونة" FontSize="12" Margin="0,0,0,4" />
+                        <TextBlock x:Name="TxtCartonLabel" Text="كرتونة" FontSize="12" Margin="0,0,0,4" />
                         <TextBox x:Name="TxtCartonQty" Text="0" TextChanged="Qty_TextChanged" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="4">
-                        <TextBlock Text="علبة" FontSize="12" Margin="0,0,0,4" />
+                        <TextBlock x:Name="TxtBoxLabel" Text="علبة" FontSize="12" Margin="0,0,0,4" />
                         <TextBox x:Name="TxtBoxQty" Text="0" TextChanged="Qty_TextChanged" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="4">
-                        <TextBlock Text="قطعة" FontSize="12" Margin="0,0,0,4" />
+                        <TextBlock x:Name="TxtPieceLabel" Text="قطعة" FontSize="12" Margin="0,0,0,4" />
                         <TextBox x:Name="TxtPieceQty" Text="0" TextChanged="Qty_TextChanged" />
                     </StackPanel>
                     <StackPanel Grid.Column="3" Margin="4">

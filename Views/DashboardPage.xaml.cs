@@ -19,7 +19,7 @@ public partial class DashboardPage : Page
     private decimal _todaySales, _todayCost, _todayDiscount, _todayProfit, _todayProfitMargin;
     private decimal _totalRevenue, _totalCost, _totalDiscount, _totalProfit, _profitMargin;
     private decimal _pendingAmount, _cancelledAmount;
-    private decimal _todayDeductionCost, _totalDeductionCost;
+    private decimal _todayDeductionCost, _totalDeductionCost, _stockValue;
     private List<Invoice> _recentInvoices = new();
 
     public DashboardPage()
@@ -151,6 +151,9 @@ public partial class DashboardPage : Page
                 TxtTotalDeductionCost.Text = totalDeductionCost > 0
                     ? $"{totalDeductionCost:0.##} ج.م" : "0 ج.م";
                 TxtProfitMargin.Text  = profitMargin >= 0 ? $"هامش ربح {profitMargin:0.0}%" : $"خسارة {Math.Abs(profitMargin):0.0}%";
+                _stockValue = _db.InventoryBatches
+                    .Sum(b => (decimal?)b.RemainingQuantity * b.CostPricePerPiece) ?? 0;
+                TxtDashboardStockValue.Text = $"{_stockValue:0.##} ج.م";
                 TxtTotalCustomers.Text = $"{totalCustomers}";
                 TxtNewCustomers.Text  = $"{newCustomers} هذا الشهر";
                 TxtPendingInvoices.Text = $"{pendingCount}";
@@ -186,6 +189,7 @@ public partial class DashboardPage : Page
         TxtTotalDeductionCost.Text = hidden ? mask : (_totalDeductionCost > 0 ? $"{_totalDeductionCost:0.##} ج.م" : "0 ج.م");
         TxtTotalDiscount.Text    = hidden ? mask : $"{_totalDiscount:0.##} ج.م";
         TxtTotalProfit.Text      = hidden ? mask : $"{_totalProfit:0.##} ج.م";
+        TxtDashboardStockValue.Text = hidden ? mask : $"{_stockValue:0.##} ج.م";
         TxtPendingAmount.Text    = hidden ? mask : $"{_pendingAmount:0.##} ج.م";
         TxtCancelledAmount.Text  = hidden ? mask : $"{_cancelledAmount:0.##} ج.م";
     }

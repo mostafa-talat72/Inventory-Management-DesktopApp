@@ -117,7 +117,32 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
-                    <Button x:Name="BtnPrint" Grid.Column="6" Click="BtnPrint_Click"
+                    <Button x:Name="BtnExportExcel" Grid.Column="6" Click="ExportExcel_Click"
+                            Height="38" Padding="14,0" Cursor="Hand" Margin="10,0,0,0"
+                            Background="#1B5E20" Foreground="White" BorderThickness="0"
+                            FontSize="13" FontWeight="SemiBold"
+                            ToolTip="تصدير التقرير إلى Excel (xlsx)">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" CornerRadius="10"
+                                        Background="{TemplateBinding Background}"
+                                        Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path FlowDirection="LeftToRight" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                              VerticalAlignment="Center"
+                                              Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M9.9,15.9L8.5,14.5L12,11L15.5,14.5L14.1,15.9L13,14.8V19H11V14.8L9.9,15.9Z" />
+                                        <TextBlock Text="Excel" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Opacity" Value="0.88" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="BtnPrint" Grid.Column="7" Click="BtnPrint_Click"
                             Height="38" Padding="14,0" Cursor="Hand" Margin="10,0,0,0"
                             Background="#00695C" Foreground="White" BorderThickness="0"
                             FontSize="13" FontWeight="SemiBold"

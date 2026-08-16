@@ -30,7 +30,7 @@ public partial class InvoiceDetailsDialog : UserControl
     {
         _invoice = _db.Invoices
             .Include(i => i.Customer)
-            .Include(i => i.Orders).ThenInclude(o => o.Items).ThenInclude(oi => oi.Product)
+            .Include(i => i.Orders).ThenInclude(o => o.Items).ThenInclude(oi => oi.Product).ThenInclude(p => p.Units)
             .Include(i => i.Orders).ThenInclude(o => o.Items).ThenInclude(oi => oi.ProductUnit)
             .Include(i => i.Payments)
             .First(i => i.Id == _invoice.Id);
@@ -150,20 +150,25 @@ public partial class InvoiceDetailsDialog : UserControl
         var primaryFg   = Application.Current.TryFindResource("PrimaryTextBrush")  as Brush ?? (Brush)new BrushConverter().ConvertFrom("#1A237E")!;
         var bodyFg      = Application.Current.TryFindResource("BodyTextBrush")     as Brush ?? (Brush)new BrushConverter().ConvertFrom("#546E7A")!;
 
+        var units = product.Units.ToList();
+        var cartonName = units.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+        var boxName = units.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
+        var pieceName = units.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+
         string RetailQty()
         {
             string s = "";
-            if (rCarton > 0) s += $"{rCarton} كرتونة, ";
-            if (rBox > 0) s += $"{rBox} علبة, ";
-            if (rPiece > 0) s += $"{rPiece} قطعة, ";
+            if (rCarton > 0) s += $"{rCarton} {cartonName}, ";
+            if (rBox > 0) s += $"{rBox} {boxName}, ";
+            if (rPiece > 0) s += $"{rPiece} {pieceName}, ";
             return s.TrimEnd(',', ' ');
         }
         string WholesaleQty()
         {
             string s = "";
-            if (wCarton > 0) s += $"{wCarton} كرتونة, ";
-            if (wBox > 0) s += $"{wBox} علبة, ";
-            if (wPiece > 0) s += $"{wPiece} قطعة, ";
+            if (wCarton > 0) s += $"{wCarton} {cartonName}, ";
+            if (wBox > 0) s += $"{wBox} {boxName}, ";
+            if (wPiece > 0) s += $"{wPiece} {pieceName}, ";
             return s.TrimEnd(',', ' ');
         }
 
@@ -589,29 +594,14 @@ public partial class InvoiceDetailsDialog : UserControl
                             int totalPieces = inv.CalculatePieceEquivalent(item.Product, item.CartonQuantity, item.BoxQuantity, item.PieceQuantity);
                             if (totalPieces > 0)
                             {
-                                var batch = _db.InventoryBatches
-                                    .Where(b => b.ProductId == item.ProductId && b.RemainingQuantity > 0)
-                                    .OrderByDescending(b => b.PurchaseDate)
-                                    .FirstOrDefault();
-                                if (batch != null)
-                                    batch.RemainingQuantity += totalPieces;
-                                else
-                                {
-                                    _db.InventoryBatches.Add(new InventoryBatch
-                                    {
-                                        ProductId = item.ProductId,
-                                        CostPricePerPiece = item.CostPrice / totalPieces,
-                                        InitialQuantity = totalPieces,
-                                        RemainingQuantity = totalPieces,
-                                        PurchaseDate = DateTime.Now
-                                    });
-                                }
+                                var (unitCost, totalCost) = inv.ReturnToBatches(item.ProductId, totalPieces);
                                 _db.InventoryMovements.Add(new InventoryMovement
                                 {
                                     ProductId = item.ProductId,
                                     MovementType = MovementType.Return,
                                     Quantity = totalPieces,
-                                    CostPrice = item.CostPrice / totalPieces,
+                                    CostPrice = unitCost,
+                                    SellingPrice = totalCost,
                                     ReferenceType = ReferenceType.Return,
                                     ReferenceId = _invoice.Id,
                                     Notes = $"مرتجعات بيع - فاتورة #{_invoice.Id}"

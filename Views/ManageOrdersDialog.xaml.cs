@@ -208,9 +208,13 @@ public partial class ManageOrdersDialog : UserControl
         foreach (var item in order.Items.OrderBy(i => i.Product.Name))
         {
             string qtyDisplay = "";
-            if (item.CartonQuantity > 0) qtyDisplay += $"{item.CartonQuantity} كرتونة  ";
-            if (item.BoxQuantity    > 0) qtyDisplay += $"{item.BoxQuantity} علبة  ";
-            if (item.PieceQuantity  > 0) qtyDisplay += $"{item.PieceQuantity} قطعة";
+            var units = item.Product.Units.ToList();
+            var cartonName = units.FirstOrDefault(u => u.UnitType == UnitType.Carton)?.Name ?? "كرتونة";
+            var boxName = units.FirstOrDefault(u => u.UnitType == UnitType.Box)?.Name ?? "علبة";
+            var pieceName = units.FirstOrDefault(u => u.UnitType == UnitType.Piece)?.Name ?? "قطعة";
+            if (item.CartonQuantity > 0) qtyDisplay += $"{item.CartonQuantity} {cartonName}  ";
+            if (item.BoxQuantity    > 0) qtyDisplay += $"{item.BoxQuantity} {boxName}  ";
+            if (item.PieceQuantity  > 0) qtyDisplay += $"{item.PieceQuantity} {pieceName}";
             qtyDisplay = qtyDisplay.Trim();
 
             string priceTypeText = item.PriceType == PriceType.Retail ? "قطاعي" : "جملة";
@@ -343,6 +347,11 @@ public partial class ManageOrdersDialog : UserControl
 
                 if (_invoice.TotalAmount < 0) _invoice.TotalAmount = 0;
                 if (_invoice.TotalAmount <= 0) { _invoice.TotalPaid = 0; _invoice.Discount = 0; }
+                else if (_invoice.TotalPaid > _invoice.NetAmount)
+                    _invoice.TotalPaid = Math.Max(0, _invoice.NetAmount);
+                _invoice.Status = _invoice.Remaining <= 0 ? InvoiceStatus.Paid
+                    : _invoice.TotalPaid > 0 ? InvoiceStatus.PartiallyPaid
+                    : InvoiceStatus.Open;
 
                 // حذف الـ order (cascade يحذف الـ items)
                 _db.Orders.Remove(order);
@@ -357,6 +366,21 @@ public partial class ManageOrdersDialog : UserControl
                     _db.Invoices.Remove(_invoice);
                     _db.SaveChanges();
 
+                    // لو فيه فواتير تانية غير مدفوعة بالكامل لنفس العميل → اطبع أحدثها ككشف حساب
+                    try
+                    {
+                        var otherInvoice = _db.Invoices
+                            .Where(i => i.CustomerId == _invoice.CustomerId
+                                && i.Id != _invoice.Id
+                                && i.Status != InvoiceStatus.Paid
+                                && i.Status != InvoiceStatus.Cancelled)
+                            .OrderByDescending(i => i.Id)
+                            .FirstOrDefault();
+                        if (otherInvoice != null)
+                            new ReceiptPrinter(_db).Print(otherInvoice);
+                    }
+                    catch (System.Exception) { }
+
                     NotificationManager.ShowSuccess($"تم حذف الفاتورة #{_invoice.Id} تلقائياً لأنها أصبحت فارغة");
                     DialogClosed?.Invoke(this, true);
                     return;
@@ -368,6 +392,13 @@ public partial class ManageOrdersDialog : UserControl
                     .Include(i => i.Orders).ThenInclude(o => o.Items).ThenInclude(oi => oi.ProductUnit)
                     .First(i => i.Id == _invoice.Id);
                 LoadItems();
+
+                // الفاتورة لسه فيها طلبات → اطبع حالتها بعد الحذف
+                try
+                {
+                    new ReceiptPrinter(_db).Print(_invoice);
+                }
+                catch (System.Exception) { }
             },
             ConfirmDialog.DialogType.Danger);
     }
@@ -375,30 +406,15 @@ public partial class ManageOrdersDialog : UserControl
     private void ReturnStockToBatches(int productId, int totalPieces, decimal costPrice)
     {
         if (totalPieces <= 0) return;
-        var batch = _db.InventoryBatches
-            .Where(b => b.ProductId == productId && b.RemainingQuantity > 0)
-            .OrderByDescending(b => b.PurchaseDate)
-            .FirstOrDefault();
-        if (batch != null)
-            batch.RemainingQuantity += totalPieces;
-        else
-        {
-            _db.InventoryBatches.Add(new InventoryBatch
-            {
-                ProductId = productId,
-                CostPricePerPiece = totalPieces > 0 ? costPrice / totalPieces : 0,
-                InitialQuantity = totalPieces,
-                RemainingQuantity = totalPieces,
-                PurchaseDate = DateTime.Now
-            });
-        }
+        var (unitCost, totalCost) = _inv.ReturnToBatches(productId, totalPieces);
 
         _db.InventoryMovements.Add(new InventoryMovement
         {
             ProductId = productId,
             MovementType = MovementType.Return,
             Quantity = totalPieces,
-            CostPrice = totalPieces > 0 ? costPrice / totalPieces : 0,
+            CostPrice = unitCost,
+            SellingPrice = totalCost,
             ReferenceType = ReferenceType.Return,
             ReferenceId = _invoice.Id,
             Notes = $"مرتجع حذف طلب - فاتورة #{_invoice.Id}"

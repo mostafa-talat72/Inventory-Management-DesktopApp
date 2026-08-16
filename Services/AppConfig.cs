@@ -28,6 +28,10 @@ public class AppConfig
     public bool IsDarkMode { get; set; } = false;
     public bool HideAmounts { get; set; } = true;
 
+    // تفضيلات شاشة المنتجات
+    public string ProductsSortMode { get; set; } = "name";
+    public bool ProductsLowStockOnly { get; set; }
+
     private static readonly string DefaultPassword = "123456";
 
     public static AppConfig Load()
@@ -57,7 +61,22 @@ public class AppConfig
 
     public bool VerifyPassword(string password)
     {
-        return PasswordHash == HashPassword(password);
+        if (string.IsNullOrEmpty(PasswordHash)) return false;
+
+        // PBKDF2 format: "$PBKDF2$<iterations>$<salt_b64>$<hash_b64>"
+        if (PasswordHash.StartsWith("$PBKDF2$"))
+        {
+            var parts = PasswordHash.Split('$');
+            if (parts.Length < 5) return false;
+            if (!int.TryParse(parts[2], out var iterations)) return false;
+            var salt = Convert.FromBase64String(parts[3]);
+            var storedHash = Convert.FromBase64String(parts[4]);
+            var computedHash = PBKDF2Hash(password, salt, iterations);
+            return CryptographicOperations.FixedTimeEquals(storedHash, computedHash);
+        }
+
+        // Fallback: old SHA256 format (migration support)
+        return PasswordHash == LegacySha256Hash(password);
     }
 
     public void ChangePassword(string newPassword)
@@ -67,6 +86,23 @@ public class AppConfig
     }
 
     public static string HashPassword(string password)
+    {
+        var salt = RandomNumberGenerator.GetBytes(16);
+        var hash = PBKDF2Hash(password, salt, 100_000);
+        return $"$PBKDF2$100000${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+    }
+
+    private static byte[] PBKDF2Hash(string password, byte[] salt, int iterations)
+    {
+        return Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(password),
+            salt,
+            iterations,
+            HashAlgorithmName.SHA256,
+            32);
+    }
+
+    private static string LegacySha256Hash(string password)
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
         return Convert.ToHexString(bytes).ToLower();

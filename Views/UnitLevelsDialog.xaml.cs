@@ -52,7 +52,7 @@ public partial class UnitLevelsDialog : UserControl
             {
                 var piece = units.FirstOrDefault(x => x.UnitType == UnitType.Piece && x.ParentUnitId == u.Id);
                 if (piece != null)
-                    contains = $"يحتوي على {u.QuantityPerParent} قطعة";
+                    contains = $"يحتوي على {u.QuantityPerParent} {piece.Name}";
             }
             else if (u.UnitType == UnitType.Piece)
                 contains = "الوحدة الأساسية";
@@ -60,13 +60,7 @@ public partial class UnitLevelsDialog : UserControl
             return new
             {
                 u.Name,
-                UnitTypeDisplay = u.UnitType switch
-                {
-                    UnitType.Carton => "كرتونة",
-                    UnitType.Box => "علبة",
-                    UnitType.Piece => "قطعة",
-                    _ => ""
-                },
+                UnitTypeDisplay = "",
                 ContainsDisplay = contains,
                 RetailDisplay = $"{u.RetailPrice:0.##} ج.م",
                 WholesaleDisplay = $"{u.WholesalePrice:0.##} ج.م",
@@ -113,10 +107,11 @@ public partial class UnitLevelsDialog : UserControl
         var mainWindow = (MainWindow)Window.GetWindow(this);
         var dialog = new ProductDialog(_db, _product);
         mainWindow.ShowOverlay(dialog);
+
         dialog.DialogClosed += (s, r) =>
         {
             mainWindow.HideOverlay();
-            if (r == true)
+            if (r == true || r == null)
             {
                 LoadUnits();
                 DialogClosed?.Invoke(this, true);

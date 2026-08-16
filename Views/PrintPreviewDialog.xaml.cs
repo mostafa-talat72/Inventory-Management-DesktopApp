@@ -66,15 +66,9 @@ public partial class PrintPreviewDialog : UserControl
 
         try
         {
-            if (!string.IsNullOrWhiteSpace(config.PrinterName) && _invoice != null && _items != null)
+            if (!string.IsNullOrWhiteSpace(config.PrinterName))
             {
-                // طباعة WPF مباشرة — بدون browser بدون dialog
-                var printer = new ReceiptPrinter(null!);
-                printer.PrintDirect(_invoice, _items, config);
-            }
-            else if (!string.IsNullOrWhiteSpace(config.PrinterName))
-            {
-                // طباعة عبر OLE بدون dialog
+                // الطباعة الحرارية — نفس HTML المعروض في المعاينة بالضبط
                 PrintToReceiptPrinter(config.PrinterName);
             }
             else
@@ -96,7 +90,8 @@ public partial class PrintPreviewDialog : UserControl
         bool changed = false;
         try
         {
-            SetPrinterPaperSize(printerName);
+            int lengthMm = MeasureContentHeightMm();
+            SetPrinterPaperSize(printerName, lengthMm);
             if (originalDefault != printerName) { SetDefaultPrinter(printerName); changed = true; }
             ReceiptBrowser.Dispatcher.Invoke(() => PrintViaOle(false), DispatcherPriority.Background);
         }
@@ -104,7 +99,29 @@ public partial class PrintPreviewDialog : UserControl
         finally { if (changed && originalDefault != null) SetDefaultPrinter(originalDefault); }
     }
 
-    private static void SetPrinterPaperSize(string printerName)
+    /// <summary>
+    /// يقيس الارتفاع الفعلي لمحتوى HTML المعروض في المعاينة (بنفس محرك العرض)
+    /// ويحوّله إلى mm حتى تُطبع الفاتورة صفحة واحدة متواصلة بدون تقسيم.
+    /// </summary>
+    private int MeasureContentHeightMm()
+    {
+        try
+        {
+            var doc = ReceiptBrowser.Document;
+            if (doc == null) return 297;
+            dynamic body = ((dynamic)doc).body;
+            if (body == null) return 297;
+
+            int heightPx = Convert.ToInt32(body.scrollHeight);
+            if (heightPx <= 0) return 297;
+
+            int lengthMm = (int)Math.Ceiling(heightPx * 25.4 / 96.0) + 8;
+            return Math.Clamp(lengthMm, 40, 3000);
+        }
+        catch { return 297; }
+    }
+
+private static void SetPrinterPaperSize(string printerName, int lengthMm)
     {
         try
         {
@@ -122,7 +139,7 @@ public partial class PrintPreviewDialog : UserControl
                     dm.dmFields     |= DM_PAPERSIZE | DM_PAPERLENGTH | DM_PAPERWIDTH;
                     dm.dmPaperSize   = DMPAPER_USER;
                     dm.dmPaperWidth  = 800;
-                    dm.dmPaperLength = 2970;
+                    dm.dmPaperLength = (short)Math.Clamp(lengthMm * 10, 400, 30000);
                     Marshal.StructureToPtr(dm, pDev, true);
                     DocumentProperties(IntPtr.Zero, hPrinter, printerName, pDev, pDev, DM_IN_BUFFER | DM_OUT_BUFFER);
                 }

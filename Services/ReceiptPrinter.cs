@@ -44,7 +44,17 @@ public class ReceiptPrinter : IDisposable
         catch { return ""; }
     }
 
-    private static string ToArabicNumerals(string input) => input;
+    private static string ToArabicNumerals(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        var chars = input.ToCharArray();
+        for (int i = 0; i < chars.Length; i++)
+        {
+            if (chars[i] >= '0' && chars[i] <= '9')
+                chars[i] = (char)('\u0660' + (chars[i] - '0'));
+        }
+        return new string(chars);
+    }
 
     private static string FormatDateArabic(DateTime dt)
     {
@@ -95,19 +105,19 @@ public class ReceiptPrinter : IDisposable
             if (g.Cartons > 0 && cartonUnit != null)
             {
                 decimal p = isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice;
-                qtyLines.Add($"{ToArabicNumerals(g.Cartons.ToString())} كرتونة");
+                qtyLines.Add($"{ToArabicNumerals(g.Cartons.ToString())} {cartonUnit.Name}");
                 priceLines.Add(ToArabicNumerals($"{p:0.##}"));
             }
             if (g.Boxes > 0 && boxUnit != null)
             {
                 decimal p = isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice;
-                qtyLines.Add($"{ToArabicNumerals(g.Boxes.ToString())} علبة");
+                qtyLines.Add($"{ToArabicNumerals(g.Boxes.ToString())} {boxUnit.Name}");
                 priceLines.Add(ToArabicNumerals($"{p:0.##}"));
             }
             if (g.Pieces > 0 && pieceUnit != null)
             {
                 decimal p = isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice;
-                qtyLines.Add($"{ToArabicNumerals(g.Pieces.ToString())} قطعة");
+                qtyLines.Add($"{ToArabicNumerals(g.Pieces.ToString())} {pieceUnit.Name}");
                 priceLines.Add(ToArabicNumerals($"{p:0.##}"));
             }
 
@@ -136,6 +146,56 @@ public class ReceiptPrinter : IDisposable
         }
 
         var locationInfoHtml = BuildLocationInfoHtml(config);
+
+        // ملخص الفواتير غير المدفوعة بالكامل لهذا العميل (فقط للفواتير ذات عميل)
+        var unpaidTotalsHtml = "";
+        if (invoice.CustomerId != null)
+        {
+            var unpaid = _db.Invoices
+                .Where(i => i.CustomerId == invoice.CustomerId
+                    && i.Status != InvoiceStatus.Paid
+                    && i.Status != InvoiceStatus.Cancelled)
+                .ToList();
+
+            var totalSum    = unpaid.Sum(i => i.TotalAmount);
+            var discountSum = unpaid.Sum(i => i.Discount);
+            var paidSum     = unpaid.Sum(i => i.TotalPaid);
+            var remSum      = unpaid.Sum(i => i.Remaining);
+            var oldRemSum   = unpaid.Where(i => i.Id != invoice.Id).Sum(i => i.Remaining);
+
+            unpaidTotalsHtml = $@"
+  <div class=""divider""></div>
+  <div class=""total-section"">
+    <div class=""section-title"">الأجل (المتبقي من الفواتير القديمة)</div>
+    <div class=""total-row remaining"">الأجل: {ToArabicNumerals(oldRemSum.ToString("0.##"))} ج.م</div>
+  </div>
+  <div class=""divider""></div>
+  <div class=""total-section"">
+    <div class=""section-title"">إجمالي فواتير العميل غير المدفوعة بالكامل</div>
+    <div class=""total-row grand-total"">إجمالي المطلوب: {ToArabicNumerals(totalSum.ToString("0.##"))} ج.م</div>
+    {(discountSum > 0 ? $"<div class=\"total-row\">إجمالي المخصوم: {ToArabicNumerals(discountSum.ToString("0.##"))} ج.م</div>" : "")}
+    <div class=""total-row paid"">إجمالي المدفوع: {ToArabicNumerals(paidSum.ToString("0.##"))} ج.م</div>
+    <div class=""total-row remaining"">إجمالي المتبقي: {ToArabicNumerals(remSum.ToString("0.##"))} ج.م</div>
+  </div>";
+        }
+
+        bool hasCustomer = invoice.CustomerId != null;
+        string totalsBlock = hasCustomer
+            ? $@"
+                <div class=""total-section"">
+                  <div class=""section-title"">مطلوب فاتورة #{invoice.Id}</div>
+                  <div class=""total-row grand-total"">المطلوب: {ToArabicNumerals(invoice.TotalAmount.ToString("0.##"))} ج.م</div>
+                  {(invoice.Discount > 0 ? $"<div class=\"total-row\">المخصوم: {ToArabicNumerals(invoice.Discount.ToString("0.##"))} ج.م</div>" : "")}
+                  <div class=""total-row paid"">المدفوع: {ToArabicNumerals(invoice.TotalPaid.ToString("0.##"))} ج.م</div>
+                  <div class=""total-row remaining"">المتبقي: {ToArabicNumerals(remaining.ToString("0.##"))} ج.م</div>
+                </div>{unpaidTotalsHtml}"
+            : $@"
+                <div class=""total-section"">
+                  <div class=""total-row grand-total"">الإجمالي: {ToArabicNumerals(invoice.TotalAmount.ToString("0.##"))} ج.م</div>
+                  {(invoice.Discount > 0 ? $"<div class=\"total-row\">الخصم: {ToArabicNumerals(invoice.Discount.ToString("0.##"))} ج.م</div>" : "")}
+                  <div class=""total-row paid"">المدفوع: {ToArabicNumerals(invoice.TotalPaid.ToString("0.##"))} ج.م</div>
+                  {(remaining <= 0 ? "" : $"<div class=\"total-row remaining\">المتبقي: {ToArabicNumerals(remaining.ToString("0.##"))} ج.م</div>")}
+                </div>";
 
         return $@"<!DOCTYPE html>
 <html dir=""rtl"" lang=""ar"">
@@ -203,11 +263,198 @@ public class ReceiptPrinter : IDisposable
     <tbody>{itemsRows}</tbody>
   </table>
   <div class=""divider""></div>
+  {totalsBlock}
+  <div class=""thank-you"">شكراً لزيارتكم</div>
+  <div class=""divider""></div>
+  {locationInfoHtml}
+  <div class=""footer"">
+    <strong style=""font-weight: 900; font-size: 14px;"">تم تصميم وتطوير هذا النظام بواسطة المهندس مصطفى طلعت للحلول البرمجيه - 01116626164</strong>
+  </div>
+</body>
+</html>";
+    }
+
+    // ═══════════════════════════════════════════
+    //  AGGREGATED PRINTING (multiple invoices)
+    // ═══════════════════════════════════════════
+
+    public void PrintInvoices(List<Invoice> invoices)
+    {
+        if (invoices == null || invoices.Count == 0) return;
+        var ids = invoices.Select(i => i.Id).ToList();
+        var items = _db.OrderItems
+            .Include(oi => oi.Product).ThenInclude(p => p.Units)
+            .Where(oi => ids.Contains(oi.Order.InvoiceId))
+            .ToList();
+        var config = AppConfig.Load();
+        var html = BuildAggregatedHtml(invoices, items, config);
+        Views.PrintPreviewDialog.Show(html, $"طباعة مجمعة - {invoices.Count} فاتورة");
+    }
+
+    public string BuildAggregatedHtml(List<Invoice> invoices, List<OrderItem> items, AppConfig config)
+    {
+        var locationName = config.PrintLocationName ? config.LocationName : "";
+        var now = DateTime.Now;
+
+        // نفس العميل لكل الفواتير؟
+        var customerName = invoices.All(i => i.CustomerName == invoices[0].CustomerName)
+            ? invoices[0].CustomerName
+            : null;
+
+        // تجميع الأصناف — الفصل بين الأسعار المختلفة (ProductId + PriceType + UnitPrice)
+        var grouped = items
+            .GroupBy(i => (i.ProductId, i.PriceType, i.UnitPrice))
+            .Select(g => new
+            {
+                ProductName = g.First().Product.Name,
+                PriceType   = g.Key.PriceType,
+                Units       = g.First().Product.Units.ToList(),
+                Cartons     = g.Sum(i => i.CartonQuantity),
+                Boxes       = g.Sum(i => i.BoxQuantity),
+                Pieces      = g.Sum(i => i.PieceQuantity),
+                UnitPrice   = g.Key.UnitPrice,
+                Total       = g.Sum(i => i.Total)
+            })
+            .OrderBy(g => g.ProductName)
+            .ThenBy(g => g.PriceType)
+            .ToList();
+
+        var itemsRows = new StringBuilder();
+        foreach (var g in grouped)
+        {
+            var units = g.Units;
+            var cartonUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Carton);
+            var boxUnit    = units.FirstOrDefault(u => u.UnitType == UnitType.Box);
+            var pieceUnit  = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
+
+            bool isWholesale = g.PriceType == PriceType.Wholesale;
+
+            var qtyLines   = new List<string>();
+            var priceLines = new List<string>();
+
+            if (g.Cartons > 0 && cartonUnit != null)
+            {
+                var p = isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice;
+                qtyLines.Add($"{ToArabicNumerals(g.Cartons.ToString())} {cartonUnit.Name}");
+                priceLines.Add(ToArabicNumerals($"{p:0.##}"));
+            }
+            if (g.Boxes > 0 && boxUnit != null)
+            {
+                var p = isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice;
+                qtyLines.Add($"{ToArabicNumerals(g.Boxes.ToString())} {boxUnit.Name}");
+                priceLines.Add(ToArabicNumerals($"{p:0.##}"));
+            }
+            if (g.Pieces > 0 && pieceUnit != null)
+            {
+                var p = isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice;
+                qtyLines.Add($"{ToArabicNumerals(g.Pieces.ToString())} {pieceUnit.Name}");
+                priceLines.Add(ToArabicNumerals($"{p:0.##}"));
+            }
+
+            if (qtyLines.Count == 0)
+            {
+                var qtyParts = new List<string>();
+                if (g.Cartons > 0) qtyParts.Add($"{ToArabicNumerals(g.Cartons.ToString())} كرتونة");
+                if (g.Boxes   > 0) qtyParts.Add($"{ToArabicNumerals(g.Boxes.ToString())} علبة");
+                if (g.Pieces  > 0) qtyParts.Add($"{ToArabicNumerals(g.Pieces.ToString())} قطعة");
+                qtyLines.AddRange(qtyParts);
+                priceLines.Add(ToArabicNumerals($"{g.UnitPrice:0.##}"));
+            }
+
+            bool hasBothTypes = grouped.Count(x => x.ProductName == g.ProductName) > 1;
+            var priceLabel = hasBothTypes
+                ? (isWholesale ? "<br/><small>(جملة)</small>" : "<br/><small>(قطاعي)</small>") : "";
+
+            itemsRows.Append($@"
+        <tr>
+          <td class=""item-name"">{System.Net.WebUtility.HtmlEncode(g.ProductName)}{priceLabel}</td>
+          <td class=""item-quantity"">{string.Join("<br/>", qtyLines)}</td>
+          <td class=""item-price"">{string.Join("<br/>", priceLines)}</td>
+          <td class=""item-total"">{ToArabicNumerals(g.Total.ToString("0.##"))}</td>
+        </tr>");
+        }
+
+        var totalSum    = invoices.Sum(i => i.TotalAmount);
+        var discountSum = invoices.Sum(i => i.Discount);
+        var paidSum     = invoices.Sum(i => i.TotalPaid);
+        var remSum      = invoices.Sum(i => i.Remaining);
+
+        var locationInfoHtml = BuildLocationInfoHtml(config);
+
+        return $@"<!DOCTYPE html>
+<html dir=""rtl"" lang=""ar"">
+<head>
+  <meta charset=""UTF-8"">
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+  <title>طباعة مجمعة - {invoices.Count} فواتير</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+    * {{ font-family: 'Tajawal', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }}
+    body {{ margin: 0; padding: 8px 8px; font-size: 11px; color: #000; font-weight: 600; width: auto; max-width: auto; text-align: center; direction: rtl; }}
+    .header {{ text-align: center; margin-bottom: 8px; margin-top: 0; font-weight: 700; border-bottom: 2px dashed #000; padding-bottom: 6px; }}
+    .org-name {{ font-size: 1.4em; font-weight: 900; margin-bottom: 6px; color: #000; }}
+    .sys-name {{ font-size: 1em; font-weight: 800; margin-bottom: 4px; color: #000; }}
+    .title {{ font-size: 1.2em; font-weight: 900; margin-bottom: 6px; color: #000; }}
+    .info {{ margin-bottom: 4px; font-weight: 600; font-size: 0.9em; }}
+    .divider {{ border-top: 2px dashed #000; margin: 10px 0; }}
+    .section-title {{ font-size: 1.1em; font-weight: 800; margin: 10px 0 6px 0; text-align: center; background: #e0e0e0; padding: 4px; border-radius: 4px; }}
+    .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 0.85em; border: 2px solid #000; table-layout: fixed; }}
+    .items-table thead {{ background: #e0e0e0; font-weight: 800; }}
+    .items-table th {{ padding: 3px 3px; text-align: center; border: 1.5px solid #000; font-size: 0.9em; word-wrap: break-word; }}
+    .items-table td {{ padding: 3px 3px; text-align: center; border: 1px solid #000; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word; }}
+    .items-table .item-name {{ text-align: center; font-weight: 700; padding-right: 5px; width: 40% !important; }}
+    .items-table .item-quantity {{ width: 22% !important; }}
+    .items-table .item-price {{ width: 19% !important; }}
+    .items-table .item-total {{ width: 19% !important; }}
+    .items-table th:first-child {{ text-align: center; padding-right: 5px; }}
+    small {{ font-size: 0.8em; color: #555; }}
+    .total-section {{ margin-top: 12px; text-align: center; font-weight: 800; }}
+    .total-row {{ text-align: center; padding: 6px 8px; margin-bottom: 4px; font-size: 1.1em; font-weight: 700; }}
+    .total-row.grand-total {{ font-size: 1.4em; font-weight: 900; background: #000; color: #fff; border-radius: 4px; margin-top: 8px; margin-bottom: 8px; padding: 8px; }}
+    .total-row.paid {{ font-size: 1.3em; font-weight: 900; }}
+    .total-row.remaining {{ font-size: 1.3em; font-weight: 900; border: 1.5px solid #000; border-radius: 4px; padding: 6px 8px; }}
+    .thank-you {{ text-align: center; margin-top: 10px; margin-bottom: 8px; font-size: 1.1em; font-weight: 700; }}
+    .location-info {{ background: #f5f5f5; padding: 6px; margin: 4px 0; text-align: center; font-size: 0.9em; color: #555; }}
+    .footer {{ margin-top: 12px; text-align: center; font-size: 1.1em; color: #000; border-top: 2px dashed #000; padding-top: 10px; padding-bottom: 10px; font-weight: 800; }}
+    strong {{ font-weight: 800; }}
+    @@media print {{
+      @@page {{ size: auto; margin: 0; }}
+      body {{ margin: 0; padding: 0; font-weight: 600; width: auto; }}
+      .no-print {{ display: none !important; }}
+      .items-table {{ border: 2px solid #000 !important; }}
+      .items-table th, .items-table td {{ border: 1px solid #000 !important; }}
+      * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+    }}
+    @@media screen {{ body {{ max-width: auto; margin: 0 auto; background: #fff; }} }}
+  </style>
+</head>
+<body>
+  <div class=""header"">
+    {(string.IsNullOrWhiteSpace(locationName) ? "" : $"<div class=\"org-name\">{System.Net.WebUtility.HtmlEncode(locationName)}</div>")}
+    <div class=""sys-name"">MTE Stock</div>
+    <div class=""title"">كشف حساب مجمع</div>
+    <div class=""info"">عدد الفواتير: {ToArabicNumerals(invoices.Count.ToString())}</div>
+    {(string.IsNullOrEmpty(customerName) ? "" : $"<div class=\"info\">العميل: {System.Net.WebUtility.HtmlEncode(customerName)}</div>")}
+    <div class=""info"">تاريخ الطباعة: {FormatDateArabic(now)}</div>
+  </div>
+  <div class=""section-title"">المنتجات</div>
+  <table class=""items-table"">
+    <thead>
+      <tr>
+        <th style=""width: 40%;"">المنتج</th>
+        <th style=""width: 22%;"">الكمية</th>
+        <th style=""width: 19%;"">السعر</th>
+        <th style=""width: 19%;"">الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody>{itemsRows}</tbody>
+  </table>
+  <div class=""divider""></div>
   <div class=""total-section"">
-    <div class=""total-row grand-total"">الإجمالي: {ToArabicNumerals(invoice.TotalAmount.ToString("0.##"))} ج.م</div>
-    {(invoice.Discount > 0 ? $"<div class=\"total-row\">الخصم: {ToArabicNumerals(invoice.Discount.ToString("0.##"))} ج.م</div>" : "")}
-    <div class=""total-row paid"">المدفوع: {ToArabicNumerals(invoice.TotalPaid.ToString("0.##"))} ج.م</div>
-    {(remaining <= 0 ? "" : $"<div class=\"total-row remaining\">المتبقي: {ToArabicNumerals(remaining.ToString("0.##"))} ج.م</div>")}
+    <div class=""total-row grand-total"">إجمالي المطلوب: {ToArabicNumerals(totalSum.ToString("0.##"))} ج.م</div>
+    {(discountSum > 0 ? $"<div class=\"total-row\">إجمالي المخصوم: {ToArabicNumerals(discountSum.ToString("0.##"))} ج.م</div>" : "")}
+    <div class=""total-row paid"">إجمالي المدفوع: {ToArabicNumerals(paidSum.ToString("0.##"))} ج.م</div>
+    <div class=""total-row remaining"">إجمالي المتبقي: {ToArabicNumerals(remSum.ToString("0.##"))} ج.م</div>
   </div>
   <div class=""thank-you"">شكراً لزيارتكم</div>
   <div class=""divider""></div>
@@ -223,7 +470,7 @@ public class ReceiptPrinter : IDisposable
     //  INVENTORY REPORT PRINTING
     // ═══════════════════════════════════════════
 
-    public string BuildInventoryHtml(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products, AppConfig config)
+    public string BuildInventoryHtml(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products, AppConfig config, string? title = null)
     {
         var locationName = config.PrintLocationName ? config.LocationName : "";
         var now = DateTime.Now;
@@ -332,7 +579,7 @@ public class ReceiptPrinter : IDisposable
   <div class=""header"">
     {(string.IsNullOrWhiteSpace(locationName) ? "" : $"<div class=\"org-name\">{System.Net.WebUtility.HtmlEncode(locationName)}</div>")}
     <div class=""sys-name"">MTE Stock</div>
-    <div class=""title"">كشف المخزون</div>
+    <div class=""title"">{(title != null ? System.Net.WebUtility.HtmlEncode(title) : "كشف المخزون")}</div>
     <div class=""info"">تاريخ الطباعة: {FormatDateArabic(now)}</div>
   </div>
 
@@ -366,15 +613,14 @@ public class ReceiptPrinter : IDisposable
 </html>";
     }
 
-    public void PrintInventory(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products)
+    public void PrintInventory(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products, string? title = null)
     {
         var config = AppConfig.Load();
-        var html = BuildInventoryHtml(products, config);
-        Views.PrintPreviewDialog.ShowInventory(html, "كشف المخزون");
+        var html = BuildInventoryHtml(products, config, title);
+        Views.PrintPreviewDialog.ShowInventory(html, title ?? "كشف المخزون");
     }
 
     public void Dispose() => _db.Dispose();
-
     public void Print(Invoice invoice)
     {
         _db.Entry(invoice).Reference(i => i.Customer).Load();
@@ -386,6 +632,164 @@ public class ReceiptPrinter : IDisposable
         var config = AppConfig.Load();
         var html = BuildReceiptHtml(invoice, items, config);
         Views.PrintPreviewDialog.Show(html, $"فاتورة #{invoice.Id}", invoice, items, config);
+    }
+
+    // ═══════════════════════════════════════════
+    //  SUPPLIER INVOICE PRINTING
+    // ═══════════════════════════════════════════
+
+    public string BuildSupplierReceiptHtml(SupplierInvoice invoice, List<SupplierInvoiceItem> items, AppConfig config)
+    {
+        var remaining    = invoice.Remaining;
+        var locationName = config.PrintLocationName ? config.LocationName : "";
+
+        var rows = items
+            .OrderBy(i => i.Product.Name)
+            .ThenBy(i => i.Id)
+            .Select(i =>
+            {
+                var units = i.Product.Units.ToList();
+                var cartonUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Carton);
+                var boxUnit    = units.FirstOrDefault(u => u.UnitType == UnitType.Box);
+                var pieceUnit  = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
+
+                var qtyParts = new List<string>();
+                if (i.CartonQuantity > 0) qtyParts.Add($"{ToArabicNumerals(i.CartonQuantity.ToString())} {(cartonUnit?.Name ?? "كرتونة")}");
+                if (i.BoxQuantity   > 0) qtyParts.Add($"{ToArabicNumerals(i.BoxQuantity.ToString())} {(boxUnit?.Name ?? "علبة")}");
+                if (i.PieceQuantity > 0) qtyParts.Add($"{ToArabicNumerals(i.PieceQuantity.ToString())} {(pieceUnit?.Name ?? "قطعة")}");
+                if (qtyParts.Count == 0) qtyParts.Add("—");
+
+                return $"<tr><td class=\"item-name\">{System.Net.WebUtility.HtmlEncode(i.Product.Name)}</td>" +
+                       $"<td class=\"item-quantity\">{string.Join("<br/>", qtyParts)}</td>" +
+                       $"<td class=\"item-total\">{ToArabicNumerals(i.CostPrice.ToString("0.##"))}</td></tr>";
+            })
+            .ToList();
+
+        // الأجل: الفواتير غير المدفوعة بالكامل لهذا المورد
+        var unpaidTotalsHtml = "";
+        if (invoice.SupplierId != null)
+        {
+            var unpaid = _db.SupplierInvoices
+                .Where(i => i.SupplierId == invoice.SupplierId
+                    && i.Status != InvoiceStatus.Paid
+                    && i.Status != InvoiceStatus.Cancelled)
+                .ToList();
+
+            var totalSum    = unpaid.Sum(i => i.TotalAmount);
+            var paidSum     = unpaid.Sum(i => i.TotalPaid);
+            var remSum      = unpaid.Sum(i => i.Remaining);
+            var oldRemSum   = unpaid.Where(i => i.Id != invoice.Id).Sum(i => i.Remaining);
+
+            unpaidTotalsHtml = $@"
+  <div class=""divider""></div>
+  <div class=""total-section"">
+    <div class=""section-title"">الأجل (المتبقي من فواتير المورد القديمة)</div>
+    <div class=""total-row remaining"">الأجل: {ToArabicNumerals(oldRemSum.ToString("0.##"))} ج.م</div>
+  </div>
+  <div class=""divider""></div>
+  <div class=""total-section"">
+    <div class=""section-title"">إجمالي فواتير المورد غير المدفوعة بالكامل</div>
+    <div class=""total-row grand-total"">إجمالي المطلوب: {ToArabicNumerals(totalSum.ToString("0.##"))} ج.م</div>
+    <div class=""total-row paid"">إجمالي المدفوع: {ToArabicNumerals(paidSum.ToString("0.##"))} ج.م</div>
+    <div class=""total-row remaining"">إجمالي المتبقي: {ToArabicNumerals(remSum.ToString("0.##"))} ج.م</div>
+  </div>";
+        }
+
+        string totalsBlock = $@"
+                <div class=""total-section"">
+                  <div class=""section-title"">فاتورة مورد #{invoice.Id}</div>
+                  <div class=""total-row grand-total"">الإجمالي: {ToArabicNumerals(invoice.TotalAmount.ToString("0.##"))} ج.م</div>
+                  <div class=""total-row paid"">المدفوع: {ToArabicNumerals(invoice.TotalPaid.ToString("0.##"))} ج.م</div>
+                  {(remaining <= 0 ? "" : $"<div class=\"total-row remaining\">المتبقي: {ToArabicNumerals(remaining.ToString("0.##"))} ج.م</div>")}
+                </div>{unpaidTotalsHtml}";
+
+        var locationInfoHtml = BuildLocationInfoHtml(config);
+
+        return $@"<!DOCTYPE html>
+<html dir=""rtl"" lang=""ar"">
+<head>
+  <meta charset=""UTF-8"">
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+  <title>فاتورة مورد #{invoice.Id}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+    * {{ font-family: 'Tajawal', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }}
+    body {{ margin: 0; padding: 8px 8px; font-size: 11px; color: #000; font-weight: 600; width: auto; max-width: auto; text-align: center; direction: rtl; }}
+    .header {{ text-align: center; margin-bottom: 8px; margin-top: 0; font-weight: 700; border-bottom: 2px dashed #000; padding-bottom: 6px; }}
+    .org-name {{ font-size: 1.4em; font-weight: 900; margin-bottom: 6px; color: #000; }}
+    .title {{ font-size: 1.1em; font-weight: 800; margin-bottom: 6px; color: #000; }}
+    .info {{ margin-bottom: 4px; font-weight: 600; font-size: 0.9em; }}
+    .divider {{ border-top: 2px dashed #000; margin: 10px 0; }}
+    .section-title {{ font-size: 1.1em; font-weight: 800; margin: 10px 0 6px 0; text-align: center; background: #e0e0e0; padding: 4px; border-radius: 4px; }}
+    .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 0.85em; border: 2px solid #000; table-layout: fixed; }}
+    .items-table thead {{ background: #e0e0e0; font-weight: 800; }}
+    .items-table th {{ padding: 3px 3px; text-align: center; border: 1.5px solid #000; font-size: 0.9em; word-wrap: break-word; }}
+    .items-table td {{ padding: 3px 3px; text-align: center; border: 1px solid #000; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word; }}
+    .items-table .item-name {{ text-align: center; font-weight: 700; padding-right: 5px; width: 55% !important; }}
+    .items-table .item-quantity {{ width: 25% !important; }}
+    .items-table .item-total {{ width: 20% !important; }}
+    .items-table th:first-child {{ text-align: center; padding-right: 5px; }}
+    small {{ font-size: 0.8em; color: #555; }}
+    .total-section {{ margin-top: 12px; text-align: center; font-weight: 800; }}
+    .total-row {{ text-align: center; padding: 6px 8px; margin-bottom: 4px; font-size: 1.1em; font-weight: 700; }}
+    .total-row.grand-total {{ font-size: 1.4em; font-weight: 900; background: #000; color: #fff; border-radius: 4px; margin-top: 8px; margin-bottom: 8px; padding: 8px; }}
+    .total-row.paid {{ font-size: 1.3em; font-weight: 900; }}
+    .total-row.remaining {{ font-size: 1.3em; font-weight: 900; border: 1.5px solid #000; border-radius: 4px; padding: 6px 8px; }}
+    .thank-you {{ text-align: center; margin-top: 10px; margin-bottom: 8px; font-size: 1.1em; font-weight: 700; }}
+    .location-info {{ background: #f5f5f5; padding: 6px; margin: 4px 0; text-align: center; font-size: 0.9em; color: #555; }}
+    .footer {{ margin-top: 12px; text-align: center; font-size: 1.1em; color: #000; border-top: 2px dashed #000; padding-top: 10px; padding-bottom: 10px; font-weight: 800; }}
+    strong {{ font-weight: 800; }}
+    @media print {{
+      @page {{ size: auto; margin: 0; }}
+      body {{ margin: 0; padding: 0; font-weight: 600; width: auto; }}
+      .no-print {{ display: none !important; }}
+      .items-table {{ border: 2px solid #000 !important; }}
+      .items-table th, .items-table td {{ border: 1px solid #000 !important; }}
+      * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+    }}
+    @media screen {{ body {{ max-width: auto; margin: 0 auto; background: #fff; }} }}
+  </style>
+</head>
+<body>
+  <div class=""header"">
+    {(string.IsNullOrWhiteSpace(locationName) ? "" : $"<div class=\"org-name\">{System.Net.WebUtility.HtmlEncode(locationName)}</div>")}
+    <div class=""title"" style=""font-weight: 900; font-size: 22px;"">فاتورة مورد #{invoice.Id}</div>
+    <div class=""info"">{FormatDateArabic(invoice.CreatedAt)}</div>
+    {(invoice.SupplierId == null ? "" : $"<div class=\"info\">المورد: {System.Net.WebUtility.HtmlEncode(invoice.SupplierName ?? "")}</div>")}
+  </div>
+  <div class=""section-title"">المنتجات</div>
+  <table class=""items-table"">
+    <thead>
+      <tr>
+        <th style=""width: 55%;"">المنتج</th>
+        <th style=""width: 25%;"">الكمية</th>
+        <th style=""width: 20%;"">التكلفة</th>
+      </tr>
+    </thead>
+    <tbody>{string.Join("\n", rows)}</tbody>
+  </table>
+  <div class=""divider""></div>
+  {totalsBlock}
+  <div class=""thank-you"">شكراً لتعاملكم</div>
+  <div class=""divider""></div>
+  {locationInfoHtml}
+  <div class=""footer"">
+    <strong style=""font-weight: 900; font-size: 14px;"">تم تصميم وتطوير هذا النظام بواسطة المهندس مصطفى طلعت للحلول البرمجيه - 01116626164</strong>
+  </div>
+</body>
+</html>";
+    }
+
+    public void PrintSupplierInvoice(SupplierInvoice invoice)
+    {
+        _db.Entry(invoice).Reference(i => i.Supplier).Load();
+        var items = _db.SupplierInvoiceItems
+            .Include(i => i.Product).ThenInclude(p => p.Units)
+            .Where(i => i.SupplierInvoiceId == invoice.Id)
+            .ToList();
+        var config = AppConfig.Load();
+        var html = BuildSupplierReceiptHtml(invoice, items, config);
+        Views.PrintPreviewDialog.ShowInventory(html, $"فاتورة مورد #{invoice.Id}");
     }
 
     public void PrintDirect(Invoice invoice, List<OrderItem> items, AppConfig config)
@@ -496,19 +900,19 @@ public class ReceiptPrinter : IDisposable
             if (g.Sum(i => i.CartonQuantity) > 0 && cartonUnit != null)
             {
                 decimal p = isWholesale ? cartonUnit.WholesalePrice : cartonUnit.RetailPrice;
-                qtyLines.Add($"{ToArabicNumerals(g.Sum(i => i.CartonQuantity).ToString())} كرتونة");
+                qtyLines.Add($"{ToArabicNumerals(g.Sum(i => i.CartonQuantity).ToString())} {cartonUnit.Name}");
                 priceLines.Add(ToArabicNumerals($"{p:0.##}"));
             }
             if (g.Sum(i => i.BoxQuantity) > 0 && boxUnit != null)
             {
                 decimal p = isWholesale ? boxUnit.WholesalePrice : boxUnit.RetailPrice;
-                qtyLines.Add($"{ToArabicNumerals(g.Sum(i => i.BoxQuantity).ToString())} علبة");
+                qtyLines.Add($"{ToArabicNumerals(g.Sum(i => i.BoxQuantity).ToString())} {boxUnit.Name}");
                 priceLines.Add(ToArabicNumerals($"{p:0.##}"));
             }
             if (g.Sum(i => i.PieceQuantity) > 0 && pieceUnit != null)
             {
                 decimal p = isWholesale ? pieceUnit.WholesalePrice : pieceUnit.RetailPrice;
-                qtyLines.Add($"{ToArabicNumerals(g.Sum(i => i.PieceQuantity).ToString())} قطعة");
+                qtyLines.Add($"{ToArabicNumerals(g.Sum(i => i.PieceQuantity).ToString())} {pieceUnit.Name}");
                 priceLines.Add(ToArabicNumerals($"{p:0.##}"));
             }
 
