@@ -19,6 +19,10 @@ public class Product
 
     public bool IsFavorite { get; set; }
 
+    public bool IsDeleted { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public ICollection<ProductUnit> Units { get; set; } = new List<ProductUnit>();

@@ -30,6 +30,7 @@ public partial class SettingsPage : UserControl
         ChkPrintLocationAddress.IsChecked = _config.PrintLocationAddress;
         ChkPrintLocationPhone.IsChecked = _config.PrintLocationPhone;
         ChkPrintLocationDescription.IsChecked = _config.PrintLocationDescription;
+        ChkAutoPrintAfterSave.IsChecked = _config.AutoPrintAfterSave;
         TxtBackupFolder.Text = _config.BackupFolder;
         ChkBackupOnStartup.IsChecked = _config.BackupOnStartup;
         ChkBackupOnOperation.IsChecked = _config.BackupOnOperation;
@@ -226,6 +227,7 @@ public partial class SettingsPage : UserControl
             _config.PrinterName = CmbPrinter.SelectedItem.ToString() ?? "";
         }
 
+        _config.AutoPrintAfterSave = ChkAutoPrintAfterSave.IsChecked == true;
         _config.Save();
         UpdatePrinterInfo();
         NotificationManager.ShowSuccess("تم حفظ الطابعة الافتراضية");

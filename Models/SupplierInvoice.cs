@@ -13,6 +13,8 @@ public class SupplierInvoice
     public decimal TotalAmount { get; set; }
     public decimal TotalPaid { get; set; }
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Open;
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
     [MaxLength(1000)] public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public ICollection<SupplierInvoiceItem> Items { get; set; } = new List<SupplierInvoiceItem>();

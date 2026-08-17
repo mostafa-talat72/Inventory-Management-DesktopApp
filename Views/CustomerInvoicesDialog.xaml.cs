@@ -514,46 +514,18 @@ public partial class CustomerInvoicesDialog : UserControl
 
     private void DeleteInvoice(Invoice invoice)
     {
-        ConfirmDialog.Show("حذف الفاتورة",
-            $"هل أنت متأكد من حذف الفاتورة #{invoice.Id}؟\nلا يمكن التراجع عن هذا الإجراء.",
+        ConfirmDialog.Show("نقل إلى سلة المحذوفات",
+            $"هل أنت متأكد من حذف الفاتورة #{invoice.Id}؟\nيمكنك استعادتها لاحقاً من سلة المحذوفات.",
             result =>
             {
                 if (result != true) return;
-                var full = _db.Invoices.Include(i => i.Orders).ThenInclude(o => o.Items)
-                    .Include(i => i.Payments).First(i => i.Id == invoice.Id);
-
-                var inv = new InventoryService(_db);
-                foreach (var order in full.Orders)
-                {
-                    foreach (var item in order.Items)
-                    {
-                        _db.Entry(item).Reference(oi => oi.Product).Load();
-                        _db.Entry(item).Reference(oi => oi.ProductUnit).Load();
-                        if (item.ProductUnit == null) continue;
-                        int totalPieces = inv.CalculatePieceEquivalent(item.Product, item.CartonQuantity, item.BoxQuantity, item.PieceQuantity);
-                        if (totalPieces <= 0) continue;
-                        var (unitCost, totalCost) = inv.ReturnToBatches(item.ProductId, totalPieces);
-                        _db.InventoryMovements.Add(new InventoryMovement
-                        {
-                            ProductId = item.ProductId,
-                            MovementType = MovementType.Return,
-                            Quantity = totalPieces,
-                            CostPrice = unitCost,
-                            SellingPrice = totalCost,
-                            ReferenceType = ReferenceType.Return,
-                            ReferenceId = full.Id,
-                            Notes = $"مرتجعات بيع - فاتورة #{full.Id}"
-                        });
-                    }
-                    _db.OrderItems.RemoveRange(order.Items);
-                }
-                _db.Payments.RemoveRange(full.Payments);
-                _db.Orders.RemoveRange(full.Orders);
-                _db.Invoices.Remove(full);
+                var full = _db.Invoices.First(i => i.Id == invoice.Id);
+                full.IsDeleted = true;
+                full.DeletedAt = DateTime.Now;
                 _db.SaveChanges();
                 _selectedIds.Remove(invoice.Id);
                 LoadData();
-                NotificationManager.ShowSuccess("تم حذف الفاتورة وترجيع الكميات للمخزن");
+                NotificationManager.ShowSuccess($"تم نقل الفاتورة #{invoice.Id} إلى سلة المحذوفات");
             },
             ConfirmDialog.DialogType.Warning);
     }

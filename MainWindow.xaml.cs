@@ -22,6 +22,17 @@ public partial class MainWindow : Window
         NavigateToPage("Dashboard");
         UpdateThemeToggleButton();
         UpdateAmountsToggleButton();
+
+        KeyDown += MainWindow_KeyDown;
+    }
+
+    private void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Escape && OverlayContainer.Visibility == Visibility.Visible)
+        {
+            HideOverlay();
+            e.Handled = true;
+        }
     }
 
     public void UpdateLocationName(string name)

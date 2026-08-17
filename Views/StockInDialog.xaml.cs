@@ -64,7 +64,7 @@ public partial class StockInDialog : UserControl
 
     private void LoadProductCards(string? search = null)
     {
-        var query = _db.Products.AsQueryable();
+        var query = _db.Products.Where(p => !p.IsDeleted).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(p => p.Name.Contains(search) || (p.Barcode != null && p.Barcode.Contains(search)));
@@ -252,7 +252,7 @@ public partial class StockInDialog : UserControl
         _searchTimer.Stop();
         var text = TxtSearch.Text.Trim();
         if (text.Length == 0) return;
-        var match = _db.Products.FirstOrDefault(p => p.Barcode == text || p.Name == text);
+        var match = _db.Products.FirstOrDefault(p => !p.IsDeleted && (p.Barcode == text || p.Name == text));
         if (match != null)
         {
             AddProduct(match);

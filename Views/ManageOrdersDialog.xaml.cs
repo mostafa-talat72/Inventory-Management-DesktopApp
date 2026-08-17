@@ -367,6 +367,8 @@ public partial class ManageOrdersDialog : UserControl
                     _db.SaveChanges();
 
                     // لو فيه فواتير تانية غير مدفوعة بالكامل لنفس العميل → اطبع أحدثها ككشف حساب
+                    if (AppConfig.Load().AutoPrintAfterSave)
+                {
                     try
                     {
                         var otherInvoice = _db.Invoices
@@ -379,7 +381,11 @@ public partial class ManageOrdersDialog : UserControl
                         if (otherInvoice != null)
                             new ReceiptPrinter(_db).Print(otherInvoice);
                     }
-                    catch (System.Exception) { }
+                    catch (System.Exception ex)
+                    {
+                        NotificationManager.ShowWarning($"فشلت طباعة الفاتورة: {ex.Message}");
+                    }
+                }
 
                     NotificationManager.ShowSuccess($"تم حذف الفاتورة #{_invoice.Id} تلقائياً لأنها أصبحت فارغة");
                     DialogClosed?.Invoke(this, true);
@@ -394,11 +400,17 @@ public partial class ManageOrdersDialog : UserControl
                 LoadItems();
 
                 // الفاتورة لسه فيها طلبات → اطبع حالتها بعد الحذف
-                try
+                if (AppConfig.Load().AutoPrintAfterSave)
                 {
-                    new ReceiptPrinter(_db).Print(_invoice);
+                    try
+                    {
+                        new ReceiptPrinter(_db).Print(_invoice);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        NotificationManager.ShowWarning($"فشلت طباعة الفاتورة: {ex.Message}");
+                    }
                 }
-                catch (System.Exception) { }
             },
             ConfirmDialog.DialogType.Danger);
     }

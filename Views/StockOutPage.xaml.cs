@@ -95,7 +95,7 @@ public partial class StockOutPage : Page
             .OrderByDescending(m => m.CreatedAt)
             .ToList();
 
-        var names = _db.Products.AsNoTracking().ToDictionary(p => p.Id, p => p.Name);
+        var names = _db.Products.AsNoTracking().Where(p => !p.IsDeleted).ToDictionary(p => p.Id, p => p.Name);
 
         _rows.Clear();
         foreach (var m in movements)

@@ -122,6 +122,11 @@ public partial class InvoicesPage : Page
 
     private IQueryable<Invoice> GetBaseQuery()
     {
+        if (_filterMode == "Trash")
+            return _db.Invoices.AsNoTracking().IgnoreQueryFilters()
+                .Where(i => i.IsDeleted)
+                .OrderByDescending(i => i.DeletedAt ?? i.CreatedAt);
+
         var q = _db.Invoices.AsNoTracking();
 
         q = _filterMode switch
@@ -140,6 +145,11 @@ public partial class InvoicesPage : Page
             q = q.Where(i => i.Id.ToString().Contains(searchText)
                 || (i.CustomerName != null && i.CustomerName.Contains(searchText))
                 || (i.Customer != null && i.Customer.Name.Contains(searchText)));
+
+        if (DpFromDate.SelectedDate is DateTime fromDate)
+            q = q.Where(i => i.CreatedAt >= fromDate);
+        if (DpToDate.SelectedDate is DateTime toDate)
+            q = q.Where(i => i.CreatedAt < toDate.Date.AddDays(1));
 
         q = _sortAscending ? q.OrderBy(i => i.CreatedAt) : q.OrderByDescending(i => i.CreatedAt);
 
@@ -171,11 +181,14 @@ public partial class InvoicesPage : Page
                 "Cancelled" => "ملغاة",
                 "Paid" => "مدفوعة",
                 "All" => "",
+                "Trash" => "محذوفة",
                 _ => "غير مدفوعة"
             };
-            var subtitle = _filterMode == "All"
-                ? "لم يتم العثور على أي فواتير"
-                : $"لم يتم العثور على فواتير {filterLabel}";
+            var subtitle = _filterMode == "Trash"
+                ? "سلة المحذوفات فارغة"
+                : _filterMode == "All"
+                    ? "لم يتم العثور على أي فواتير"
+                    : $"لم يتم العثور على فواتير {filterLabel}";
 
             var emptyCardBg = Application.Current.TryFindResource("CardBackground") as Brush ?? Brushes.White;
             var emptyBorder = Application.Current.TryFindResource("BorderBrushLight") as Brush ?? (Brush)new BrushConverter().ConvertFrom("#E8E8E8")!;
@@ -238,7 +251,8 @@ public partial class InvoicesPage : Page
     private Border CreateInvoiceCard(Invoice invoice)
     {
         var isSelected = _selectedIds.Contains(invoice.Id);
-        var (statusText, statusBg, statusFg) = invoice.Status switch
+        var isTrash = _filterMode == "Trash";
+        var (statusText, statusBg, statusFg) = isTrash ? ("محذوفة", "#F5F5F5", "#9E9E9E") : invoice.Status switch
         {
             InvoiceStatus.Paid => ("مدفوعة", "#E8F5E9", "#2E7D32"),
             InvoiceStatus.PartiallyPaid => ("مدفوعة جزئياً", "#FFF8E1", "#F57F17"),
@@ -314,6 +328,8 @@ public partial class InvoicesPage : Page
                 HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
                 Data = Geometry.Parse("M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z")
             };
+        if (isTrash)
+            checkBorder.Visibility = Visibility.Collapsed;
         mainGrid.Children.Add(checkBorder);
         Grid.SetColumn(checkBorder, 0);
         Grid.SetRowSpan(checkBorder, 2);
@@ -407,6 +423,13 @@ public partial class InvoicesPage : Page
 
         var actions = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
 
+        if (isTrash)
+        {
+            actions.Children.Add(CreateRestoreBtn(() => RestoreInvoice(invoice)));
+            actions.Children.Add(CreatePermanentDeleteBtn(() => PermanentlyDeleteInvoice(invoice)));
+        }
+        else
+        {
         var printBtn = new Border
         {
             CornerRadius = new CornerRadius(6), Background = (Brush)new BrushConverter().ConvertFrom("#546E7A")!,
@@ -475,6 +498,7 @@ public partial class InvoicesPage : Page
         };
         deleteBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; DeleteInvoice(invoice); };
         actions.Children.Add(deleteBtn);
+        }
 
         mainGrid.Children.Add(actions);
         Grid.SetColumn(actions, 3);
@@ -482,8 +506,11 @@ public partial class InvoicesPage : Page
 
         card.Child = new Grid { Children = { accentBar, mainGrid } };
 
-        checkBorder.MouseLeftButtonDown += (_, e) => { e.Handled = true; ToggleSelection(invoice.Id); };
-        card.MouseLeftButtonDown += (_, e) => OpenInvoice(invoice);
+        if (!isTrash)
+        {
+            checkBorder.MouseLeftButtonDown += (_, e) => { e.Handled = true; ToggleSelection(invoice.Id); };
+            card.MouseLeftButtonDown += (_, e) => OpenInvoice(invoice);
+        }
         return card;
     }
 
@@ -510,12 +537,42 @@ public partial class InvoicesPage : Page
 
     private void DeleteInvoice(Invoice invoice)
     {
-        ConfirmDialog.Show("حذف الفاتورة",
-            $"هل أنت متأكد من حذف الفاتورة #{invoice.Id}؟\nلا يمكن التراجع عن هذا الإجراء.",
+        ConfirmDialog.Show("نقل إلى سلة المحذوفات",
+            $"هل أنت متأكد من حذف الفاتورة #{invoice.Id}؟\nيمكنك استعادتها لاحقاً من سلة المحذوفات.",
             result =>
             {
                 if (result != true) return;
-                var full = _db.Invoices.Include(i => i.Orders).ThenInclude(o => o.Items)
+                var full = _db.Invoices.First(i => i.Id == invoice.Id);
+                full.IsDeleted = true;
+                full.DeletedAt = DateTime.Now;
+                _db.SaveChanges();
+                _selectedIds.Remove(invoice.Id);
+                App.NotifyDataChanged();
+                LoadData();
+                NotificationManager.ShowSuccess($"تم نقل الفاتورة #{invoice.Id} إلى سلة المحذوفات");
+            },
+            ConfirmDialog.DialogType.Warning);
+    }
+
+    private void RestoreInvoice(Invoice invoice)
+    {
+        var full = _db.Invoices.IgnoreQueryFilters().First(i => i.Id == invoice.Id);
+        full.IsDeleted = false;
+        full.DeletedAt = null;
+        _db.SaveChanges();
+        App.NotifyDataChanged();
+        LoadData();
+        NotificationManager.ShowSuccess($"تمت استعادة الفاتورة #{invoice.Id}");
+    }
+
+    private void PermanentlyDeleteInvoice(Invoice invoice)
+    {
+        ConfirmDialog.Show("حذف نهائي",
+            $"هل أنت متأكد من الحذف النهائي للفاتورة #{invoice.Id}؟\nسيتم ترجيع الكميات للمخزن ولا يمكن التراجع.",
+            result =>
+            {
+                if (result != true) return;
+                var full = _db.Invoices.IgnoreQueryFilters().Include(i => i.Orders).ThenInclude(o => o.Items)
                     .Include(i => i.Payments).First(i => i.Id == invoice.Id);
 
                 var inv = new InventoryService(_db);
@@ -548,10 +605,45 @@ public partial class InvoicesPage : Page
                 _db.Invoices.Remove(full);
                 _db.SaveChanges();
                 _selectedIds.Remove(invoice.Id);
+                App.NotifyDataChanged();
                 LoadData();
-                NotificationManager.ShowSuccess("تم حذف الفاتورة وترجيع الكميات للمخزن");
+                NotificationManager.ShowSuccess("تم الحذف النهائي للفاتورة وترجيع الكميات للمخزن");
             },
-            ConfirmDialog.DialogType.Warning);
+            ConfirmDialog.DialogType.Danger);
+    }
+
+    private Border CreateRestoreBtn(Action action)
+    {
+        var btn = new Border
+        {
+            CornerRadius = new CornerRadius(6), Background = Res("#2E7D32"),
+            Cursor = Cursors.Hand, Padding = new Thickness(12, 5, 12, 5), Margin = new Thickness(0, 0, 4, 0),
+            Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
+            {
+                new Path { FlowDirection = System.Windows.FlowDirection.LeftToRight, Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center,
+                    Data = Geometry.Parse("M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z") },
+                new TextBlock { Text = "  استعادة", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, VerticalAlignment = VerticalAlignment.Center }
+            }}
+        };
+        btn.MouseLeftButtonDown += (_, e) => { e.Handled = true; action(); };
+        return btn;
+    }
+
+    private Border CreatePermanentDeleteBtn(Action action)
+    {
+        var btn = new Border
+        {
+            CornerRadius = new CornerRadius(6), Background = Res("#C62828"),
+            Cursor = Cursors.Hand, Padding = new Thickness(12, 5, 12, 5),
+            Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
+            {
+                new Path { FlowDirection = System.Windows.FlowDirection.LeftToRight, Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center,
+                    Data = Geometry.Parse("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z") },
+                new TextBlock { Text = "  حذف نهائي", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, VerticalAlignment = VerticalAlignment.Center }
+            }}
+        };
+        btn.MouseLeftButtonDown += (_, e) => { e.Handled = true; action(); };
+        return btn;
     }
 
     private void BatchPrint_Click(object sender, MouseButtonEventArgs e)
@@ -586,6 +678,18 @@ public partial class InvoicesPage : Page
         _showAll = true;
         _searchTimer.Stop();
         _searchTimer.Start();
+    }
+
+    private void DateFilterChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _showAll = true;
+        ApplyFilter();
+    }
+
+    private void SupplierDateFilterChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _sShowAll = true;
+        ApplySupplierFilter();
     }
 
     private void ExportExcel_Click(object sender, RoutedEventArgs e)
@@ -772,9 +876,9 @@ public partial class InvoicesPage : Page
     {
         _filterMode = mode;
 
-        foreach (var btn in new[] { BtnUnpaid, BtnPartiallyPaid, BtnCancelled, BtnPaid, BtnAll })
+        foreach (var btn in new[] { BtnUnpaid, BtnPartiallyPaid, BtnCancelled, BtnPaid, BtnAll, BtnTrash })
             btn.Background = Brushes.Transparent;
-        foreach (var txt in new[] { TxtUnpaid, TxtPartiallyPaid, TxtCancelled, TxtPaid, TxtAll })
+        foreach (var txt in new[] { TxtUnpaid, TxtPartiallyPaid, TxtCancelled, TxtPaid, TxtAll, TxtTrash })
         { txt.Foreground = GrayBrush; txt.FontWeight = FontWeights.SemiBold; }
 
         var activeBtn = mode switch
@@ -783,6 +887,7 @@ public partial class InvoicesPage : Page
             "Cancelled" => (BtnCancelled, (TextBlock)TxtCancelled),
             "Paid" => (BtnPaid, (TextBlock)TxtPaid),
             "All" => (BtnAll, (TextBlock)TxtAll),
+            "Trash" => (BtnTrash, (TextBlock)TxtTrash),
             _ => (BtnUnpaid, (TextBlock)TxtUnpaid)
         };
         activeBtn.Item1.Background = BlueBrush;
@@ -798,11 +903,17 @@ public partial class InvoicesPage : Page
     private void BtnCancelled_Click(object sender, MouseButtonEventArgs e) => SetFilter("Cancelled");
     private void BtnPaid_Click(object sender, MouseButtonEventArgs e) => SetFilter("Paid");
     private void BtnAll_Click(object sender, MouseButtonEventArgs e) => SetFilter("All");
+    private void BtnTrash_Click(object sender, MouseButtonEventArgs e) => SetFilter("Trash");
 
     // ══════════ فواتير الموردين ══════════
 
     private IQueryable<SupplierInvoice> GetBaseSupplierQuery()
     {
+        if (_sFilterMode == "Trash")
+            return _db.SupplierInvoices.AsNoTracking().IgnoreQueryFilters()
+                .Where(i => i.IsDeleted)
+                .OrderByDescending(i => i.DeletedAt ?? i.CreatedAt);
+
         var q = _db.SupplierInvoices.AsNoTracking();
 
         q = _sFilterMode switch
@@ -819,6 +930,11 @@ public partial class InvoicesPage : Page
             q = q.Where(i => i.Id == searchId);
         else if (!string.IsNullOrEmpty(searchText))
             q = q.Where(i => i.SupplierName != null && i.SupplierName.Contains(searchText));
+
+        if (SDpFromDate.SelectedDate is DateTime fromDate)
+            q = q.Where(i => i.CreatedAt >= fromDate);
+        if (SDpToDate.SelectedDate is DateTime toDate)
+            q = q.Where(i => i.CreatedAt < toDate.Date.AddDays(1));
 
         q = _sSortAscending
             ? q.OrderBy(i => i.CreatedAt)
@@ -881,7 +997,7 @@ public partial class InvoicesPage : Page
                         },
                         new TextBlock
                         {
-                            Text = "لم يتم العثور على فواتير مطابقة",
+                            Text = _sFilterMode == "Trash" ? "سلة المحذوفات فارغة" : "لم يتم العثور على فواتير مطابقة",
                             FontSize = 13,
                             Foreground = iconFg,
                             HorizontalAlignment = HorizontalAlignment.Center
@@ -903,7 +1019,8 @@ public partial class InvoicesPage : Page
 
     private Border CreateSupplierCard(SupplierInvoice invoice)
     {
-        var (statusText, statusBg, statusFg) = invoice.Status switch
+        var isTrash = _sFilterMode == "Trash";
+        var (statusText, statusBg, statusFg) = isTrash ? ("محذوفة", "#F5F5F5", "#9E9E9E") : invoice.Status switch
         {
             InvoiceStatus.Paid => ("مدفوعة", "#E8F5E9", "#2E7D32"),
             InvoiceStatus.PartiallyPaid => ("مدفوعة جزئياً", "#FFF8E1", "#F57F17"),
@@ -1032,6 +1149,13 @@ public partial class InvoicesPage : Page
 
         var actions = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
 
+        if (isTrash)
+        {
+            actions.Children.Add(CreateRestoreBtn(() => RestoreSupplierInvoice(invoice)));
+            actions.Children.Add(CreatePermanentDeleteBtn(() => PermanentlyDeleteSupplierInvoice(invoice)));
+        }
+        else
+        {
         // View the invoice's orders (same as details window)
         var ordersBtn = new Border
         {
@@ -1105,6 +1229,7 @@ public partial class InvoicesPage : Page
         };
         deleteBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; DeleteSupplierInvoice(invoice); };
         actions.Children.Add(deleteBtn);
+        }
 
         mainGrid.Children.Add(actions);
         Grid.SetColumn(actions, 2);
@@ -1112,7 +1237,8 @@ public partial class InvoicesPage : Page
 
         card.Child = new Grid { Children = { accentBar, mainGrid } };
 
-        card.MouseLeftButtonDown += (_, e) => OpenSupplierInvoice(invoice);
+        if (!isTrash)
+            card.MouseLeftButtonDown += (_, e) => OpenSupplierInvoice(invoice);
         return card;
     }
 
@@ -1154,13 +1280,44 @@ public partial class InvoicesPage : Page
 
     private void DeleteSupplierInvoice(SupplierInvoice invoice)
     {
-        ConfirmDialog.Show("حذف فاتورة المورد",
-            $"هل أنت متأكد من حذف فاتورة المورد #{invoice.Id}؟\nسيتم خصم الكميات من المخزون ولا يمكن التراجع.",
+        ConfirmDialog.Show("نقل إلى سلة المحذوفات",
+            $"هل أنت متأكد من حذف فاتورة المورد #{invoice.Id}؟\nيمكنك استعادتها لاحقاً من سلة المحذوفات.",
             result =>
             {
                 if (result != true) return;
 
-                var full = _db.SupplierInvoices
+                var full = _db.SupplierInvoices.First(i => i.Id == invoice.Id);
+                full.IsDeleted = true;
+                full.DeletedAt = DateTime.Now;
+                _db.SaveChanges();
+                App.NotifyDataChanged();
+                App.AppBackup?.BackupIfOnOperation();
+                NotificationManager.ShowSuccess($"تم نقل فاتورة المورد #{invoice.Id} إلى سلة المحذوفات");
+                ApplySupplierFilter();
+            },
+            ConfirmDialog.DialogType.Warning);
+    }
+
+    private void RestoreSupplierInvoice(SupplierInvoice invoice)
+    {
+        var full = _db.SupplierInvoices.IgnoreQueryFilters().First(i => i.Id == invoice.Id);
+        full.IsDeleted = false;
+        full.DeletedAt = null;
+        _db.SaveChanges();
+        App.NotifyDataChanged();
+        NotificationManager.ShowSuccess($"تمت استعادة فاتورة المورد #{invoice.Id}");
+        ApplySupplierFilter();
+    }
+
+    private void PermanentlyDeleteSupplierInvoice(SupplierInvoice invoice)
+    {
+        ConfirmDialog.Show("حذف نهائي",
+            $"هل أنت متأكد من الحذف النهائي لفاتورة المورد #{invoice.Id}؟\nسيتم خصم الكميات من المخزون ولا يمكن التراجع.",
+            result =>
+            {
+                if (result != true) return;
+
+                var full = _db.SupplierInvoices.IgnoreQueryFilters()
                     .Include(i => i.Items).ThenInclude(i => i.Product)
                     .Include(i => i.Payments)
                     .First(i => i.Id == invoice.Id);
@@ -1194,7 +1351,7 @@ public partial class InvoicesPage : Page
                 App.NotifyDataChanged();
 
                 App.AppBackup?.BackupIfOnOperation();
-                NotificationManager.ShowSuccess("تم حذف الفاتورة وخصم الكميات من المخزون");
+                NotificationManager.ShowSuccess("تم الحذف النهائي للفاتورة وخصم الكميات من المخزون");
                 ApplySupplierFilter();
             },
             ConfirmDialog.DialogType.Danger);
@@ -1204,9 +1361,9 @@ public partial class InvoicesPage : Page
     {
         _sFilterMode = mode;
 
-        foreach (var btn in new[] { SBtnUnpaid, SBtnPartiallyPaid, SBtnCancelled, SBtnPaid, SBtnAll })
+        foreach (var btn in new[] { SBtnUnpaid, SBtnPartiallyPaid, SBtnCancelled, SBtnPaid, SBtnAll, SBtnTrash })
             btn.Background = Brushes.Transparent;
-        foreach (var txt in new[] { STxtUnpaid, STxtPartiallyPaid, STxtCancelled, STxtPaid, STxtAll })
+        foreach (var txt in new[] { STxtUnpaid, STxtPartiallyPaid, STxtCancelled, STxtPaid, STxtAll, STxtTrash })
         { txt.Foreground = GrayBrush; txt.FontWeight = FontWeights.SemiBold; }
 
         var activeBtn = mode switch
@@ -1215,6 +1372,7 @@ public partial class InvoicesPage : Page
             "Cancelled" => (SBtnCancelled, (TextBlock)STxtCancelled),
             "Paid" => (SBtnPaid, (TextBlock)STxtPaid),
             "All" => (SBtnAll, (TextBlock)STxtAll),
+            "Trash" => (SBtnTrash, (TextBlock)STxtTrash),
             _ => (SBtnUnpaid, (TextBlock)STxtUnpaid)
         };
         activeBtn.Item1.Background = BlueBrush;
@@ -1230,6 +1388,7 @@ public partial class InvoicesPage : Page
     private void SBtnCancelled_Click(object sender, MouseButtonEventArgs e) => SetSupplierFilter("Cancelled");
     private void SBtnPaid_Click(object sender, MouseButtonEventArgs e) => SetSupplierFilter("Paid");
     private void SBtnAll_Click(object sender, MouseButtonEventArgs e) => SetSupplierFilter("All");
+    private void SBtnTrash_Click(object sender, MouseButtonEventArgs e) => SetSupplierFilter("Trash");
 
     private void SBtnSort_Click(object sender, MouseButtonEventArgs e)
     {

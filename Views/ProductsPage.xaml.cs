@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.EntityFrameworkCore;
 using ProductApp.Converters;
@@ -38,6 +39,7 @@ public partial class ProductsPage : Page
     private int _lowStockCount;
     private ScrollViewer? _productsScroll;
     private bool _selectionMode;
+    private bool _showTrash;
 
     private class ProductCardItem : INotifyPropertyChanged
     {
@@ -134,6 +136,201 @@ public partial class ProductsPage : Page
 
         _loaded = true;
         LoadProducts();
+        UpdateTrashCount();
+    }
+
+    private static Brush Res(string hex) =>
+        (Brush)new BrushConverter().ConvertFrom(hex)!;
+
+    private void UpdateTrashCount()
+    {
+        int count;
+        try { count = _db.Products.Count(p => p.IsDeleted); }
+        catch { count = 0; }
+        BtnTrashToggle.Tag = count > 0 ? $"سلة المحذوفات ({count})" : "سلة المحذوفات";    }
+
+    private void TrashToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        _showTrash = BtnTrashToggle.IsChecked == true;
+        if (_showTrash)
+            LoadTrashProducts();
+        ApplyTrashVisibility();
+    }
+
+    private void ApplyTrashVisibility()
+    {
+        ProductsList.Visibility = _showTrash ? Visibility.Collapsed : Visibility.Visible;
+        TxtEmptyProducts.Visibility = !_showTrash && (_allProducts == null || _allProducts.Count == 0)
+            ? Visibility.Visible : Visibility.Collapsed;
+        if (!_showTrash)
+        {
+            TrashScroll.Visibility = Visibility.Collapsed;
+            TxtEmptyTrash.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void LoadTrashProducts()
+    {
+        var deleted = _db.Products.AsNoTracking()
+            .Where(p => p.IsDeleted)
+            .OrderByDescending(p => p.DeletedAt)
+            .ToList();
+
+        TrashPanel.Children.Clear();
+        bool empty = deleted.Count == 0;
+        TxtEmptyTrash.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
+        TrashScroll.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
+
+        foreach (var p in deleted)
+            TrashPanel.Children.Add(CreateTrashCard(p));
+    }
+
+    private Border CreateTrashCard(Product p)
+    {
+        var cardBg = Application.Current.TryFindResource("CardBackground") as Brush ?? Brushes.White;
+        var borderB = Application.Current.TryFindResource("BorderBrushLight") as Brush ?? Res("#E0E0E0");
+        var headingFg = Application.Current.TryFindResource("HeadingTextBrush") as Brush ?? Res("#37474F");
+        var mutedFg = Application.Current.TryFindResource("MutedTextBrush") as Brush ?? Res("#90A4AE");
+
+        var card = new Border
+        {
+            CornerRadius = new CornerRadius(12),
+            Background = cardBg,
+            BorderBrush = borderB,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 10),
+            Padding = new Thickness(16, 12, 16, 12)
+        };
+
+        var grid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new ColumnDefinition { Width = GridLength.Auto }
+            }
+        };
+
+        var icon = new Border
+        {
+            Width = 42, Height = 42, CornerRadius = new CornerRadius(10), Background = Res("#EFEBE9"),
+            VerticalAlignment = VerticalAlignment.Center,
+            Child = new Path
+            {
+                FlowDirection = System.Windows.FlowDirection.LeftToRight,
+                Width = 18, Height = 18, Fill = Res("#6D4C41"), Stretch = Stretch.Uniform,
+                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
+                Data = Geometry.Parse("M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z")
+            }
+        };
+        grid.Children.Add(icon);
+        Grid.SetColumn(icon, 0);
+
+        var info = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) };
+        info.Children.Add(new TextBlock { Text = p.Name, FontSize = 14, FontWeight = FontWeights.Bold, Foreground = headingFg });
+        info.Children.Add(new TextBlock
+        {
+            Text = $"الباركود: {(string.IsNullOrWhiteSpace(p.Barcode) ? "—" : p.Barcode)}   •   حُذف في {p.DeletedAt:yyyy/MM/dd HH:mm}",
+            FontSize = 11, Foreground = mutedFg, Margin = new Thickness(0, 3, 0, 0)
+        });
+        grid.Children.Add(info);
+        Grid.SetColumn(info, 1);
+
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+
+        var restoreBtn = new Border
+        {
+            CornerRadius = new CornerRadius(6), Background = Res("#2E7D32"),
+            Cursor = Cursors.Hand, Padding = new Thickness(12, 6, 12, 6), Margin = new Thickness(0, 0, 6, 0),
+            Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
+            {
+                new Path { FlowDirection = System.Windows.FlowDirection.LeftToRight, Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center,
+                    Data = Geometry.Parse("M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z") },
+                new TextBlock { Text = "  استعادة", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, VerticalAlignment = VerticalAlignment.Center }
+            }}
+        };
+        restoreBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; RestoreProduct(p); };
+        actions.Children.Add(restoreBtn);
+
+        var delBtn = new Border
+        {
+            CornerRadius = new CornerRadius(6), Background = Res("#C62828"),
+            Cursor = Cursors.Hand, Padding = new Thickness(12, 6, 12, 6),
+            Child = new StackPanel { Orientation = Orientation.Horizontal, Children =
+            {
+                new Path { FlowDirection = System.Windows.FlowDirection.LeftToRight, Width = 14, Height = 14, Fill = Brushes.White, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center,
+                    Data = Geometry.Parse("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z") },
+                new TextBlock { Text = "  حذف نهائي", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = Brushes.White, VerticalAlignment = VerticalAlignment.Center }
+            }}
+        };
+        delBtn.MouseLeftButtonDown += (_, e) => { e.Handled = true; PermanentlyDeleteProduct(p); };
+        actions.Children.Add(delBtn);
+
+        grid.Children.Add(actions);
+        Grid.SetColumn(actions, 2);
+
+        card.Child = grid;
+        return card;
+    }
+
+    private void RestoreProduct(Product p)
+    {
+        var tracked = _db.Products.Find(p.Id);
+        if (tracked == null) return;
+        tracked.IsDeleted = false;
+        tracked.DeletedAt = null;
+        _db.SaveChanges();
+        App.NotifyDataChanged();
+        NotificationManager.ShowSuccess($"تمت استعادة المنتج: {p.Name}");
+        LoadTrashProducts();
+        LoadProducts();
+        UpdateTrashCount();
+    }
+
+    private void PermanentlyDeleteProduct(Product p)
+    {
+        ConfirmDialog.Show("حذف نهائي",
+            $"هل أنت متأكد من الحذف النهائي لـ {p.Name}؟\nسيتم حذف المخزون وحركاته إلى الأبد ولا يمكن التراجع.",
+            result =>
+            {
+                if (!result) return;
+                _db.ProductUnits.RemoveRange(_db.ProductUnits.Where(u => u.ProductId == p.Id));
+                _db.InventoryBatches.RemoveRange(_db.InventoryBatches.Where(b => b.ProductId == p.Id));
+                _db.InventoryMovements.RemoveRange(_db.InventoryMovements.Where(m => m.ProductId == p.Id));
+                var tracked = _db.Products.Find(p.Id);
+                if (tracked != null) _db.Products.Remove(tracked);
+                _db.SaveChanges();
+                App.NotifyDataChanged();
+                NotificationManager.ShowSuccess("تم الحذف النهائي للمنتج");
+                LoadTrashProducts();
+                LoadProducts();
+                UpdateTrashCount();
+            }, ConfirmDialog.DialogType.Danger, confirmText: "نعم، حذف نهائي", requiredText: "حذف نهائي");
+    }
+
+    private void BtnScanBarcode_Click(object sender, RoutedEventArgs e)
+    {
+        if (Window.GetWindow(this) is not MainWindow mainWindow) return;
+        var scanner = new BarcodeScannerDialog();
+        mainWindow.ShowOverlay(scanner);
+        scanner.ScanFinished += (_, code) =>
+        {
+            mainWindow.HideOverlay();
+            if (string.IsNullOrWhiteSpace(code)) return;
+            var barcode = code.Trim();
+            var product = _db.Products.AsNoTracking().FirstOrDefault(p => !p.IsDeleted && p.Barcode == barcode);
+            if (product != null)
+            {
+                NotificationManager.ShowSuccess($"تم العثور على المنتج: {product.Name}");
+                OpenEditDialog(product);
+            }
+            else
+            {
+                NotificationManager.ShowSuccess("المنتج غير موجود — سيتم فتح نموذج إضافة منتج جديد");
+                OpenProductDialog(null, barcode);
+            }
+        };
     }
 
     private void RestorePreferences()
@@ -339,6 +536,7 @@ public partial class ProductsPage : Page
             TxtEmptyProducts.Visibility = _allProducts.Count == 0
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+            ApplyTrashVisibility();
         }
         finally { _isLoading = false; }
     }
@@ -613,21 +811,21 @@ public partial class ProductsPage : Page
             return;
         }
 
-        ConfirmDialog.Show("تأكيد الحذف الجماعي",
-            $"هل أنت متأكد من حذف {selected.Count} منتج؟\nسيتم حذف المخزون وحركاته نهائياً.",
+        ConfirmDialog.Show("نقل إلى سلة المحذوفات",
+            $"هل أنت متأكد من حذف {selected.Count} منتج؟\nيمكنك استعادتهم لاحقاً من سلة المحذوفات.",
             result =>
             {
                 if (!result) return;
                 foreach (var p in selected)
                 {
-                    _db.ProductUnits.RemoveRange(_db.ProductUnits.Where(u => u.ProductId == p.Id));
-                    _db.InventoryBatches.RemoveRange(_db.InventoryBatches.Where(b => b.ProductId == p.Id));
-                    _db.InventoryMovements.RemoveRange(_db.InventoryMovements.Where(m => m.ProductId == p.Id));
                     var tracked = _db.Products.Find(p.Id);
-                    if (tracked != null) _db.Products.Remove(tracked);
+                    if (tracked == null) continue;
+                    tracked.IsDeleted = true;
+                    tracked.DeletedAt = DateTime.Now;
                 }
                 _db.SaveChanges();
-                NotificationManager.ShowSuccess($"تم حذف {selected.Count} منتج");
+                App.NotifyDataChanged();
+                NotificationManager.ShowSuccess($"تم نقل {selected.Count} منتج إلى سلة المحذوفات");
                 if (_selectionMode)
                 {
                     _selectionMode = false;
@@ -635,7 +833,8 @@ public partial class ProductsPage : Page
                     BulkBar.Visibility = Visibility.Collapsed;
                 }
                 LoadProducts();
-            }, ConfirmDialog.DialogType.Danger, confirmText: "نعم، حذف", requiredText: "حذف");
+                UpdateTrashCount();
+            }, ConfirmDialog.DialogType.Danger, confirmText: "نعم، حذف");
     }
 
     private void CancelSelection_Click(object sender, RoutedEventArgs e)
@@ -710,10 +909,10 @@ public partial class ProductsPage : Page
         OpenProductDialog(product);
     }
 
-    private void OpenProductDialog(Product? product)
+    private void OpenProductDialog(Product? product, string? prefillBarcode = null)
     {
         var mainWindow = (MainWindow)Window.GetWindow(this);
-        var dialog = new ProductDialog(_db, product);
+        var dialog = new ProductDialog(_db, product, prefillBarcode);
         mainWindow.ShowOverlay(dialog);
 
         dialog.DialogClosed += (s, r) =>
@@ -725,17 +924,21 @@ public partial class ProductsPage : Page
 
     private void DeleteProduct(Product product)
     {
-        ConfirmDialog.Show("تأكيد الحذف", $"هل أنت متأكد من حذف {product.Name}؟", result =>
-        {
-            if (!result) return;
-            _db.ProductUnits.RemoveRange(_db.ProductUnits.Where(u => u.ProductId == product.Id));
-            _db.InventoryBatches.RemoveRange(_db.InventoryBatches.Where(b => b.ProductId == product.Id));
-            _db.InventoryMovements.RemoveRange(_db.InventoryMovements.Where(m => m.ProductId == product.Id));
-            var tracked = _db.Products.Find(product.Id);
-            if (tracked != null) _db.Products.Remove(tracked);
-            _db.SaveChanges();
-            LoadProducts();
-        }, ConfirmDialog.DialogType.Danger);
+        ConfirmDialog.Show("نقل إلى سلة المحذوفات",
+            $"هل أنت متأكد من حذف {product.Name}؟\nيمكنك استعادته لاحقاً من سلة المحذوفات.",
+            result =>
+            {
+                if (!result) return;
+                var tracked = _db.Products.Find(product.Id);
+                if (tracked == null) return;
+                tracked.IsDeleted = true;
+                tracked.DeletedAt = DateTime.Now;
+                _db.SaveChanges();
+                App.NotifyDataChanged();
+                NotificationManager.ShowSuccess($"تم نقل {product.Name} إلى سلة المحذوفات");
+                LoadProducts();
+                UpdateTrashCount();
+            }, ConfirmDialog.DialogType.Danger);
     }
 
     private void StockIn_Click(object sender, RoutedEventArgs e)
@@ -800,6 +1003,7 @@ public partial class ProductsPage : Page
         // طباعة جميع المنتجات
         var allProducts = _db.Products
             .Include(p => p.Units)
+            .Where(p => !p.IsDeleted)
             .OrderBy(p => p.Name)
             .ToList();
 

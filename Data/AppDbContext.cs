@@ -106,6 +106,67 @@ public DbSet<InventoryBatch> InventoryBatches => Set<InventoryBatch>();
             }
         }
 
+        // 10) Soft-delete columns (سلة المحذوفات)
+        using (var checkSoft = conn.CreateCommand())
+        {
+            checkSoft.CommandText = "PRAGMA table_info(Products)";
+            using var reader = checkSoft.ExecuteReader();
+            var cols = new System.Collections.Generic.HashSet<string>();
+            while (reader.Read()) cols.Add((string)reader["name"]);
+            if (!cols.Contains("IsDeleted"))
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Products ADD COLUMN IsDeleted INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+            if (!cols.Contains("DeletedAt"))
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Products ADD COLUMN DeletedAt TEXT";
+                alter.ExecuteNonQuery();
+            }
+        }
+
+        using (var checkInvSoft = conn.CreateCommand())
+        {
+            checkInvSoft.CommandText = "PRAGMA table_info(Invoices)";
+            using var reader = checkInvSoft.ExecuteReader();
+            var cols = new System.Collections.Generic.HashSet<string>();
+            while (reader.Read()) cols.Add((string)reader["name"]);
+            if (!cols.Contains("IsDeleted"))
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Invoices ADD COLUMN IsDeleted INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+            if (!cols.Contains("DeletedAt"))
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE Invoices ADD COLUMN DeletedAt TEXT";
+                alter.ExecuteNonQuery();
+            }
+        }
+
+        using (var checkSupSoft = conn.CreateCommand())
+        {
+            checkSupSoft.CommandText = "PRAGMA table_info(SupplierInvoices)";
+            using var reader = checkSupSoft.ExecuteReader();
+            var cols = new System.Collections.Generic.HashSet<string>();
+            while (reader.Read()) cols.Add((string)reader["name"]);
+            if (!cols.Contains("IsDeleted"))
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE SupplierInvoices ADD COLUMN IsDeleted INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+            if (!cols.Contains("DeletedAt"))
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE SupplierInvoices ADD COLUMN DeletedAt TEXT";
+                alter.ExecuteNonQuery();
+            }
+        }
+
         // 7) Supplier tables (only for databases created before this version)
         CreateIfMissing(conn, "Suppliers", @"
 CREATE TABLE IF NOT EXISTS ""Suppliers"" (
@@ -246,5 +307,9 @@ model.Entity<Invoice>()
             .WithMany(s => s.Invoices)
             .HasForeignKey(i => i.SupplierId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // سلة المحذوفات: الفواتير المحذوفة مخفية عن كل الاستعلامات تلقائياً
+        model.Entity<Invoice>().HasQueryFilter(i => !i.IsDeleted);
+        model.Entity<SupplierInvoice>().HasQueryFilter(i => !i.IsDeleted);
     }
 }

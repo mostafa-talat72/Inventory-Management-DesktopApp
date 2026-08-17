@@ -526,49 +526,22 @@ public partial class SupplierInvoicesDialog : UserControl
 
     private void DeleteSupplierInvoice(SupplierInvoice invoice)
     {
-        ConfirmDialog.Show("حذف فاتورة المورد",
-            $"هل أنت متأكد من حذف فاتورة المورد #{invoice.Id}؟\nسيتم خصم الكميات من المخزون ولا يمكن التراجع.",
+        ConfirmDialog.Show("نقل إلى سلة المحذوفات",
+            $"هل أنت متأكد من حذف فاتورة المورد #{invoice.Id}؟\nيمكنك استعادتها لاحقاً من سلة المحذوفات.",
             result =>
             {
                 if (result != true) return;
 
-                var full = _db.SupplierInvoices
-                    .Include(i => i.Items).ThenInclude(i => i.Product)
-                    .Include(i => i.Payments)
-                    .First(i => i.Id == invoice.Id);
-
-                var inv = new InventoryService(_db);
-                foreach (var item in full.Items)
-                {
-                    int totalPieces = inv.CalculatePieceEquivalent(item.Product, item.CartonQuantity, item.BoxQuantity, item.PieceQuantity);
-                    if (totalPieces <= 0) continue;
-
-                    var (fifoCost, consumed) = inv.CalculateFifoCost(item.Product, totalPieces);
-                    _db.InventoryMovements.Add(new InventoryMovement
-                    {
-                        ProductId = item.ProductId,
-                        MovementType = MovementType.StockOut,
-                        Quantity = totalPieces,
-                        CostPrice = totalPieces > 0 ? fifoCost / totalPieces : 0,
-                        ReferenceType = ReferenceType.Adjustment,
-                        ReferenceId = full.Id,
-                        Notes = $"حذف فاتورة مورد #{full.Id}"
-                    });
-
-                    foreach (var batch in consumed)
-                        _db.Entry(batch).State = EntityState.Modified;
-                }
-
-                _db.SupplierInvoiceItems.RemoveRange(full.Items);
-                _db.SupplierPayments.RemoveRange(full.Payments);
-                _db.SupplierInvoices.Remove(full);
+                var full = _db.SupplierInvoices.First(i => i.Id == invoice.Id);
+                full.IsDeleted = true;
+                full.DeletedAt = DateTime.Now;
                 _db.SaveChanges();
                 App.NotifyDataChanged();
 
                 App.AppBackup?.BackupIfOnOperation();
                 _selectedIds.Remove(invoice.Id);
                 LoadData();
-                NotificationManager.ShowSuccess("تم حذف الفاتورة وخصم الكميات من المخزون");
+                NotificationManager.ShowSuccess($"تم نقل فاتورة المورد #{invoice.Id} إلى سلة المحذوفات");
             },
             ConfirmDialog.DialogType.Danger);
     }

@@ -19,17 +19,20 @@ public partial class PrintPreviewDialog : UserControl
     private readonly string _html;
     private readonly string _tempFilePath;
     private readonly Func<double, UIElement>? _visualFactory;
+    private readonly Func<double, double, List<UIElement>>? _pageFactory;
     private Invoice?        _invoice;
 
     public event EventHandler<bool>? DialogClosed;
 
     private PrintPreviewDialog(string html, string title,
-        Func<double, UIElement>? visualFactory = null, Invoice? invoice = null)
+        Func<double, UIElement>? visualFactory = null, Invoice? invoice = null,
+        Func<double, double, List<UIElement>>? pageFactory = null)
     {
         InitializeComponent();
         _html          = html;
         _invoice       = invoice;
         _visualFactory = visualFactory;
+        _pageFactory   = pageFactory;
 
         TxtPreviewInfo.Text = title;
 
@@ -54,6 +57,36 @@ public partial class PrintPreviewDialog : UserControl
                     Background = Brushes.White,
                     Child = visual
                 };
+            }
+            catch { ReceiptBrowser.NavigateToString(html); }
+        }
+        else if (pageFactory != null)
+        {
+            // التقرير: نفس صفحات WPF التي ستُطبع بالضبط (مقسمة على صفحات)
+            try
+            {
+                var config = AppConfig.Load();
+                double w = GetQueuePaperWidth(config.PrinterName);
+                double h = GetQueuePaperHeight(config.PrinterName);
+                var pages = pageFactory(w, h);
+
+                var stack = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(12, 12, 12, 4) };
+                foreach (var page in pages)
+                {
+                    page.Measure(new Size(w, double.PositiveInfinity));
+                    page.Arrange(new Rect(0, 0, w, page.DesiredSize.Height));
+                    page.UpdateLayout();
+                    stack.Children.Add(new Border
+                    {
+                        Width = w,
+                        Background = Brushes.White,
+                        BorderBrush = new SolidColorBrush(Color.FromRgb(180, 180, 180)),
+                        BorderThickness = new Thickness(1),
+                        Margin = new Thickness(0, 0, 0, 14),
+                        Child = page
+                    });
+                }
+                PreviewScroll.Content = stack;
             }
             catch { ReceiptBrowser.NavigateToString(html); }
         }
@@ -85,10 +118,34 @@ public partial class PrintPreviewDialog : UserControl
         mainWindow.ShowOverlay(dialog);
     }
 
+    /// <summary>
+    /// معاينة وطباعة مستند متعدد الصفحات (تقارير) بنفس مسار الفواتير:
+    /// عناصر WPF تُبنى لكل صفحة وتُطبع مباشرة على FixedDocument بدون WebBrowser.
+    /// pageFactory يبني الصفحات عند عرض معيّن وارتفاع ورقة معيّن.
+    /// </summary>
+    public static void ShowDocument(string html, string title,
+        Func<double, double, List<UIElement>> pageFactory)
+    {
+        var mainWindow = Application.Current.MainWindow as MainWindow;
+        if (mainWindow == null) return;
+
+        var dialog = new PrintPreviewDialog(html, title, pageFactory: pageFactory);
+        dialog.DialogClosed += (_, _) => mainWindow.HideOverlay();
+        mainWindow.ShowOverlay(dialog);
+    }
+
     private void DoPrint()
     {
         try
         {
+            if (_pageFactory != null)
+            {
+                // التقارير: صفحات WPF مقسمة تُطبع مباشرة على FixedDocument
+                PrintPages(_pageFactory, AppConfig.Load());
+                NotificationManager.ShowSuccess("تمت الطباعة بنفس شكل المعاينة بالضبط");
+                return;
+            }
+
             if (_visualFactory != null)
             {
                 // الفاتورة أو فاتورة المورد: نطبع نفس عنصر WPF المعروض في المعاينة
@@ -252,6 +309,74 @@ public partial class PrintPreviewDialog : UserControl
         }
     }
 
+    /// <summary>
+    /// يطبع صفحات تقرير (عناصر WPF مقسمة) مباشرة على FixedDocument —
+    /// كل صفحة بعرض ورق الطابعة الفعلي من النقطة (0,0) بدون هوامش.
+    /// </summary>
+    private void PrintPages(Func<double, double, List<UIElement>> pageFactory, AppConfig config)
+    {
+        PrintQueue? queue = null;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(config.PrinterName))
+            {
+                var printDialog = new PrintDialog();
+                if (printDialog.ShowDialog() != true) return;
+                queue = printDialog.PrintQueue;
+            }
+            else
+            {
+                queue = new PrintQueue(new LocalPrintServer(), config.PrinterName);
+            }
+
+            using (queue)
+            {
+                double width = queue.DefaultPrintTicket.PageMediaSize?.Width is double pw && pw > 0
+                    ? Math.Clamp(pw, 100, 900)
+                    : 302;
+                double mediaHeight = queue.DefaultPrintTicket.PageMediaSize?.Height is double mh && mh > 0
+                    ? mh : 1123;
+
+                var pages = pageFactory(width, mediaHeight);
+                var doc = new FixedDocument();
+                foreach (var page in pages)
+                {
+                    page.Measure(new Size(width, double.PositiveInfinity));
+                    double height = page.DesiredSize.Height;
+                    page.Arrange(new Rect(0, 0, width, height));
+                    page.UpdateLayout();
+
+                    var fixedPage = new FixedPage
+                    {
+                        Width = width,
+                        Height = height,
+                        Background = Brushes.White
+                    };
+                    FixedPage.SetLeft(page, 0);
+                    FixedPage.SetTop(page, 0);
+                    fixedPage.Children.Add(page);
+
+                    var pageContent = new PageContent { Child = fixedPage };
+                    doc.Pages.Add(pageContent);
+
+                    fixedPage.Measure(new Size(width, height));
+                    fixedPage.Arrange(new Rect(new Size(width, height)));
+                    fixedPage.UpdateLayout();
+                }
+
+                var ticket = queue.DefaultPrintTicket.Clone();
+                ticket.PageOrientation = PageOrientation.Portrait;
+                ticket.CopyCount = 1;
+
+                PrintQueue.CreateXpsDocumentWriter(queue).Write(doc, ticket);
+            }
+        }
+        finally
+        {
+            queue?.Dispose();
+        }
+    }
+
     /// <summary>عرض ورق الطابعة الفعلي (بوحدة 1/96 بوصة) من الـ driver، وافتراض 80mm ≈ 302 عند الغياب</summary>
     private static double GetQueuePaperWidth(string? printerName)
     {
@@ -269,6 +394,25 @@ public partial class PrintPreviewDialog : UserControl
         }
         catch { }
         return 302;
+    }
+
+    /// <summary>ارتفاع ورق الطابعة الفعلي (بوحدة 1/96 بوصة)، وافتراض A4 ≈ 1123 عند الغياب</summary>
+    private static double GetQueuePaperHeight(string? printerName)
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(printerName))
+            {
+                var queue = new PrintQueue(new LocalPrintServer(), printerName);
+                using (queue)
+                {
+                    if (queue.DefaultPrintTicket.PageMediaSize?.Height is double h && h > 0)
+                        return Math.Clamp(h, 400, 2000);
+                }
+            }
+        }
+        catch { }
+        return 1123;
     }
 
     /// <summary>

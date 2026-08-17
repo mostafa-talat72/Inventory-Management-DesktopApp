@@ -93,6 +93,7 @@ namespace ProductApp.Views
             _forceNewInvoice = forceNewInvoice;
             InitSearchTimer();
             Loaded += OnLoaded;
+            AttachShortcuts();
         }
 
         public AddOrderDialog(AppDbContext db, Invoice invoice)
@@ -104,6 +105,7 @@ namespace ProductApp.Views
             _customer = invoice.Customer;
             InitSearchTimer();
             Loaded += OnLoadedForInvoice;
+            AttachShortcuts();
         }
 
         // Constructor للتعديل على طلب موجود
@@ -117,6 +119,19 @@ namespace ProductApp.Views
             _orderToEdit = orderToEdit;
             InitSearchTimer();
             Loaded += OnLoadedForEditOrder;
+            AttachShortcuts();
+        }
+
+        private void AttachShortcuts()
+        {
+            PreviewKeyDown += (_, e) =>
+            {
+                if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                {
+                    BtnSaveOrder_Click(this, new RoutedEventArgs());
+                    e.Handled = true;
+                }
+            };
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -220,7 +235,7 @@ namespace ProductApp.Views
 
         private void LoadProducts(string? filter = null)
         {
-            var query = _db.Products.Include(p => p.Units).AsQueryable();
+            var query = _db.Products.Include(p => p.Units).Where(p => !p.IsDeleted).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filter))
                 query = query.Where(p => p.Name.Contains(filter) || (p.Barcode != null && p.Barcode.Contains(filter)));
@@ -969,7 +984,7 @@ namespace ProductApp.Views
             if (e.Key != Key.Enter) return;
             var text = TxtSearch.Text.Trim();
             if (text.Length == 0) return;
-            var match = _db.Products.FirstOrDefault(p => p.Barcode == text || p.Name == text);
+            var match = _db.Products.FirstOrDefault(p => !p.IsDeleted && (p.Barcode == text || p.Name == text));
             if (match != null)
             {
                 SelectProduct(match);
@@ -995,6 +1010,8 @@ namespace ProductApp.Views
 
         private void PrintInvoiceAfterSave()
         {
+            if (!AppConfig.Load().AutoPrintAfterSave) return;
+
             try
             {
                 var invoice = _db.Invoices
@@ -1006,6 +1023,7 @@ namespace ProductApp.Views
             catch (System.Exception ex)
             {
                 LogError(ex);
+                NotificationManager.ShowWarning($"تم حفظ الطلب لكن فشلت الطباعة التلقائية: {ex.Message}");
             }
         }
 

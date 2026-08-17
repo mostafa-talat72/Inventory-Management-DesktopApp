@@ -34,7 +34,7 @@ public partial class OrderDialog : UserControl
 
     private void LoadProductCards(string? search = null)
     {
-        var query = _db.Products.Include(p => p.Units).AsQueryable();
+        var query = _db.Products.Include(p => p.Units).Where(p => !p.IsDeleted).AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(p => p.Name.Contains(search));
 

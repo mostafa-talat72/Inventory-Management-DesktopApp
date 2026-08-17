@@ -421,6 +421,8 @@
                                 </StackPanel>
                             </Button>
                         </Grid>
+                        <CheckBox x:Name="ChkAutoPrintAfterSave" Style="{StaticResource SettingsCheckBox}" Margin="0,12,0,0"
+                                  Content="طباعة الفاتورة تلقائياً بعد حفظ الطلب" />
                         <Border Background="{DynamicResource AppBackground}" CornerRadius="8" Padding="12,10" Margin="0,12,0,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>

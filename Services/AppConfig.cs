@@ -25,6 +25,7 @@ public class AppConfig
     public bool PrintLocationPhone { get; set; }
     public bool PrintLocationDescription { get; set; }
     public string PrinterName { get; set; } = "";
+    public bool AutoPrintAfterSave { get; set; } = true;
     public bool IsDarkMode { get; set; } = false;
     public bool HideAmounts { get; set; } = true;
 

@@ -32,6 +32,10 @@ public class Invoice
 
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Open;
 
+    public bool IsDeleted { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
+
     [MaxLength(1000)]
     public string? Notes { get; set; }
 

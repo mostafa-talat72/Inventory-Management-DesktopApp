@@ -613,11 +613,13 @@ public class ReceiptPrinter : IDisposable
 </html>";
     }
 
-    public void PrintInventory(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products, string? title = null)
+public void PrintInventory(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products, string? title = null)
     {
         var config = AppConfig.Load();
         var html = BuildInventoryHtml(products, config, title);
-        Views.PrintPreviewDialog.ShowInventory(html, title ?? "كشف المخزون");
+        Views.PrintPreviewDialog.Show(html, title ?? "??? ???????",
+            visualFactory: w => null,
+            invoice: null);
     }
 
     public void Dispose() => _db.Dispose();
@@ -643,7 +645,7 @@ public class ReceiptPrinter : IDisposable
                 .ToList();
         }
 
-        Views.PrintPreviewDialog.Show(html, $"فاتورة #{invoice.Id}",
+        Views.PrintPreviewDialog.Show(html, $"فاتورة #{invoice.Id} - {invoice.CustomerName} (Client)",
             visualFactory: w => BuildReceiptVisual(invoice, items, config, w, unpaid),
             invoice: invoice);
     }
@@ -814,7 +816,7 @@ public class ReceiptPrinter : IDisposable
                 .ToList();
         }
 
-        Views.PrintPreviewDialog.Show(html, $"فاتورة مورد #{invoice.Id}",
+        Views.PrintPreviewDialog.Show(html, $"MTE Stock - فاتورة مورد #{invoice.Id}",
             visualFactory: w => BuildSupplierReceiptVisual(invoice, items, config, w, unpaid),
             invoice: null);
     }
@@ -1342,12 +1344,14 @@ public class ReceiptPrinter : IDisposable
 </html>";
     }
 
-    public void PrintReport(DateTime from, DateTime to, List<dynamic> reportData,
+public void PrintReport(DateTime from, DateTime to, List<dynamic> reportData,
         decimal totalSales, decimal totalCost, decimal totalDiscount, decimal totalProfit, int invoiceCount)
     {
         var config = AppConfig.Load();
         var html = BuildReportHtml(from, to, reportData, totalSales, totalCost, totalDiscount, totalProfit, invoiceCount, config);
-        Views.PrintPreviewDialog.ShowInventory(html, "تقرير المبيعات");
+        Views.PrintPreviewDialog.Show(html, "????? ????????",
+            visualFactory: w => null,
+            invoice: null);
     }
 
     private static string BuildLocationInfoHtml(AppConfig config)

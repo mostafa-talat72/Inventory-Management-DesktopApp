@@ -27,7 +27,7 @@ public partial class ProductDialog : UserControl
     private bool _loaded;
     private bool _isUpdating;
 
-    public ProductDialog(AppDbContext db, Product? product = null)
+    public ProductDialog(AppDbContext db, Product? product = null, string? prefillBarcode = null)
     {
         InitializeComponent();
         _db = db;
@@ -41,6 +41,8 @@ public partial class ProductDialog : UserControl
         else
         {
             ChkHasBox.IsChecked = true;
+            if (!string.IsNullOrWhiteSpace(prefillBarcode))
+                TxtBarcode.Text = prefillBarcode.Trim();
         }
 
         _loaded = true;
@@ -402,7 +404,7 @@ public partial class ProductDialog : UserControl
 
         var name = TxtName.Text.Trim();
         var excludeId = _product?.Id ?? 0;
-        if (_db.Products.Any(p => p.Name == name && p.Id != excludeId))
+        if (_db.Products.Any(p => !p.IsDeleted && p.Name == name && p.Id != excludeId))
         {
             NotificationManager.ShowError("هذا الاسم موجود بالفعل");
             return false;
@@ -452,7 +454,7 @@ public partial class ProductDialog : UserControl
         var barcodeText = TxtBarcode.Text?.Trim();
         if (!string.IsNullOrWhiteSpace(barcodeText) && barcodeText != ProductApp.Converters.WatermarkBehavior.GetWatermark(TxtBarcode))
         {
-            if (_db.Products.Any(p => p.Barcode == barcodeText && p.Id != excludeId))
+            if (_db.Products.Any(p => !p.IsDeleted && p.Barcode == barcodeText && p.Id != excludeId))
             {
                 NotificationManager.ShowError("هذا الباركود مستخدم لمنتج آخر");
                 return false;
@@ -549,6 +551,22 @@ public partial class ProductDialog : UserControl
 
     private static bool TryParseDecimal(string? text, out decimal value) =>
         decimal.TryParse(text?.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out value);
+
+    private void BtnScanBarcode_Click(object sender, RoutedEventArgs e)
+    {
+        if (Window.GetWindow(this) is not MainWindow mainWindow) return;
+        var scanner = new BarcodeScannerDialog();
+        mainWindow.ShowOverlay(scanner);
+        scanner.ScanFinished += (_, code) =>
+        {
+            mainWindow.HideOverlay();
+            if (!string.IsNullOrWhiteSpace(code))
+            {
+                TxtBarcode.Text = code.Trim();
+                NotificationManager.ShowSuccess("تم إدخال الباركود: " + code);
+            }
+        };
+    }
 
     private void BtnChooseImage_Click(object sender, RoutedEventArgs e)
     {
