@@ -631,7 +631,21 @@ public class ReceiptPrinter : IDisposable
             .ToList();
         var config = AppConfig.Load();
         var html = BuildReceiptHtml(invoice, items, config);
-        Views.PrintPreviewDialog.Show(html, $"فاتورة #{invoice.Id}", invoice, items, config);
+
+        // الفواتير غير المدفوعة بالكامل لهذا العميل — لعرض «الأجل» في الطباعة
+        List<Invoice>? unpaid = null;
+        if (invoice.CustomerId != null)
+        {
+            unpaid = _db.Invoices
+                .Where(i => i.CustomerId == invoice.CustomerId
+                    && i.Status != InvoiceStatus.Paid
+                    && i.Status != InvoiceStatus.Cancelled)
+                .ToList();
+        }
+
+        Views.PrintPreviewDialog.Show(html, $"فاتورة #{invoice.Id}",
+            visualFactory: w => BuildReceiptVisual(invoice, items, config, w, unpaid),
+            invoice: invoice);
     }
 
     // ═══════════════════════════════════════════
@@ -789,7 +803,20 @@ public class ReceiptPrinter : IDisposable
             .ToList();
         var config = AppConfig.Load();
         var html = BuildSupplierReceiptHtml(invoice, items, config);
-        Views.PrintPreviewDialog.ShowInventory(html, $"فاتورة مورد #{invoice.Id}");
+
+        List<SupplierInvoice>? unpaid = null;
+        if (invoice.SupplierId != null)
+        {
+            unpaid = _db.SupplierInvoices
+                .Where(i => i.SupplierId == invoice.SupplierId
+                    && i.Status != InvoiceStatus.Paid
+                    && i.Status != InvoiceStatus.Cancelled)
+                .ToList();
+        }
+
+        Views.PrintPreviewDialog.Show(html, $"فاتورة مورد #{invoice.Id}",
+            visualFactory: w => BuildSupplierReceiptVisual(invoice, items, config, w, unpaid),
+            invoice: null);
     }
 
     public void PrintDirect(Invoice invoice, List<OrderItem> items, AppConfig config)
@@ -802,7 +829,7 @@ public class ReceiptPrinter : IDisposable
             // عرض الورق من الـ driver تلقائياً
             var mediaSize = queue.DefaultPrintTicket.PageMediaSize;
             double paperWidth = mediaSize?.Width ?? 302;
-            double margin     = 6;
+            double margin     = 0;
             double innerWidth = Math.Max(paperWidth - (margin * 2), 100);
 
             var receipt = BuildReceiptVisual(invoice, items, config, innerWidth);
@@ -840,7 +867,7 @@ public class ReceiptPrinter : IDisposable
         }
     }
 
-    private StackPanel BuildReceiptVisual(Invoice invoice, List<OrderItem> items, AppConfig config, double width)
+    private StackPanel BuildReceiptVisual(Invoice invoice, List<OrderItem> items, AppConfig config, double width, List<Invoice>? unpaid = null)
     {
         var panel = new StackPanel
         {
@@ -944,12 +971,149 @@ public class ReceiptPrinter : IDisposable
         }
 
         panel.Children.Add(MakeDashedSeparator());
-        panel.Children.Add(MakeTotalBox($"الإجمالي: {ToArabicNumerals(invoice.TotalAmount.ToString("0.##"))} ج.م", Brushes.Black, Brushes.White, 14, isBold: true));
+        var hasCustomer = invoice.CustomerId != null;
+        panel.Children.Add(MakeTotalBox(
+            $"{(hasCustomer ? "المطلوب" : "الإجمالي")}: {ToArabicNumerals(invoice.TotalAmount.ToString("0.##"))} ج.م",
+            Brushes.Black, Brushes.White, 14, isBold: true));
+        if (invoice.Discount > 0)
+            panel.Children.Add(MakeTotalBox($"الخصم: {ToArabicNumerals(invoice.Discount.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 12));
         panel.Children.Add(MakeTotalBox($"المدفوع: {ToArabicNumerals(invoice.TotalPaid.ToString("0.##"))} ج.م",    Brushes.White, Brushes.Black, 13));
         if (invoice.Remaining > 0)
             panel.Children.Add(MakeTotalBox($"المتبقي: {ToArabicNumerals(invoice.Remaining.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13, border: true));
 
+        if (hasCustomer && unpaid != null)
+        {
+            var oldRemSum = unpaid.Where(i => i.Id != invoice.Id).Sum(i => i.Remaining);
+            var totalSum  = unpaid.Sum(i => i.TotalAmount);
+            var discSum   = unpaid.Sum(i => i.Discount);
+            var paidSum   = unpaid.Sum(i => i.TotalPaid);
+            var remSum    = unpaid.Sum(i => i.Remaining);
+
+            panel.Children.Add(MakeDashedSeparator());
+            panel.Children.Add(MakeText("الأجل (المتبقي من الفواتير القديمة)", 11, FontWeights.ExtraBold,
+                background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+            panel.Children.Add(MakeTotalBox($"الأجل: {ToArabicNumerals(oldRemSum.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13, border: true));
+
+            panel.Children.Add(MakeDashedSeparator());
+            panel.Children.Add(MakeText("إجمالي فواتير العميل غير المدفوعة بالكامل", 11, FontWeights.ExtraBold,
+                background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+            panel.Children.Add(MakeTotalBox($"إجمالي المطلوب: {ToArabicNumerals(totalSum.ToString("0.##"))} ج.م", Brushes.Black, Brushes.White, 14, isBold: true));
+            if (discSum > 0)
+                panel.Children.Add(MakeTotalBox($"إجمالي المخصوم: {ToArabicNumerals(discSum.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 12));
+            panel.Children.Add(MakeTotalBox($"إجمالي المدفوع: {ToArabicNumerals(paidSum.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13));
+            panel.Children.Add(MakeTotalBox($"إجمالي المتبقي: {ToArabicNumerals(remSum.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13, border: true));
+        }
+
         panel.Children.Add(MakeText("شكراً لزيارتكم", 12, FontWeights.Bold, horizontal: HorizontalAlignment.Center));
+
+        if ((config.PrintLocationAddress     && !string.IsNullOrWhiteSpace(config.LocationAddress))     ||
+            (config.PrintLocationPhone       && !string.IsNullOrWhiteSpace(config.LocationPhone))       ||
+            (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription)))
+        {
+            panel.Children.Add(MakeDashedSeparator());
+            if (config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress))
+                panel.Children.Add(MakeText(config.LocationAddress, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+            if (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone))
+                panel.Children.Add(MakeText(config.LocationPhone, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+            if (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription))
+                panel.Children.Add(MakeText(config.LocationDescription, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+        }
+
+        panel.Children.Add(MakeDashedSeparator());
+        panel.Children.Add(MakeText("تم تصميم وتطوير هذا النظام بواسطة", 7, FontWeights.Normal,
+            foreground: new SolidColorBrush(Color.FromRgb(136, 136, 136)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText("المهندس مصطفى طلعت للحلول البرمجيه", 8, FontWeights.Bold,
+            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText("01116626164", 8, FontWeights.Bold,
+            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+
+        return panel;
+    }
+
+    private StackPanel BuildSupplierReceiptVisual(SupplierInvoice invoice, List<SupplierInvoiceItem> items, AppConfig config, double width, List<SupplierInvoice>? unpaid = null)
+    {
+        var panel = new StackPanel
+        {
+            Width = width,
+            Background = Brushes.White,
+            HorizontalAlignment = HorizontalAlignment.Left
+        };
+
+        var locationName = config.PrintLocationName ? config.LocationName : "";
+
+        if (!string.IsNullOrWhiteSpace(locationName))
+            panel.Children.Add(MakeText(locationName, 14, FontWeights.Black, horizontal: HorizontalAlignment.Center));
+
+        panel.Children.Add(MakeText($"فاتورة مورد #{invoice.Id}", 13, FontWeights.Black, horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText(FormatDateArabic(invoice.CreatedAt), 10, FontWeights.Normal,
+            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        if (invoice.SupplierId != null && !string.IsNullOrWhiteSpace(invoice.SupplierName))
+            panel.Children.Add(MakeText($"المورد: {invoice.SupplierName}", 10, FontWeights.Normal,
+                foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeDashedSeparator());
+
+        panel.Children.Add(MakeText("المنتجات", 11, FontWeights.ExtraBold,
+            background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+
+        var rows = items
+            .OrderBy(i => i.Product.Name)
+            .ThenBy(i => i.Id)
+            .Select(i =>
+            {
+                var units = i.Product.Units.ToList();
+                var cartonUnit = units.FirstOrDefault(u => u.UnitType == UnitType.Carton);
+                var boxUnit    = units.FirstOrDefault(u => u.UnitType == UnitType.Box);
+                var pieceUnit  = units.FirstOrDefault(u => u.UnitType == UnitType.Piece);
+
+                var qtyParts = new List<string>();
+                if (i.CartonQuantity > 0) qtyParts.Add($"{ToArabicNumerals(i.CartonQuantity.ToString())} {(cartonUnit?.Name ?? "كرتونة")}");
+                if (i.BoxQuantity   > 0) qtyParts.Add($"{ToArabicNumerals(i.BoxQuantity.ToString())} {(boxUnit?.Name ?? "علبة")}");
+                if (i.PieceQuantity > 0) qtyParts.Add($"{ToArabicNumerals(i.PieceQuantity.ToString())} {(pieceUnit?.Name ?? "قطعة")}");
+                if (qtyParts.Count == 0) qtyParts.Add("—");
+
+                return new[] { i.Product.Name, string.Join("\n", qtyParts), ToArabicNumerals(i.CostPrice.ToString("0.##")) };
+            })
+            .ToList();
+
+        panel.Children.Add(MakeTableRow(
+            new[] { "المنتج", "الكمية", "التكلفة" },
+            new[] { 0.55, 0.25, 0.20 }, width - 16, FontWeights.ExtraBold, isHeader: true));
+
+        foreach (var r in rows)
+            panel.Children.Add(MakeTableRow(r, new[] { 0.55, 0.25, 0.20 }, width - 16, FontWeights.Bold));
+
+        panel.Children.Add(MakeDashedSeparator());
+        panel.Children.Add(MakeText($"فاتورة مورد #{invoice.Id}", 11, FontWeights.ExtraBold,
+            background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeTotalBox($"الإجمالي: {ToArabicNumerals(invoice.TotalAmount.ToString("0.##"))} ج.م", Brushes.Black, Brushes.White, 14, isBold: true));
+        panel.Children.Add(MakeTotalBox($"المدفوع: {ToArabicNumerals(invoice.TotalPaid.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13));
+        if (invoice.Remaining > 0)
+            panel.Children.Add(MakeTotalBox($"المتبقي: {ToArabicNumerals(invoice.Remaining.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13, border: true));
+
+        if (invoice.SupplierId != null && unpaid != null)
+        {
+            var oldRemSum = unpaid.Where(i => i.Id != invoice.Id).Sum(i => i.Remaining);
+            var totalSum  = unpaid.Sum(i => i.TotalAmount);
+            var paidSum   = unpaid.Sum(i => i.TotalPaid);
+            var remSum    = unpaid.Sum(i => i.Remaining);
+
+            panel.Children.Add(MakeDashedSeparator());
+            panel.Children.Add(MakeText("الأجل (المتبقي من فواتير المورد القديمة)", 11, FontWeights.ExtraBold,
+                background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+            panel.Children.Add(MakeTotalBox($"الأجل: {ToArabicNumerals(oldRemSum.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13, border: true));
+
+            panel.Children.Add(MakeDashedSeparator());
+            panel.Children.Add(MakeText("إجمالي فواتير المورد غير المدفوعة بالكامل", 11, FontWeights.ExtraBold,
+                background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+            panel.Children.Add(MakeTotalBox($"إجمالي المطلوب: {ToArabicNumerals(totalSum.ToString("0.##"))} ج.م", Brushes.Black, Brushes.White, 14, isBold: true));
+            panel.Children.Add(MakeTotalBox($"إجمالي المدفوع: {ToArabicNumerals(paidSum.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13));
+            panel.Children.Add(MakeTotalBox($"إجمالي المتبقي: {ToArabicNumerals(remSum.ToString("0.##"))} ج.م", Brushes.White, Brushes.Black, 13, border: true));
+        }
+
+        panel.Children.Add(MakeText("شكراً لتعاملكم", 12, FontWeights.Bold, horizontal: HorizontalAlignment.Center));
 
         if ((config.PrintLocationAddress     && !string.IsNullOrWhiteSpace(config.LocationAddress))     ||
             (config.PrintLocationPhone       && !string.IsNullOrWhiteSpace(config.LocationPhone))       ||

@@ -187,7 +187,7 @@ public class InventoryService
         return $"{total} {pieceName}";
     }
 
-    public async Task StockIn(Product product, int cartonQty, int boxQty, int pieceQty, decimal totalCost, string? notes = null)
+    public async Task StockIn(Product product, int cartonQty, int boxQty, int pieceQty, decimal totalCost, string? notes = null, string? supplierName = null)
     {
         int ppc = GetPiecesPerCarton(product);
         int ppb = GetPiecesPerBox(product);
@@ -205,6 +205,7 @@ public class InventoryService
         _db.InventoryBatches.Add(batch);
 
         string reasonParts = "وارد";
+        if (!string.IsNullOrWhiteSpace(supplierName)) reasonParts += $" - {supplierName}";
         if (cartonQty > 0) reasonParts += $" - {cartonQty} {GetUnitName(product, UnitType.Carton)}";
         if (boxQty > 0) reasonParts += $" - {boxQty} {GetUnitName(product, UnitType.Box)}";
         if (pieceQty > 0) reasonParts += $" - {pieceQty} {GetUnitName(product, UnitType.Piece)}";

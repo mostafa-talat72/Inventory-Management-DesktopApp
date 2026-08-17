@@ -66,6 +66,9 @@ public partial class MainWindow : Window
             case "Invoices":
                 MainFrame.Navigate(new InvoicesPage());
                 break;
+            case "StockOut":
+                MainFrame.Navigate(new StockOutPage());
+                break;
             case "Reports":
                 MainFrame.Navigate(new ReportsPage());
                 break;

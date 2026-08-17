@@ -38,9 +38,14 @@
                 </Border>
             </Grid>
 
-            <!-- Preview area -->
+            <!-- Preview area — عرض المعاينة = عرض ورق الإيصال الحقيقي (80mm ≈ 302px) حتى تكون
+                 المعاينة مطابقة للطباعة تماماً -->
             <Border Grid.Row="1" Margin="28,16,28,0" CornerRadius="16" Background="{DynamicResource AppBackground}" Padding="20">
-                <WebBrowser x:Name="ReceiptBrowser" />
+                <Grid>
+                    <ScrollViewer x:Name="PreviewScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                        <WebBrowser x:Name="ReceiptBrowser" Width="302" Height="420" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </ScrollViewer>
+                </Grid>
             </Border>
 
             <!-- Footer buttons -->

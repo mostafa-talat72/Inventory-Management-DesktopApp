@@ -288,7 +288,15 @@ public partial class StockInDialog : UserControl
             var product = _db.Products.Find(entry.ProductId);
             if (product != null)
             {
-                await _inv.StockIn(product, entry.CartonQty, entry.BoxQty, entry.PieceQty, entry.TotalCost);
+                // الوارد ضمن فاتورة مورد — يُسجل اسم المورد في سجل المخزون
+                string? supplierName = null;
+                if (_targetInvoice != null)
+                    supplierName = _targetInvoice.SupplierName;
+                else if (CmbSupplier.SelectedItem is ComboBoxItem selItem && selItem.Tag is Supplier selSupplier)
+                    supplierName = selSupplier.Name;
+                supplierName ??= "بدون مورد";
+                await _inv.StockIn(product, entry.CartonQty, entry.BoxQty, entry.PieceQty, entry.TotalCost,
+                    supplierName: supplierName);
             }
         }
 

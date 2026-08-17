@@ -82,6 +82,11 @@
     <SolidColorBrush x:Key="#1B5E20" Color="#81C784" />
     <SolidColorBrush x:Key="#90A4AE" Color="#90A4AE" />
     <SolidColorBrush x:Key="#BDBDBD" Color="#5A5A7A" />
+    <SolidColorBrush x:Key="#1565C0" Color="#64B5F6" />
+    <SolidColorBrush x:Key="#E3F2FD" Color="#232D4E" />
+    <SolidColorBrush x:Key="#546E7A" Color="#90A4AE" />
+    <SolidColorBrush x:Key="#ECEFF1" Color="#2E2E4A" />
+    <SolidColorBrush x:Key="#455A64" Color="#B0BEC5" />
     <SolidColorBrush x:Key="BadgeInfoBg"          Color="#232D4E" />
     <SolidColorBrush x:Key="BadgeInfoFg"          Color="#9FA8DA" />
     <SolidColorBrush x:Key="BadgePurpleBg"        Color="#33263F" />

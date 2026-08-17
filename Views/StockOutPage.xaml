@@ -1,0 +1,383 @@
+<Page x:Class="ProductApp.Views.StockOutPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="منصرف المخزون"
+      FlowDirection="RightToLeft"
+      Background="{DynamicResource AppBackground}">
+
+    <Grid Margin="28,24,28,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Width="48" Height="48" CornerRadius="16" Background="{DynamicResource #FFEBEE}">
+                <Path FlowDirection="LeftToRight" Width="24" Height="24" Fill="{DynamicResource #C62828}" Stretch="Uniform"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Data="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6h-6z" />
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                <TextBlock Text="منصرف المخزون" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="كل المخزون المُنصرف خارج البيع — الأسباب والكميات والقيم" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Summary cards -->
+        <Grid Grid.Row="1" Margin="0,18,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Total value -->
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Padding="16" CornerRadius="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Width="36" Height="36" CornerRadius="10" Background="{DynamicResource #FFEBEE}" VerticalAlignment="Top">
+                        <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="{DynamicResource #C62828}" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Data="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6h-6z" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock Text="إجمالي قيمة المنصرف" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                        <TextBlock x:Name="TxtTotalValue" Text="0 ج.م" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource #C62828}" Margin="0,3,0,0" />
+                        <TextBlock Text="عدا مرتجع المورد المسدد قيمته" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Movement count -->
+            <Border Grid.Column="2" Style="{StaticResource CardStyle}" Padding="16" CornerRadius="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Width="36" Height="36" CornerRadius="10" Background="{DynamicResource #E8EAF6}" VerticalAlignment="Top">
+                        <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="{DynamicResource #1A237E}" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Data="M14,2H6C4.9,2 4,2.9 4,4V20C4,21.1 4.9,22 6,22H18C19.1,22 20,21.1 20,20V8L14,2M18,20H6V4H13V9H18V20M8,13H11V11H13V13H16V15H13V17H11V15H8V13Z" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock Text="عدد الحركات" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                        <TextBlock x:Name="TxtTotalCount" Text="0" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,3,0,0" />
+                        <TextBlock Text="حركة خصم مسجلة" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Affected products -->
+            <Border Grid.Column="4" Style="{StaticResource CardStyle}" Padding="16" CornerRadius="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Width="36" Height="36" CornerRadius="10" Background="{DynamicResource #E3F2FD}" VerticalAlignment="Top">
+                        <Path FlowDirection="LeftToRight" Width="18" Height="18" Fill="{DynamicResource #1565C0}" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Data="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H4v-2h16v2zm0-4H4V4h16v12zm-8-1.5l3.5-3L20 14V8h-8v8z" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock Text="المنتجات المتأثرة" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                        <TextBlock x:Name="TxtProductsCount" Text="0" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource #1565C0}" Margin="0,3,0,0" />
+                        <TextBlock Text="منتج مختلف به منصرف" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Type chips (filter + per-type totals) -->
+        <WrapPanel x:Name="ChipsPanel" Grid.Row="2" Margin="0,14,0,0" />
+
+        <!-- Content -->
+        <Border Grid.Row="3" Style="{StaticResource CardStyle}" Padding="18" CornerRadius="12" Margin="0,12,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Card header -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="سجل المنصرف" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <Border CornerRadius="9" Background="{DynamicResource #FFEBEE}" Padding="9,2" Margin="9,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtBadgeCount" Text="0" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource #C62828}" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock x:Name="TxtSubtitle" Text="" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Click="ExportExcel_Click" Cursor="Hand" Height="34"
+                            Padding="14,0" VerticalAlignment="Center"
+                            Background="{DynamicResource CardBackgroundAlt}" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Path FlowDirection="LeftToRight" Width="15" Height="15" Fill="{DynamicResource #2E7D32}" Stretch="Uniform"
+                                              VerticalAlignment="Center"
+                                              Data="M14,2H6C4.9,2 4,2.9 4,4V20C4,21.1 4.9,22 6,22H18C19.1,22 20,21.1 20,20V8L14,2M18,20H6V4H13V9H18V20M8,13H11V11H13V13H16V15H13V17H11V15H8V13Z" />
+                                        <TextBlock Text="تصدير Excel" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource HeadingTextBrush}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.75" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+<!-- Table + empty state -->
+                <Grid Grid.Row="1" Margin="0,14,0,0">
+                    <Border CornerRadius="10" Background="{DynamicResource AppBackground}" ClipToBounds="True">
+                        <DataGrid x:Name="Grid"
+                                  AutoGenerateColumns="False"
+                                  CanUserSortColumns="True"
+                                  CanUserAddRows="False"
+                                  HeadersVisibility="Column"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  Background="Transparent"
+                                  RowHeaderWidth="0"
+                                  GridLinesVisibility="None"
+                                  RowBackground="Transparent"
+                                  AlternatingRowBackground="{DynamicResource SurfaceBackground}"
+                                  ScrollViewer.CanContentScroll="False"
+                                  VirtualizingPanel.IsVirtualizing="True"
+                                  VirtualizingPanel.VirtualizationMode="Standard">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Height" Value="50" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushLight}" />
+                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                    <Setter Property="Foreground" Value="{DynamicResource HeadingTextBrush}" />
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource InputBackground}" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource InputBackground}" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="Padding" Value="12,0" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="Foreground" Value="{DynamicResource HeadingTextBrush}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="Foreground" Value="{DynamicResource HeadingTextBrush}" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Height" Value="44" />
+                                    <Setter Property="Background" Value="{DynamicResource CardBackgroundAlt}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource HeadingTextBrush}" />
+                                    <Setter Property="FontSize" Value="11.5" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushLight}" />
+                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                    <Setter Property="Padding" Value="12,0" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                </Style>
+                            </DataGrid.Resources>
+
+                            <DataGrid.Columns>
+                                <!-- Date + time -->
+                                <DataGridTemplateColumn Header="التاريخ" Width="170">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding DateDisplay}" FontSize="12" FontWeight="SemiBold"
+                                                           FontFamily="Consolas" Foreground="{DynamicResource HeadingTextBrush}"
+                                                           TextAlignment="Center" />
+                                                <TextBlock Text="{Binding TimeDisplay}" FontSize="10"
+                                                           FontFamily="Consolas" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0"
+                                                           TextAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Product -->
+                                <DataGridTextColumn Header="المنتج" Binding="{Binding ProductName}" Width="200" IsReadOnly="True">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                            <Setter Property="FontSize" Value="12.5" />
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="HorizontalAlignment" Value="Center" />
+                                            <Setter Property="TextAlignment" Value="Center" />
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+
+                                <!-- Type -->
+                                <DataGridTemplateColumn Header="النوع" Width="135">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="7" Padding="9,4"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Border.Background>
+                                                    <SolidColorBrush Color="{Binding TypeBgColor}" />
+                                                </Border.Background>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border Width="7" Height="7" CornerRadius="4" VerticalAlignment="Center">
+                                                        <Border.Background>
+                                                            <SolidColorBrush Color="{Binding TypeDotColor}" />
+                                                        </Border.Background>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding TypeName}" FontSize="11" FontWeight="SemiBold"
+                                                               Margin="6,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock.Foreground>
+                                                            <SolidColorBrush Color="{Binding TypeFgColor}" />
+                                                        </TextBlock.Foreground>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Reason -->
+                                <DataGridTextColumn Header="السبب" Binding="{Binding ReasonDisplay}" Width="*" IsReadOnly="True" MinWidth="140">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            <Setter Property="FontSize" Value="11.5" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="TextAlignment" Value="Center" />
+                                            <Setter Property="Foreground" Value="{DynamicResource BodyTextBrush}" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+
+                                <!-- Value -->
+                                <DataGridTemplateColumn Header="القيمة" Width="125">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="7" Padding="11,5"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Border.Background>
+                                                    <SolidColorBrush Color="{Binding TypeBgColor}" />
+                                                </Border.Background>
+                                                <TextBlock Text="{Binding ValueDisplay}" FontSize="12" FontWeight="Bold"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.Foreground>
+                                                        <SolidColorBrush Color="{Binding TypeFgColor}" />
+                                                    </TextBlock.Foreground>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Actions -->
+                                <DataGridTemplateColumn Header="الإجراءات" Width="86">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Click="ViewProductLog_Click" Background="Transparent" BorderThickness="0"
+                                                    Cursor="Hand" Width="32" Height="32">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="b" Background="{TemplateBinding Background}"
+                                                                CornerRadius="7" Padding="0">
+                                                            <Path FlowDirection="LeftToRight" Width="14" Height="14" Fill="{DynamicResource #1565C0}"
+                                                                  Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                  Data="M13,3C8.03,3 4,7.03 4,12H1L4.89,15.89L4.96,16.03L9,12H6C6,8.13 9.13,5 13,5S20,8.13 20,12 16.87,19 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,19.99 10.51,21 13,21C17.97,21 22,16.97 22,12S17.97,3 13,3ZM12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" />
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="b" Property="Background" Value="{DynamicResource SurfaceBackground}" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsPressed" Value="True">
+                                                                <Setter TargetName="b" Property="Background" Value="{DynamicResource CardBackgroundAlt}" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="ToolTip" Value="سجل حركات المنتج" />
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!-- Empty state -->
+                    <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Width="64" Height="64" CornerRadius="20" Background="{DynamicResource CardBackgroundAlt}"
+                                HorizontalAlignment="Center">
+                            <Path FlowDirection="LeftToRight" Width="28" Height="28" Fill="{DynamicResource #90A4AE}" Stretch="Uniform"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z" />
+                        </Border>
+                        <TextBlock Text="لا توجد حركات منصرف" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource BodyTextBrush}" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                        <TextBlock Text="خصم أي مخزون من صفحة المنتجات وسيظهر هنا مع سببه وقيمته"
+                                   FontSize="11" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Footer totals -->
+                <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrushLight}"
+                        Padding="0,12,0,0" Margin="0,12,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock x:Name="TxtFooterCount" Text="إجمالي 0 حركة" FontSize="12"
+                                       Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" />
+                            <Ellipse Width="4" Height="4" Fill="{DynamicResource MutedTextBrush}" Margin="10,0" VerticalAlignment="Center" />
+                            <TextBlock Text="القيمة:" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock x:Name="TxtFooterValue" Text="0 ج.م" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource #C62828}"
+                                       Margin="6,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Border Grid.Column="1" x:Name="HintBadge" CornerRadius="8" Background="{DynamicResource CardBackgroundAlt}"
+                                Padding="10,4" VerticalAlignment="Center">
+                            <TextBlock Text="اضغط على النوع لفلترة النتائج" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" />
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

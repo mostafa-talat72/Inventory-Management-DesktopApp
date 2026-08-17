@@ -188,6 +188,17 @@
                                   Data="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h2v5l2.5-1.5L13 9V4h5v16z" />
                         </Grid>
                     </Button>
+                    <Button x:Name="BtnStockOut" Style="{StaticResource NavButton}" Click="NavigateToPage" Tag="StockOut">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="1" Text="منصرف المخزون" FontSize="14" VerticalAlignment="Center" Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" />
+                            <Path FlowDirection="LeftToRight" Grid.Column="0" Width="20" Height="20" Fill="White" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,12,0"
+                                  Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z" />
+                        </Grid>
+                    </Button>
                     <Button x:Name="BtnReports" Style="{StaticResource NavButton}" Click="NavigateToPage" Tag="Reports">
                         <Grid>
                             <Grid.ColumnDefinitions>
