@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=MTE Stock
-AppVersion=1.3
+AppVersion=1.4
 AppPublisher=م. مصطفى طلعت
 AppPublisherURL=https://github.com/anomalyco
 AppContact=01116626164

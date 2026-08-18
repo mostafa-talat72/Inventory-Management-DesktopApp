@@ -1,4 +1,4 @@
-using System.Printing;
+﻿using System.Printing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -44,17 +44,7 @@ public class ReceiptPrinter : IDisposable
         catch { return ""; }
     }
 
-    private static string ToArabicNumerals(string input)
-    {
-        if (string.IsNullOrEmpty(input)) return input;
-        var chars = input.ToCharArray();
-        for (int i = 0; i < chars.Length; i++)
-        {
-            if (chars[i] >= '0' && chars[i] <= '9')
-                chars[i] = (char)('\u0660' + (chars[i] - '0'));
-        }
-        return new string(chars);
-    }
+    private static string ToArabicNumerals(string input) => input;
 
     private static string FormatDateArabic(DateTime dt)
     {
@@ -268,7 +258,7 @@ public class ReceiptPrinter : IDisposable
   <div class=""divider""></div>
   {locationInfoHtml}
   <div class=""footer"">
-    <strong style=""font-weight: 900; font-size: 14px;"">تم تصميم وتطوير هذا النظام بواسطة المهندس مصطفى طلعت للحلول البرمجيه - 01116626164</strong>
+    {BuildDeveloperFooterHtml()}
   </div>
 </body>
 </html>";
@@ -460,7 +450,7 @@ public class ReceiptPrinter : IDisposable
   <div class=""divider""></div>
   {locationInfoHtml}
   <div class=""footer"">
-    <strong style=""font-weight: 900; font-size: 14px;"">تم تصميم وتطوير هذا النظام بواسطة المهندس مصطفى طلعت للحلول البرمجيه - 01116626164</strong>
+    {BuildDeveloperFooterHtml()}
   </div>
 </body>
 </html>";
@@ -607,7 +597,7 @@ public class ReceiptPrinter : IDisposable
   <div class=""divider""></div>
   {locationInfoHtml}
   <div class=""footer"">
-    <strong>تم تصميم وتطوير هذا النظام بواسطة المهندس مصطفى طلعت للحلول البرمجيه - 01116626164</strong>
+    {BuildDeveloperFooterHtml()}
   </div>
 </body>
 </html>";
@@ -617,8 +607,8 @@ public void PrintInventory(List<(Product product, string stockDisplay, int total
     {
         var config = AppConfig.Load();
         var html = BuildInventoryHtml(products, config, title);
-        Views.PrintPreviewDialog.Show(html, title ?? "??? ???????",
-            visualFactory: w => null,
+        Views.PrintPreviewDialog.Show(html, title ?? "كشف المخزون",
+            visualFactory: w => BuildInventoryVisual(products, config, w, title),
             invoice: null);
     }
 
@@ -769,6 +759,7 @@ public void PrintInventory(List<(Product product, string stockDisplay, int total
 <body>
   <div class=""header"">
     {(string.IsNullOrWhiteSpace(locationName) ? "" : $"<div class=\"org-name\">{System.Net.WebUtility.HtmlEncode(locationName)}</div>")}
+    <div class=""sys-name"">MTE Stock</div>
     <div class=""title"" style=""font-weight: 900; font-size: 22px;"">فاتورة مورد #{invoice.Id}</div>
     <div class=""info"">{FormatDateArabic(invoice.CreatedAt)}</div>
     {(invoice.SupplierId == null ? "" : $"<div class=\"info\">المورد: {System.Net.WebUtility.HtmlEncode(invoice.SupplierName ?? "")}</div>")}
@@ -790,7 +781,7 @@ public void PrintInventory(List<(Product product, string stockDisplay, int total
   <div class=""divider""></div>
   {locationInfoHtml}
   <div class=""footer"">
-    <strong style=""font-weight: 900; font-size: 14px;"">تم تصميم وتطوير هذا النظام بواسطة المهندس مصطفى طلعت للحلول البرمجيه - 01116626164</strong>
+    {BuildDeveloperFooterHtml()}
   </div>
 </body>
 </html>";
@@ -1025,12 +1016,7 @@ public void PrintInventory(List<(Product product, string stockDisplay, int total
         }
 
         panel.Children.Add(MakeDashedSeparator());
-        panel.Children.Add(MakeText("تم تصميم وتطوير هذا النظام بواسطة", 7, FontWeights.Normal,
-            foreground: new SolidColorBrush(Color.FromRgb(136, 136, 136)), horizontal: HorizontalAlignment.Center));
-        panel.Children.Add(MakeText("المهندس مصطفى طلعت للحلول البرمجيه", 8, FontWeights.Bold,
-            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
-        panel.Children.Add(MakeText("01116626164", 8, FontWeights.Bold,
-            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeDeveloperFooter());
 
         return panel;
     }
@@ -1049,6 +1035,8 @@ public void PrintInventory(List<(Product product, string stockDisplay, int total
         if (!string.IsNullOrWhiteSpace(locationName))
             panel.Children.Add(MakeText(locationName, 14, FontWeights.Black, horizontal: HorizontalAlignment.Center));
 
+        panel.Children.Add(MakeText("MTE Stock", 12, FontWeights.Bold,
+            foreground: new SolidColorBrush(Color.FromRgb(51, 51, 51)), horizontal: HorizontalAlignment.Center));
         panel.Children.Add(MakeText($"فاتورة مورد #{invoice.Id}", 13, FontWeights.Black, horizontal: HorizontalAlignment.Center));
         panel.Children.Add(MakeText(FormatDateArabic(invoice.CreatedAt), 10, FontWeights.Normal,
             foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
@@ -1134,12 +1122,7 @@ public void PrintInventory(List<(Product product, string stockDisplay, int total
         }
 
         panel.Children.Add(MakeDashedSeparator());
-        panel.Children.Add(MakeText("تم تصميم وتطوير هذا النظام بواسطة", 7, FontWeights.Normal,
-            foreground: new SolidColorBrush(Color.FromRgb(136, 136, 136)), horizontal: HorizontalAlignment.Center));
-        panel.Children.Add(MakeText("المهندس مصطفى طلعت للحلول البرمجيه", 8, FontWeights.Bold,
-            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
-        panel.Children.Add(MakeText("01116626164", 8, FontWeights.Bold,
-            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeDeveloperFooter());
 
         return panel;
     }
@@ -1193,6 +1176,233 @@ public void PrintInventory(List<(Product product, string stockDisplay, int total
 
     private static Border MakeDashedSeparator() =>
         new Border { Margin = new Thickness(0, 4, 0, 4), BorderThickness = new Thickness(0, 1, 0, 0), BorderBrush = new SolidColorBrush(Color.FromRgb(153, 153, 153)) };
+
+    private static UIElement MakeDeveloperFooter()
+    {
+        var footer = new StackPanel { Margin = new Thickness(0, 4, 0, 0) };
+        footer.Children.Add(MakeDashedSeparator());
+        footer.Children.Add(MakeText("✦ تم تصميم وتطوير هذا النظام بواسطة ✦", 8, FontWeights.Normal,
+            foreground: new SolidColorBrush(Color.FromRgb(136, 136, 136)), horizontal: HorizontalAlignment.Center));
+        footer.Children.Add(MakeTotalBox("المهندس مصطفى طلعت للحلول البرمجية المتكاملة",
+            Brushes.Black, Brushes.White, 12, isBold: true));
+        footer.Children.Add(MakeTotalBox("01116626164",
+            Brushes.Black, Brushes.White, 12, isBold: true));
+        return footer;
+    }
+
+    // ══════════════════════════════════════════
+    //  INVENTORY VISUAL (same printing path as invoices)
+    //  ══════════════════════════════════════════
+
+    private static StackPanel BuildInventoryVisual(List<(Product product, string stockDisplay, int totalPieces, decimal stockValue)> products,
+        AppConfig config, double width, string? title = null)
+    {
+        var panel = new StackPanel
+        {
+            Width = width,
+            Background = Brushes.White,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            FlowDirection = FlowDirection.RightToLeft
+        };
+
+        var locationName = config.PrintLocationName ? config.LocationName : "";
+
+        if (!string.IsNullOrWhiteSpace(locationName))
+            panel.Children.Add(MakeText(locationName, 14, FontWeights.Black, horizontal: HorizontalAlignment.Center));
+
+        panel.Children.Add(MakeText("MTE Stock", 12, FontWeights.Bold,
+            foreground: new SolidColorBrush(Color.FromRgb(51, 51, 51)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText(title ?? "كشف المخزون", 10, FontWeights.SemiBold,
+            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText(FormatDateArabic(DateTime.Now), 10, FontWeights.Normal,
+            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeDashedSeparator());
+
+        panel.Children.Add(MakeText("ملخص المخزون", 11, FontWeights.ExtraBold,
+            background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeTotalBox($"إجمالي المنتجات: {ToArabicNumerals(products.Count.ToString())}",
+            Brushes.Black, Brushes.White, 12, isBold: true));
+        panel.Children.Add(MakeTotalBox($"متوفر: {ToArabicNumerals(products.Count(p => p.totalPieces > 0).ToString())}",
+            Brushes.White, Brushes.Black, 11));
+        panel.Children.Add(MakeTotalBox($"نفذ: {ToArabicNumerals(products.Count(p => p.totalPieces <= 0).ToString())}",
+            Brushes.White, Brushes.Black, 11, border: true));
+        panel.Children.Add(MakeTotalBox($"القيمة الإجمالية: {ToArabicNumerals(products.Sum(p => p.stockValue).ToString("0.##"))} ج.م",
+            Brushes.White, Brushes.Black, 11, border: true));
+        panel.Children.Add(MakeDashedSeparator());
+
+        panel.Children.Add(MakeText("المنتجات", 11, FontWeights.ExtraBold,
+            background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+
+        // Table headers
+        panel.Children.Add(MakeTableRow(
+            new[] { "اسم المنتج", "السعر", "المخزن", "القيمة" },
+            new[] { 0.34, 0.22, 0.22, 0.22 }, width - 16, FontWeights.ExtraBold, isHeader: true));
+
+        // Table rows - access totalPieces and stockValue from tuple
+        foreach (var p in products.OrderBy(p => p.product.Name))
+        {
+            var units = p.product.Units.OrderBy(u => u.UnitType).ToList();
+            var priceLines = new List<string>();
+            foreach (var u in units)
+                priceLines.Add($"{u.Name}: {ToArabicNumerals(u.RetailPrice.ToString("0.##"))}");
+            string priceText = priceLines.Count > 0 ? string.Join("\n", priceLines) : "-";
+            panel.Children.Add(MakeTableRow(
+                new[] { p.product.Name, priceText, p.stockDisplay,
+                    ToArabicNumerals(p.stockValue.ToString("0.##")) },
+                new[] { 0.34, 0.22, 0.22, 0.22 }, width - 16, FontWeights.Bold));
+        }
+
+        panel.Children.Add(MakeDashedSeparator());
+        panel.Children.Add(MakeText("شكراً لزيارتكم", 12, FontWeights.Bold, horizontal: HorizontalAlignment.Center));
+
+        if ((config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress)) ||
+            (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone)) ||
+            (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription)))
+        {
+            panel.Children.Add(MakeDashedSeparator());
+            if (config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress))
+                panel.Children.Add(MakeText(config.LocationAddress, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+            if (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone))
+                panel.Children.Add(MakeText(config.LocationPhone, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+            if (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription))
+                panel.Children.Add(MakeText(config.LocationDescription, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+        }
+
+        panel.Children.Add(MakeDashedSeparator());
+        panel.Children.Add(MakeDeveloperFooter());
+
+        return panel;
+    }
+
+    // ═════════════════════════════════════════
+    //  SALES REPORT VISUAL (same printing path as invoices)
+    //  ══════════════════════════════════════════
+
+    private static StackPanel BuildSalesReportVisual(DateTime from, DateTime to, List<dynamic> reportData,
+        decimal totalSales, decimal totalCost, decimal totalDiscount, decimal totalProfit, int invoiceCount, AppConfig config, double width)
+    {
+        var panel = new StackPanel
+        {
+            Width = width,
+            Background = Brushes.White,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            FlowDirection = FlowDirection.RightToLeft
+        };
+
+        var locationName = config.PrintLocationName ? config.LocationName : "";
+
+        if (!string.IsNullOrWhiteSpace(locationName))
+            panel.Children.Add(MakeText(locationName, 14, FontWeights.Black, horizontal: HorizontalAlignment.Center));
+
+        panel.Children.Add(MakeText("MTE Stock", 12, FontWeights.Bold,
+            foreground: new SolidColorBrush(Color.FromRgb(51, 51, 51)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText("تقرير المبيعات", 10, FontWeights.SemiBold,
+            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText($"{from:dd/MM/yyyy} - {to.AddDays(-1):dd/MM/yyyy}", 10, FontWeights.SemiBold,
+            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeText(FormatDateArabic(DateTime.Now), 10, FontWeights.Normal,
+            foreground: new SolidColorBrush(Color.FromRgb(102, 102, 102)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeDashedSeparator());
+
+        panel.Children.Add(MakeText("ملخص التقرير", 11, FontWeights.ExtraBold,
+            background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+        panel.Children.Add(MakeTotalBox($"المبيعات: {ToArabicNumerals(totalSales.ToString("0.##"))} ج.م",
+            Brushes.Black, Brushes.White, 12, isBold: true));
+        panel.Children.Add(MakeTotalBox($"التكلفة: {ToArabicNumerals(totalCost.ToString("0.##"))} ج.م",
+            new SolidColorBrush(Color.FromRgb(255, 235, 238)), new SolidColorBrush(Color.FromRgb(198, 40, 40)), 11));
+        panel.Children.Add(MakeTotalBox($"الخصم: {ToArabicNumerals(totalDiscount.ToString("0.##"))} ج.م",
+            new SolidColorBrush(Color.FromRgb(255, 243, 224)), new SolidColorBrush(Color.FromRgb(230, 81, 0)), 11));
+        panel.Children.Add(MakeTotalBox($"الربح: {ToArabicNumerals(totalProfit.ToString("0.##"))} ج.م",
+            new SolidColorBrush(Color.FromRgb(232, 245, 233)), new SolidColorBrush(Color.FromRgb(46, 125, 50)), 11));
+        panel.Children.Add(MakeTotalBox($"عدد الفواتير: {ToArabicNumerals(invoiceCount.ToString())}",
+            new SolidColorBrush(Color.FromRgb(224, 242, 241)), new SolidColorBrush(Color.FromRgb(0, 105, 92)), 11));
+        panel.Children.Add(MakeDashedSeparator());
+
+        panel.Children.Add(MakeText("المنتجات", 11, FontWeights.ExtraBold,
+            background: new SolidColorBrush(Color.FromRgb(224, 224, 224)), horizontal: HorizontalAlignment.Center));
+
+        // Table headers
+        panel.Children.Add(MakeTableRow(
+            new[] { "#", "المنتج", "الكمية", "الإيراد", "التكلفة", "الربح", "%" },
+            new[] { 0.05, 0.24, 0.14, 0.16, 0.16, 0.14, 0.11 }, width - 16, FontWeights.ExtraBold, isHeader: true));
+
+        // Table rows
+        int rowNum = 1;
+        foreach (var r in reportData.OrderBy(r => (string)r.ProductName))
+        {
+            decimal retailRev  = (decimal)r._retailRev;
+            decimal wholeRev   = (decimal)r._wholesaleRev;
+            decimal retailCost = (decimal)r._retailCost;
+            decimal wholeCost  = (decimal)r._wholesaleCost;
+            decimal profit     = (decimal)r._profit;
+            decimal totalRev   = (decimal)r._totalRev;
+            string marginPct   = totalRev > 0 ? (profit / totalRev * 100).ToString("0.#") : "0";
+
+            string productName = (string)r.ProductName;
+
+            // Build quantity display from carton/box/piece display strings
+            var qtyParts = new List<string>();
+            if (!string.IsNullOrEmpty((string)r.CartonDisplay)) qtyParts.Add((string)r.CartonDisplay);
+            if (!string.IsNullOrEmpty((string)r.BoxDisplay))    qtyParts.Add((string)r.BoxDisplay);
+            if (!string.IsNullOrEmpty((string)r.PieceDisplay))  qtyParts.Add((string)r.PieceDisplay);
+            string qtyDisplay = string.Join("\n", qtyParts);
+
+            // Build revenue display
+            var revParts = new List<string>();
+            if (retailRev > 0) revParts.Add($"قطاعي: {ToArabicNumerals(retailRev.ToString("0.##"))}");
+            if (wholeRev > 0)  revParts.Add($"جملة: {ToArabicNumerals(wholeRev.ToString("0.##"))}");
+            string revDisplay = string.Join("\n", revParts);
+
+            // Build cost display
+            var costParts = new List<string>();
+            if (retailCost > 0) costParts.Add($"قطاعي: {ToArabicNumerals(retailCost.ToString("0.##"))}");
+            if (wholeCost > 0)  costParts.Add($"جملة: {ToArabicNumerals(wholeCost.ToString("0.##"))}");
+            string costDisplay = string.Join("\n", costParts);
+
+            panel.Children.Add(MakeTableRow(
+                new[] { rowNum.ToString(), productName, qtyDisplay, revDisplay, costDisplay,
+                    ToArabicNumerals(profit.ToString("0.##")), $"{marginPct}%" },
+                new[] { 0.05, 0.24, 0.14, 0.16, 0.16, 0.14, 0.11 }, width - 16, FontWeights.Bold));
+
+            rowNum++;
+        }
+
+        // Totals in invoice total-box style
+        panel.Children.Add(MakeDashedSeparator());
+        panel.Children.Add(MakeTotalBox($"الإجمالي: {ToArabicNumerals(totalSales.ToString("0.##"))} ج.م",
+            Brushes.White, Brushes.Black, 12));
+        panel.Children.Add(MakeTotalBox($"التكلفة: {ToArabicNumerals((totalCost + totalDiscount).ToString("0.##"))} ج.م",
+            Brushes.White, Brushes.Black, 12));
+        panel.Children.Add(MakeTotalBox($"صافي الربح: {ToArabicNumerals(totalProfit.ToString("0.##"))} ج.م",
+            Brushes.Black, Brushes.White, 13, isBold: true));
+
+        panel.Children.Add(MakeDashedSeparator());
+        panel.Children.Add(MakeText("شكراً لزيارتكم", 12, FontWeights.Bold, horizontal: HorizontalAlignment.Center));
+
+        if ((config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress)) ||
+            (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone)) ||
+            (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription)))
+        {
+            panel.Children.Add(MakeDashedSeparator());
+            if (config.PrintLocationAddress && !string.IsNullOrWhiteSpace(config.LocationAddress))
+                panel.Children.Add(MakeText(config.LocationAddress, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+            if (config.PrintLocationPhone && !string.IsNullOrWhiteSpace(config.LocationPhone))
+                panel.Children.Add(MakeText(config.LocationPhone, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+            if (config.PrintLocationDescription && !string.IsNullOrWhiteSpace(config.LocationDescription))
+                panel.Children.Add(MakeText(config.LocationDescription, 9, FontWeights.Normal,
+                    foreground: new SolidColorBrush(Color.FromRgb(85, 85, 85)), horizontal: HorizontalAlignment.Center));
+        }
+
+        panel.Children.Add(MakeDashedSeparator());
+        panel.Children.Add(MakeDeveloperFooter());
+
+        return panel;
+    }
 
     public string BuildReportHtml(DateTime from, DateTime to, List<dynamic> reportData,
         decimal totalSales, decimal totalCost, decimal totalDiscount, decimal totalProfit, int invoiceCount,
@@ -1338,7 +1548,7 @@ public void PrintInventory(List<(Product product, string stockDisplay, int total
   <div class=""divider""></div>
   {locationInfoHtml}
   <div class=""footer"">
-    <strong>تم تصميم وتطوير هذا النظام بواسطة المهندس مصطفى طلعت للحلول البرمجيه - 01116626164</strong>
+    {BuildDeveloperFooterHtml()}
   </div>
 </body>
 </html>";
@@ -1349,8 +1559,8 @@ public void PrintReport(DateTime from, DateTime to, List<dynamic> reportData,
     {
         var config = AppConfig.Load();
         var html = BuildReportHtml(from, to, reportData, totalSales, totalCost, totalDiscount, totalProfit, invoiceCount, config);
-        Views.PrintPreviewDialog.Show(html, "????? ????????",
-            visualFactory: w => null,
+        Views.PrintPreviewDialog.Show(html, "تقرير المبيعات",
+            visualFactory: w => BuildSalesReportVisual(from, to, reportData, totalSales, totalCost, totalDiscount, totalProfit, invoiceCount, config, w),
             invoice: null);
     }
 
@@ -1370,6 +1580,15 @@ public void PrintReport(DateTime from, DateTime to, List<dynamic> reportData,
             sb.Append($"<div>{System.Net.WebUtility.HtmlEncode(config.LocationDescription)}</div>");
         sb.Append("</div>");
         return sb.ToString();
+    }
+
+    private static string BuildDeveloperFooterHtml()
+    {
+        return @"<div style=""text-align:center; margin-top:10px; padding-top:6px; border-top:2px dashed #000;"">
+      <div style=""font-size:0.85em; color:#888; font-weight:600; margin-bottom:4px;"">&#10022; تم تصميم وتطوير هذا النظام بواسطة &#10022;</div>
+      <div style=""display:inline-block; background:#000; color:#fff; font-weight:900; font-size:1.15em; border-radius:5px; padding:6px 14px; margin-bottom:5px;"">المهندس مصطفى طلعت للحلول البرمجية المتكاملة</div><br/>
+      <div style=""display:inline-block; background:#000; color:#fff; font-weight:900; font-size:1.2em; border-radius:5px; padding:4px 18px; letter-spacing:1px;"">01116626164</div>
+    </div>";
     }
 
     public void PrintTestPage(PrintQueue? queue)
